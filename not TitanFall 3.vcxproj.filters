@@ -21,13 +21,43 @@
     <ClInclude Include="Dependencies\Includes\KHR\khrplatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\Includes\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Source.cpp">
+    <ClCompile Include="src\App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\Hug.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\Q1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\why.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Shaders\3.3.shader.fs" />
+    <None Include="res\Shaders\3.3.shader.vs" />
   </ItemGroup>
 </Project>

@@ -146,10 +146,24 @@
   <ItemGroup>
     <ClInclude Include="Dependencies\Includes\GLAD\glad.h" />
     <ClInclude Include="Dependencies\Includes\KHR\khrplatform.h" />
+    <ClInclude Include="Dependencies\Includes\stb_image.h" />
+    <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\Source.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\1.png" />
+    <Image Include="res\textures\Hug.png" />
+    <Image Include="res\textures\Q1.png" />
+    <Image Include="res\textures\why.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Shaders\3.3.shader.fs" />
+    <None Include="res\Shaders\3.3.shader.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
