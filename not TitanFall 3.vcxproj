@@ -147,9 +147,11 @@
     <ClInclude Include="Dependencies\Includes\GLAD\glad.h" />
     <ClInclude Include="Dependencies\Includes\KHR\khrplatform.h" />
     <ClInclude Include="Dependencies\Includes\stb_image.h" />
+    <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\App.cpp" />
@@ -157,6 +159,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\1.png" />
+    <Image Include="res\textures\awesomeface.png" />
+    <Image Include="res\textures\container.jpg" />
     <Image Include="res\textures\Hug.png" />
     <Image Include="res\textures\Q1.png" />
     <Image Include="res\textures\why.png" />
