@@ -48,9 +48,9 @@ public:
 
 private:
 	
-	
+	int countA = 0;
+	int countB = 0;
 	void updateCameraVectors();
-
 
 };
 
