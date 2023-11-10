@@ -4,8 +4,9 @@
 
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <string>
 #include "Camera.h"
+#include <vector>
 
 class Game
 {
@@ -24,6 +25,8 @@ private:
 	
 	void InitMeshes();
 	void processInput(GLFWwindow* window);
+	unsigned int loadCubemap(std::vector<std::string> faces);
+	unsigned int loadCubeMapSingle(const std::string& filePath);
 
 private:
 	float m_deltaTime;

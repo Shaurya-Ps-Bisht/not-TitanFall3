@@ -52,6 +52,7 @@ public:
 
     // render the mesh
     void Draw(Shader& shader);
+    void SetTransformationMatrix(const glm::mat4& transformationMatrix);
     
 
 private:
@@ -60,6 +61,7 @@ private:
 
     // initializes all the buffer objects/arrays
     void setupMesh();
+
    
 };
 #endif

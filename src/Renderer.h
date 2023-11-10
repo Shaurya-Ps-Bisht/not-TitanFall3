@@ -42,7 +42,7 @@ private:
 	void SetWindowProp(int width, int height);
 	int InitGlfwOGL();
 
-
+	void InitMesh();
 
 };
 

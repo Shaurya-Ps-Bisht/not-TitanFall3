@@ -92,3 +92,26 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 
 }
+
+void Mesh::SetTransformationMatrix(const glm::mat4& transformationMatrix)
+{
+    for (size_t i = 0; i < vertices.size(); ++i)
+    {
+        // Transform the position of each vertex
+        glm::vec4 transformedPosition = transformationMatrix * glm::vec4(vertices[i].Position, 1.0f);
+        vertices[i].Position = glm::vec3(transformedPosition);
+
+        // If you have normals, tangents, and bitangents, transform those as well
+        glm::vec4 transformedNormal = transformationMatrix * glm::vec4(vertices[i].Normal, 0.0f);
+        vertices[i].Normal = glm::vec3(transformedNormal);
+
+        glm::vec4 transformedTangent = transformationMatrix * glm::vec4(vertices[i].Tangent, 0.0f);
+        vertices[i].Tangent = glm::vec3(transformedTangent);
+
+        glm::vec4 transformedBitangent = transformationMatrix * glm::vec4(vertices[i].Bitangent, 0.0f);
+        vertices[i].Bitangent = glm::vec3(transformedBitangent);
+    }
+
+    // Recreate the mesh with the updated vertices
+    setupMesh();
+}

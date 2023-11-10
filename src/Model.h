@@ -32,14 +32,20 @@ public:
 
     Model(const char* path);
     void Draw(Shader& shader);
+
 private:
     // model data
     vector<Mesh> meshes;
     string directory;
+    glm::vec3 m_position, m_axis, m_scale;
+    float  m_angle;
 
+private:
     void loadModel(string path);
-    void processNode(aiNode* node, const aiScene* scene);
+    void processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTransformation);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
     vector<TextureStruct> loadMaterialTextures(aiMaterial* mat, aiTextureType type,string typeName);
     unsigned int TextureFromFile(const char* path, const string& directory);
+    void SetTransform(glm::vec3 pos, glm::vec3 axisRotation, float angle, glm::vec3 scale);
+    glm::mat4 AiMatrix4x4ToGlm(const aiMatrix4x4* from);
 };

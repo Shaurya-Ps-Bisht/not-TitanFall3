@@ -17,6 +17,11 @@ private:
 	std::string m_FilePath;
 	unsigned char* m_LocalBuffer;
 	int m_Width, m_Height, m_BPP;
+
+private:
+	void genSkyBox(std::vector<std::string> faces);
+	void genSkyBoxFromStrip(const std::string& filePath);
+
 public:
 	Texture(const std::string& path);
 	~Texture();

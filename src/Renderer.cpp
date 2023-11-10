@@ -10,7 +10,7 @@ Renderer::~Renderer()
 
 void Renderer::Run()
 {
-    SetWindowProp(800, 600);
+    SetWindowProp(1440, 900);
     InitGlfwOGL();
 }
 
@@ -71,7 +71,6 @@ int Renderer::InitGlfwOGL()
 
 void Renderer::setCamera(Camera* camera)
 {
-    std::cout << "HH";
     m_camera = camera;
 }
 

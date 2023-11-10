@@ -235,10 +235,12 @@
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\GameEntity.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Terrain.h" />
     <ClInclude Include="src\Texture.h" />
   </ItemGroup>
   <ItemGroup>
