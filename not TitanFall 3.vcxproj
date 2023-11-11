@@ -242,6 +242,7 @@
     <ClInclude Include="src\GameEntity.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Terrain.h" />
@@ -259,6 +260,7 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
+    <ClCompile Include="src\Terrain.cpp" />
     <ClCompile Include="src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
