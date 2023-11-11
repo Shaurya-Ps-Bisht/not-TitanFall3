@@ -3,6 +3,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+#define MAX_BONE_INFLUENCE 4
+
+
 #include <glad/glad.h> // holds all OpenGL type declarations
 
 #include <glm/glm.hpp>

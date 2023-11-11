@@ -1,5 +1,5 @@
 #include "Model.h"
-
+#include "assimp_glm_helper.h"
 Model::Model(const char* path)
 {
     loadModel(path);
@@ -11,12 +11,74 @@ void Model::Draw(Shader& shader)
         meshes[i].Draw(shader);
 }
 
+void Model::SetVertexBoneDataToDefault(Vertex& vertex)
+{
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        vertex.m_BoneIDs[i] = -1;
+        vertex.m_Weights[i] = 0.0f;
+    }
+}
+
+void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+{
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+    {
+        if (vertex.m_BoneIDs[i] < 0)
+        {
+            vertex.m_Weights[i] = weight;
+            vertex.m_BoneIDs[i] = boneID;
+            break;
+        }
+    }
+}
+
+void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+{
+    auto& boneInfoMap = m_BoneInfoMap;
+    int& boneCount = m_BoneCounter;
+
+    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+        int boneID = -1;
+        std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+        if (boneInfoMap.find(boneName) == boneInfoMap.end())
+        {
+            BoneInfo newBoneInfo;
+            newBoneInfo.id = boneCount;
+            newBoneInfo.offset = assimp_glm_helper::AiMatrix4x4ToGlm(&mesh->mBones[boneIndex]->mOffsetMatrix);
+            boneInfoMap[boneName] = newBoneInfo;
+            boneID = boneCount;
+            boneCount++;
+        }
+        else
+        {
+            boneID = boneInfoMap[boneName].id;
+        }
+        assert(boneID != -1);
+        auto weights = mesh->mBones[boneIndex]->mWeights;
+        int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+        for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+        {
+            int vertexId = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexId <= vertices.size());
+            SetVertexBoneData(vertices[vertexId], boneID, weight);
+        }
+    }
+}
+
 void Model::loadModel(string path)
 {
+    bool a = true;
     if (path.length() >= 4 && path.substr(path.length() - 4) == ".obj")
     {
         // Set stbi_set_flip_vertically_on_load(false) only for ".obj" files
         stbi_set_flip_vertically_on_load(false);
+    }
+    else if (path.length() >= 4 && path.substr(path.length() - 4) == ".dae") {
+        a = false;
     }
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace );
@@ -28,15 +90,16 @@ void Model::loadModel(string path)
     }
     // retrieve the directory path of the filepath
     directory = path.substr(0, path.find_last_of('/'));
+    
 
     // process ASSIMP's root node recursively
-    processNode(scene->mRootNode, scene, glm::mat4(1.0f));
+    processNode(scene->mRootNode, scene, glm::mat4(1.0f), a);
 
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTransformation)
+void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTransformation, bool a)
 {
-    glm::mat4 transformation = AiMatrix4x4ToGlm(&node->mTransformation);
+    glm::mat4 transformation = assimp_glm_helper::AiMatrix4x4ToGlm(&node->mTransformation);
     glm::mat4 globalTransformation =  parentTransformation * transformation;
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -44,13 +107,14 @@ void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTran
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh neroMesh = processMesh(mesh, scene);
-        neroMesh.SetTransformationMatrix(globalTransformation);
+        if(a)
+            neroMesh.SetTransformationMatrix(globalTransformation);
         meshes.push_back(neroMesh);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, globalTransformation);
+        processNode(node->mChildren[i], scene, globalTransformation, a);
     }
 
 }
@@ -60,6 +124,28 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     vector<Vertex> vertices;
     vector<unsigned int> indices;
     vector<TextureStruct> textures;
+
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+    {
+        Vertex vertex;
+
+        SetVertexBoneDataToDefault(vertex);
+
+        vertex.Position = assimp_glm_helper::GetGLMVec(mesh->mVertices[i]);
+        vertex.Normal = assimp_glm_helper::GetGLMVec(mesh->mNormals[i]);
+
+        if (mesh->mTextureCoords[0])
+        {
+            glm::vec2 vec;
+            vec.x = mesh->mTextureCoords[0][i].x;
+            vec.y = mesh->mTextureCoords[0][i].y;
+            vertex.TexCoords = vec;
+        }
+        else
+            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+
+        vertices.push_back(vertex);
+    }
 
 
     // walk through each of the mesh's vertices
@@ -134,6 +220,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     // 4. height maps
     std::vector<TextureStruct> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+    ExtractBoneWeightForVertices(vertices, mesh, scene);
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);
@@ -221,15 +309,3 @@ void Model::SetTransform(glm::vec3 pos, glm::vec3 axisRotation, float angle, glm
     m_scale = scale;        
 }
 
-glm::mat4 Model::AiMatrix4x4ToGlm(const aiMatrix4x4* from)
-{
-    glm::mat4 to;
-
-
-    to[0][0] = (GLfloat)from->a1; to[0][1] = (GLfloat)from->b1;  to[0][2] = (GLfloat)from->c1; to[0][3] = (GLfloat)from->d1;
-    to[1][0] = (GLfloat)from->a2; to[1][1] = (GLfloat)from->b2;  to[1][2] = (GLfloat)from->c2; to[1][3] = (GLfloat)from->d2;
-    to[2][0] = (GLfloat)from->a3; to[2][1] = (GLfloat)from->b3;  to[2][2] = (GLfloat)from->c3; to[2][3] = (GLfloat)from->d3;
-    to[3][0] = (GLfloat)from->a4; to[3][1] = (GLfloat)from->b4;  to[3][2] = (GLfloat)from->c4; to[3][3] = (GLfloat)from->d4;
-
-    return to;
-}

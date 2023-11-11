@@ -7,6 +7,8 @@
 #include "Model.h"
 #include "Renderer.h"
 #include "Texture.h"
+#include "Animation.h"
+#include "Animator.h"
 
 Game::Game()
 {
@@ -26,7 +28,8 @@ void Game::Run()
 void Game::GameLoop()
 {
     float lastFrame = 0.0;
-    Shader ourShader("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
+    //Shader ourShader("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
+    Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader skyboxShader("res/Shaders/Skybox/skybox.vs", "res/Shaders/Skybox/skybox.fs");
 
     float skyboxVertices[] = {
@@ -104,8 +107,21 @@ void Game::GameLoop()
     //Model ourModel("res/Models/LOTR_troll/scene.gltf");
     //Model ourModel("res/Models/LOTR_troll/fbx/source/nice.fbx");
 
+    //Model ourModel("res/Models/Player/Vampire/dancing_vampire.dae");
+    //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
+    //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
+    //Model ourModel("res/Models/BathRoom/gltf/scene.gltf");
+
+    //Model ourModel("res/Models/Player/Terrorist/dae/nice.dae");
+    Model ourModel("res/Models/Player/Soldier/1/dae/nice.dae");
+
+    //Model ourModel("res/Models/Player/Vampire/vampire.gltf");
+    //Animation danceAnimation(("res/Models/Player/Terrorist/dae/nice.dae"), &ourModel);
+    Animation danceAnimation(("res/Models/Player/Soldier/1/dae/nice.dae"), &ourModel);
+    //Animation danceAnimation(("res/Models/Player/Vampire/dancing_vampire.dae"), &ourModel);
+    Animator animator(&danceAnimation);
+
     
-    Model ourModel("res/Models/BathRoom/gltf/scene.gltf");
     const unsigned int SCR_WIDTH = 1440;
     const unsigned int SCR_HEIGHT = 900;
 
@@ -116,6 +132,7 @@ void Game::GameLoop()
         lastFrame = currentFrame;
 
         processInput(m_window);
+        animator.UpdateAnimation(m_deltaTime);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -128,10 +145,16 @@ void Game::GameLoop()
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
+        auto transforms = animator.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i)
+            ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+
+
+
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(0.001f, 0.001f, 0.001f));	// it's a bit too big for our scene, so scale it down
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 
