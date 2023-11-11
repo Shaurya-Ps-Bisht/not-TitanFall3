@@ -28,8 +28,8 @@ void Game::Run()
 void Game::GameLoop()
 {
     float lastFrame = 0.0;
-    //Shader ourShader("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
-    Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
+    Shader ourShader("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
+    //Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader skyboxShader("res/Shaders/Skybox/skybox.vs", "res/Shaders/Skybox/skybox.fs");
 
     float skyboxVertices[] = {
@@ -110,14 +110,16 @@ void Game::GameLoop()
     //Model ourModel("res/Models/Player/Vampire/dancing_vampire.dae");
     //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
     //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
-    //Model ourModel("res/Models/BathRoom/gltf/scene.gltf");
+    Model ourModel("res/Models/BathRoom/gltf/scene.gltf");
 
     //Model ourModel("res/Models/Player/Terrorist/dae/nice.dae");
-    Model ourModel("res/Models/Player/Soldier/1/dae/nice.dae");
+    //Model ourModel("res/Models/Player/Soldier/1/dae/nice.dae");
+    //Model ourModel("res/Models/Player/Soldier/gltf/soldier1.gltf");
 
     //Model ourModel("res/Models/Player/Vampire/vampire.gltf");
     //Animation danceAnimation(("res/Models/Player/Terrorist/dae/nice.dae"), &ourModel);
-    Animation danceAnimation(("res/Models/Player/Soldier/1/dae/nice.dae"), &ourModel);
+    //Animation danceAnimation(("res/Models/Player/Soldier/1/dae/nice.dae"), &ourModel)
+    Animation danceAnimation(("res/Models/Player/Soldier/gltf/soldier1.gltf"), &ourModel, "nodder");
     //Animation danceAnimation(("res/Models/Player/Vampire/dancing_vampire.dae"), &ourModel);
     Animator animator(&danceAnimation);
 
@@ -154,7 +156,7 @@ void Game::GameLoop()
         // render the loaded model
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.001f, 0.001f, 0.001f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 

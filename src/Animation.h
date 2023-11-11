@@ -25,12 +25,24 @@ class Animation
 public:
 	Animation() = default;
 
-	Animation(const std::string& animationPath, Model* model)
+	Animation(const std::string& animationPath, Model* model, const std::string& targetAnimationName)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
 		assert(scene && scene->mRootNode);
-		auto animation = scene->mAnimations[0];
+		auto animation = scene->mAnimations[1];
+
+		for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
+			std::cout << i << std::endl;
+			if (std::strcmp(scene->mAnimations[i]->mName.C_Str(), targetAnimationName.c_str()) == 0)
+			{
+
+				animation = scene->mAnimations[i];
+				std::cout << "Found animation with name: " << animation->mName.C_Str() << std::endl;
+				break;
+			}
+		}
+
 		m_Duration = animation->mDuration;
 		m_TicksPerSecond = animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;

@@ -107,8 +107,7 @@ void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTran
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh neroMesh = processMesh(mesh, scene);
-        if(a)
-            neroMesh.SetTransformationMatrix(globalTransformation);
+        neroMesh.SetTransformationMatrix(globalTransformation);
         meshes.push_back(neroMesh);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
