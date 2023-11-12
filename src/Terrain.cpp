@@ -17,7 +17,7 @@ Terrain::Terrain(const char* mapPath)
     // -------------------------
     glGenTextures(1, &m_textureID);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textureID); 
+    glBindTexture(GL_TEXTURE_2D, m_textureID);
     // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -27,23 +27,26 @@ Terrain::Terrain(const char* mapPath)
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char* data = stbi_load(mapPath, &width, &height, &nrChannels, 0);
+    data = stbi_load(mapPath, &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         m_terrainShader.setInt("heightMap", 0);
-        std::cout << "Shader " << m_terrainShader.m_ID<< std::endl;
-        std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+        std::cout << "Shader " << m_terrainShader.m_ID << std::endl;
+
+        m_ResolutionWidth = width;
+        m_ResolutionHeight = height;
+        m_nrChannels = nrChannels;
+
+        std::cout << "Loaded heightmap of size " << m_ResolutionWidth << " x " << m_ResolutionHeight <<" CHANNELS: "<< m_nrChannels <<std::endl;
+
     }
     else
     {
         std::cout << "Failed to load texture" << std::endl;
     }
-    stbi_image_free(data);
-    m_ResolutionWidth = width;
-    m_ResolutionHeight = height;
     // ------------------------------------------------------------------
     std::vector<float> vertices;
 
@@ -101,6 +104,8 @@ Terrain::Terrain(const char* mapPath)
 
 Terrain::~Terrain()
 {
+    stbi_image_free(data);
+
 }
 
 void Terrain::Draw(Camera& camera)
@@ -130,4 +135,23 @@ void Terrain::Draw(Camera& camera)
 
 void Terrain::LoadFromFile(const char* filename)
 {
+    
+}
+
+float Terrain::getHeight(float x, float z)
+{
+    if(data)
+    {
+        x += m_ResolutionWidth/2;
+        z += m_ResolutionHeight/2;
+
+        int index = ((int)x + (int)m_ResolutionWidth* (int)z) * 4;
+        // Access the pixel values at the specified position
+        unsigned char* offset = data + index;
+
+        float final = (float)offset[0]/255 * 64.0 - 16.0;        
+
+        return final;
+
+    }
 }

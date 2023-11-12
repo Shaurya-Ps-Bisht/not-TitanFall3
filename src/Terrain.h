@@ -22,6 +22,7 @@ public:
 
 	void Draw(Camera& camera);
 	void LoadFromFile(const char* filename);
+	float getHeight(float x, float y);
 
 public:
 	unsigned int m_textureID;
@@ -36,7 +37,8 @@ private:
 private:
 	Shader m_terrainShader;
 	unsigned rez;
-	float m_ResolutionWidth, m_ResolutionHeight;
+	float m_ResolutionWidth, m_ResolutionHeight, m_nrChannels;
+	unsigned char* data;
 };
 
 

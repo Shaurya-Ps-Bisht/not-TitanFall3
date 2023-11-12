@@ -63,8 +63,8 @@ int Renderer::InitGlfwOGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glClearColor(0.137255f, 0.137255f, 0.556863f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glClearColor(0.137255f, 0.137255f, 0.556863f, 1.0f);
 
 
     m_window = window;

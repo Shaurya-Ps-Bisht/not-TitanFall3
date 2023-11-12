@@ -166,7 +166,7 @@ void Game::GameLoop()
             model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
             model = glm::scale(model, glm::vec3(.001f, .001, .001));	// it's a bit too big for our scene, so scale it down
             ourShader.setMat4("model", model);
-            //ourModel.Draw(ourShader);
+            ourModel.Draw(ourShader);
         }
         {
             chaljao.Draw(m_camera);
@@ -201,6 +201,7 @@ void Game::GameLoop()
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y, m_camera.m_cameraPos.z);
+            ImGui::Text("Height: %.3f ", chaljao.getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z));
         }
         {
             static float inputNumber = 0.5f; // Default value
