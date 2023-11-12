@@ -42,7 +42,8 @@ Terrain::Terrain(const char* mapPath)
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
+    m_ResolutionWidth = width;
+    m_ResolutionHeight = height;
     // ------------------------------------------------------------------
     std::vector<float> vertices;
 
@@ -104,7 +105,11 @@ Terrain::~Terrain()
 
 void Terrain::Draw(Camera& camera)
 {
+    int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
     m_terrainShader.use();
+    m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
+    //m_terrainShader.setInt("uHeightMap", 0);
+
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), (float)1440 / (float)900, 0.01f, 1000000.0f);
@@ -115,10 +120,9 @@ void Terrain::Draw(Camera& camera)
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
     m_terrainShader.setMat4("model", model);
-    std::cout << "While Drawing: " << m_terrainShader.m_ID << std::endl;
 
-
-    // render the terrain
+    // render the 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureID);
     glBindVertexArray(m_terrainVAO);
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);

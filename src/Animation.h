@@ -44,7 +44,7 @@ public:
 		}
 
 		m_Duration = animation->mDuration;
-		m_TicksPerSecond = animation->mTicksPerSecond;
+		m_TicksPerSecond = (int)animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHierarchyData(m_RootNode, scene->mRootNode);
@@ -68,8 +68,8 @@ public:
 	}
 
 
-	inline float GetTicksPerSecond() { return m_TicksPerSecond; }
-	inline float GetDuration() { return m_Duration; }
+	inline int GetTicksPerSecond() { return m_TicksPerSecond; }
+	inline double GetDuration() { return m_Duration; }
 	inline const AssimpNodeData& GetRootNode() { return m_RootNode; }
 	inline const std::map<std::string, BoneInfo>& GetBoneIDMap()
 	{
@@ -110,14 +110,14 @@ private:
 		dest.transformation = assimp_glm_helper::AiMatrix4x4ToGlm(&src->mTransformation);
 		dest.childrenCount = src->mNumChildren;
 
-		for (int i = 0; i < src->mNumChildren; i++)
+		for (size_t  i = 0; i < src->mNumChildren; i++)
 		{
 			AssimpNodeData newData;
 			ReadHierarchyData(newData, src->mChildren[i]);
 			dest.children.push_back(newData);
 		}
 	}
-	float m_Duration;
+	double m_Duration;
 	int m_TicksPerSecond;
 	std::vector<Bone> m_Bones;
 	AssimpNodeData m_RootNode;

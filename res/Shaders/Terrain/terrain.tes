@@ -7,6 +7,7 @@ uniform mat4 view;
 uniform mat4 projection;
 
 in vec2 TextureCoord[];
+out vec2 TexCoords;
 
 out float Height;
 
@@ -23,8 +24,11 @@ void main()
     vec2 t0 = (t01 - t00) * u + t00;
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
+    TexCoords = texCoord;
 
-    Height = texture(heightMap, texCoord).y * 64.0 - 16.0;
+
+
+    Height = texture(heightMap, texCoord).x * 64.0 - 16.0;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;

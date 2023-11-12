@@ -2,6 +2,7 @@
 #include <iostream>
 
 
+
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     :m_lookVec(glm::vec3(0.0f, 0.0f, -1.0f)), m_movementSpeed(SPEED), m_mouseSens(SENS), m_FOV(FOV), m_cameraPos(position),
     m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch)
@@ -84,4 +85,9 @@ void Camera::updateCameraVectors()
     m_camRight = glm::normalize(glm::cross(m_lookVec, m_WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     m_upVec = glm::normalize(glm::cross(m_camRight, m_lookVec));
 
+}
+
+void Camera::setCameraSpeed(float speed)
+{
+    m_movementSpeed = speed;
 }

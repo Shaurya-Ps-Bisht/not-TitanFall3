@@ -19,9 +19,9 @@ enum Camera_Movement {
 //default cam values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 110.5f;
+const float SPEED = 0.5f;
 const float SENS = 0.1f;
-const float FOV = 60.0f;
+const float FOV = 80.0f;
 
 class Camera
 {
@@ -36,7 +36,7 @@ public:
 	float m_Pitch;
 	float m_movementSpeed;
 	float m_mouseSens;
-
+public:
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 	~Camera();
@@ -45,6 +45,7 @@ public:
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
+	void setCameraSpeed(float speed);
 
 private:
 	

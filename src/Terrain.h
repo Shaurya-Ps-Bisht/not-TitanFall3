@@ -36,6 +36,7 @@ private:
 private:
 	Shader m_terrainShader;
 	unsigned rez;
+	float m_ResolutionWidth, m_ResolutionHeight;
 };
 
 

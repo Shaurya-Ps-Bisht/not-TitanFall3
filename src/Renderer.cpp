@@ -5,6 +5,8 @@
 
 Renderer::~Renderer()
 {
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
 }
 
@@ -61,10 +63,16 @@ int Renderer::InitGlfwOGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glClearColor(0.137255f, 0.137255f, 0.556863f, 1.0f);
 
 
     m_window = window;
+
+    ImGui::CreateContext();
+    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui::StyleColorsDark();
+
     return 0;
 
 }
@@ -81,29 +89,35 @@ void Renderer::framebuffer_size_callback(GLFWwindow* window, int width, int heig
 
 void Renderer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    GetInstance().m_camera->ProcessMouseScroll(static_cast<float>(yoffset));
+    if (!Renderer::GetInstance().cursorEnabled)
+    {
+        GetInstance().m_camera->ProcessMouseScroll(static_cast<float>(yoffset));
+    }
 }
 
 
 void Renderer::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (GetInstance().m_firstMouse)
+    if (!Renderer::GetInstance().cursorEnabled)
     {
+        float xpos = static_cast<float>(xposIn);
+        float ypos = static_cast<float>(yposIn);
+
+        if (GetInstance().m_firstMouse)
+        {
+            GetInstance().m_lastX = xpos;
+            GetInstance().m_lastY = ypos;
+            GetInstance().m_firstMouse = false;
+        }
+
+        float xoffset = xpos - GetInstance().m_lastX;
+        float yoffset = GetInstance().m_lastY - ypos; // reversed since y-coordinates go from bottom to top
+
         GetInstance().m_lastX = xpos;
         GetInstance().m_lastY = ypos;
-        GetInstance().m_firstMouse = false;
+
+        GetInstance().m_camera->ProcessMouseMovement(xoffset, yoffset);
     }
-
-    float xoffset = xpos - GetInstance().m_lastX;
-    float yoffset = GetInstance().m_lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    GetInstance().m_lastX = xpos;
-    GetInstance().m_lastY = ypos;
-
-    GetInstance().m_camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
 

@@ -5,6 +5,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "vendor/imgui/imgui.h"
+#include "vendor/imgui/imgui_impl_glfw_gl3.h"
+
 #include "Camera.h"
 #include "Game.h"
 
@@ -29,6 +32,11 @@ public:
 
 public:
 	GLFWwindow* m_window;
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.45f, 0.45f, 0.45f);
+
+	bool cursorEnabled = false;
 
 
 private:
@@ -36,6 +44,7 @@ private:
 	Camera* m_camera = nullptr;
 	float m_lastX, m_lastY;
 	bool m_firstMouse = true;
+
 
 private:
 	Renderer() {};

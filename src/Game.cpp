@@ -11,6 +11,7 @@
 #include "Animator.h"
 #include "Terrain.h"
 
+
 Game::Game()
 {
     m_camera = Camera(glm::vec3(0.0f, .17f, 0.0f));
@@ -132,6 +133,8 @@ void Game::GameLoop()
 
     while (!glfwWindowShouldClose(m_window))
     {
+        ImGui_ImplGlfwGL3_NewFrame();
+
         
         float currentFrame = static_cast<float>(glfwGetTime());
         m_deltaTime = currentFrame - lastFrame;
@@ -163,7 +166,7 @@ void Game::GameLoop()
             model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
             model = glm::scale(model, glm::vec3(.001f, .001, .001));	// it's a bit too big for our scene, so scale it down
             ourShader.setMat4("model", model);
-            ourModel.Draw(ourShader);
+            //ourModel.Draw(ourShader);
         }
         {
             chaljao.Draw(m_camera);
@@ -182,6 +185,33 @@ void Game::GameLoop()
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+            ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+            ImGui::ColorEdit3("clear color", (float*)&(Renderer::GetInstance().clear_color)); // Edit 3 floats representing a color
+            ImGui::Checkbox("Demo Window", &(Renderer::GetInstance().show_demo_window));      // Edit bools storing our windows open/close state
+            ImGui::Checkbox("Another Window", &(Renderer::GetInstance().show_another_window));
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y, m_camera.m_cameraPos.z);
+        }
+        {
+            static float inputNumber = 0.5f; // Default value
+
+            if (ImGui::InputFloat("Movement Speed", &inputNumber, 1.0f, 10.0f)) {
+                m_camera.setCameraSpeed(inputNumber);
+            }
+        }
+
+        ImGui::Render();
+        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(m_window);
         glfwPollEvents();
@@ -189,19 +219,28 @@ void Game::GameLoop()
 }
 
 void Game::processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+{   if(!Renderer::GetInstance().cursorEnabled)
+    {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        m_camera.ProcessKeyboard(FORWARD, m_deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        m_camera.ProcessKeyboard(BACKWARD, m_deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        m_camera.ProcessKeyboard(LEFT, m_deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        m_camera.ProcessKeyboard(RIGHT, m_deltaTime);
-
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            m_camera.ProcessKeyboard(FORWARD, m_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            m_camera.ProcessKeyboard(LEFT, m_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            m_camera.ProcessKeyboard(RIGHT, m_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !(Renderer::GetInstance().cursorEnabled)) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            Renderer::GetInstance().cursorEnabled = true;
+        }
+    }
+    else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && Renderer::GetInstance().cursorEnabled) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        Renderer::GetInstance().cursorEnabled = false;
+    }
 }
 
 unsigned int Game::loadCubeMapSingle(const std::string& filePath)
