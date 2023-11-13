@@ -1,4 +1,6 @@
 #pragma once
+#ifndef __ASSIMP_GLM_HELPER__
+#define __ASSIMP_GLM_HELPER__
 
 #include <glad/glad.h> 
 
@@ -35,3 +37,5 @@ public:
 		return glm::quat(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
 	}
 };
+
+#endif

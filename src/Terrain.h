@@ -4,8 +4,6 @@
 
 #include "Shader.h"
 #include "Texture.h"
-#include "Camera.h"
-
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +18,7 @@ public:
 	Terrain(const char* mapPath);
 	~Terrain();
 
-	void Draw(Camera& camera);
+	void Draw(glm::mat4 projection, glm::mat4 view);
 	void LoadFromFile(const char* filename);
 	float getHeight(float x, float y);
 

@@ -28,7 +28,7 @@ void main()
 
 
 
-    Height = texture(heightMap, texCoord).x * 64.0 - 16.0;
+    Height = texture(heightMap, texCoord).x * 100.0 - 16.0;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;
@@ -45,3 +45,7 @@ void main()
 
     gl_Position = projection * view * model * p;
 }
+
+
+
+

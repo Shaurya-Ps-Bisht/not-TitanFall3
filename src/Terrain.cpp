@@ -108,17 +108,13 @@ Terrain::~Terrain()
 
 }
 
-void Terrain::Draw(Camera& camera)
+void Terrain::Draw(glm::mat4 projection , glm::mat4 view)
 {
     int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
     m_terrainShader.use();
     m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
-    //m_terrainShader.setInt("uHeightMap", 0);
-
 
     // view/projection transformations
-    glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), (float)1440 / (float)900, 0.01f, 1000000.0f);
-    glm::mat4 view = camera.GetViewMatrix();
     m_terrainShader.setMat4("projection", projection);
     m_terrainShader.setMat4("view", view);
 
@@ -140,18 +136,49 @@ void Terrain::LoadFromFile(const char* filename)
 
 float Terrain::getHeight(float x, float z)
 {
-    if(data)
+    if (data)
     {
-        x += m_ResolutionWidth/2;
-        z += m_ResolutionHeight/2;
+        x += m_ResolutionWidth / 2;
+        z += m_ResolutionHeight / 2;
 
-        int index = ((int)x + (int)m_ResolutionWidth* (int)z) * 4;
-        // Access the pixel values at the specified position
-        unsigned char* offset = data + index;
+        if (x < 0 || z < 0 || x >= m_ResolutionWidth - 1 || z >= m_ResolutionHeight - 1)
+        {
+            return 0.0f; // Adjusted boundary conditions
+        }
 
-        float final = (float)offset[0]/255 * 64.0 - 16.0;        
+        // Get the integer coordinates of the top-left corner of the cell
+        int x0 = (int)x;
+        int z0 = (int)z;
 
-        return final;
+        // Calculate the fractional part of the coordinates
+        float dx = x - (float)x0;
+        float dz = z - (float)z0;
 
+        // Calculate the heights at the four corners of the cell
+        int index00 = ((int)x0 + (int)m_ResolutionWidth * (int)z0) * 4;
+        int index10 = ((int)(x0 + 1) + (int)m_ResolutionWidth * (int)z0) * 4;
+        int index01 = ((int)x0 + (int)m_ResolutionWidth * (int)(z0 + 1)) * 4;
+        int index11 = ((int)(x0 + 1) + (int)m_ResolutionWidth * (int)(z0 + 1)) * 4;
+
+        unsigned char* offset00 = data + index00;
+        unsigned char* offset10 = data + index10;
+        unsigned char* offset01 = data + index01;
+        unsigned char* offset11 = data + index11;
+
+        // Bilinear interpolation
+        float h00 = ((float)offset00[0] / 255.0f) * 100.0f - 16.0f;
+        float h10 = ((float)offset10[0] / 255.0f) * 100.0f - 16.0f;
+        float h01 = ((float)offset01[0] / 255.0f) * 100.0f - 16.0f;
+        float h11 = ((float)offset11[0] / 255.0f) * 100.0f - 16.0f;
+
+        float finalHeight = (1.0f - dz) * ((1.0f - dx) * h00 + dx * h10) +
+            dz * ((1.0f - dx) * h01 + dx * h11);
+
+        return finalHeight;
+    }
+    else
+    {
+        return 0.0f;
     }
 }
+

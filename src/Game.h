@@ -7,6 +7,7 @@
 #include <string>
 #include "Camera.h"
 #include <vector>
+//#include "Player.h"
 
 class Game
 {
@@ -22,6 +23,7 @@ public:
 
 private:
 	void GameLoop();
+	void RenderLoop();
 	
 	void InitMeshes();
 	void processInput(GLFWwindow* window);
@@ -30,6 +32,7 @@ private:
 
 private:
 	float m_deltaTime;
+	Terrain* t;
 
 };
 

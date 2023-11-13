@@ -18,8 +18,10 @@ void main()
     vec3 normal = normalize(vec3(down - up, 2.0, left - right));
 
     float h = (Height + 16)/64.0f;
+    FragColor = vec4(h, h, h, 1.0);
+
     // FragColor = vec4(normal, 1.0);
-    // FragColor = texture(uHeightMap, TexCoord + vec2(0.0, -uTexelSize))* 64.0 - 16.0;
-    FragColor = vec4(normal * 0.5 + 0.5, 1.0);
+    // FragColor = texture(uHeightMap, TexCoords + vec2(0.0, -uTexelSize))* 64.0 - 16.0;
+    // FragColor = vec4(normal * 0.5 + 0.5, 1.0);
 
 }

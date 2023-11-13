@@ -1,9 +1,11 @@
 #pragma once
+#ifndef __ANIMATION_H__
+#define __ANIMATION_H__
 
 
 #include <vector>
 #include <map>
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
 #include <assimp/scene.h>
 #include <functional>
 #include "Model.h"
@@ -123,3 +125,5 @@ private:
 	AssimpNodeData m_RootNode;
 	std::map<std::string, BoneInfo> m_BoneInfoMap;
 };
+
+#endif

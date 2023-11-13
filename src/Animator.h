@@ -1,17 +1,17 @@
 #pragma once
+#ifndef __ANIMATOR_H__
+#define __ANIMATOR_H__
 
-
-#include <glm/glm.hpp>
 #include <map>
 #include <vector>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include "Animation.h"
-#include "Bone.h"
 
 class Animator
 {
 public:
+	Animator() {};
 	Animator(Animation* animation)
 	{
 		m_CurrentTime = 0.0;
@@ -79,3 +79,5 @@ private:
 	float m_DeltaTime;
 
 };
+
+#endif

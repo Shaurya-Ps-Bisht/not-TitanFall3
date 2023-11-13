@@ -1,7 +1,6 @@
 #include "Camera.h"
 #include <iostream>
-
-
+#include "Player.h"
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     :m_lookVec(glm::vec3(0.0f, 0.0f, -1.0f)), m_movementSpeed(SPEED), m_mouseSens(SENS), m_FOV(FOV), m_cameraPos(position),
@@ -27,18 +26,32 @@ glm::mat4 Camera::GetViewMatrix()
 
 }
 
-void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
+void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t)
 {
   
     float velocity = m_movementSpeed * deltaTime;
+
     if (direction == FORWARD)
-        m_cameraPos += m_lookVec * velocity;
+    {
+        m_cameraPos += glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+    }
     if (direction == BACKWARD)
-        m_cameraPos -= m_lookVec * velocity;
+    {
+        m_cameraPos -= glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+    }
     if (direction == LEFT)
+    {
         m_cameraPos -= m_camRight * velocity;
+        Player::GetInstance().UpdatePlayerPos(-m_camRight * velocity);
+
+    }
     if (direction == RIGHT)
+    {
         m_cameraPos += m_camRight * velocity;
+        Player::GetInstance().UpdatePlayerPos(m_camRight * velocity);
+
+    }
+    m_cameraPos.y = t->getHeight(m_cameraPos.x, m_cameraPos.z) + 1.7f;
 
 }
 
@@ -61,6 +74,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 
     // update Front, Right and Up Vectors using the updated Euler angles
     updateCameraVectors();
+    Player::GetInstance().UpdatePlayerRotation(m_Yaw, m_Pitch);
 
 }
 

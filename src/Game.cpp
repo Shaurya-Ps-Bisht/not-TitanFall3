@@ -1,3 +1,4 @@
+
 #include "Game.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,11 +11,13 @@
 #include "Animation.h"
 #include "Animator.h"
 #include "Terrain.h"
+#include "Player.h"
+
 
 
 Game::Game()
 {
-    m_camera = Camera(glm::vec3(0.0f, .17f, 0.0f));
+    m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
     Renderer::GetInstance().setCamera(&m_camera);
 }
 
@@ -30,7 +33,7 @@ void Game::Run()
 void Game::GameLoop()
 {
     float lastFrame = 0.0;
-    //Shader ourShader("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
+    Shader ourShader1("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
     Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader skyboxShader("res/Shaders/Skybox/skybox.vs", "res/Shaders/Skybox/skybox.fs");
 
@@ -82,9 +85,9 @@ void Game::GameLoop()
     std::vector<std::string> faces
     {
         "res/CubeMaps/skybox/right.jpg",
-         "res/CubeMaps/skybox/left.jpg",
-         "res/CubeMaps/skybox/top.jpg",
-         "res/CubeMaps/skybox/bottom.jpg",
+            "res/CubeMaps/skybox/left.jpg",
+            "res/CubeMaps/skybox/top.jpg",
+            "res/CubeMaps/skybox/bottom.jpg",
             "res/CubeMaps/skybox/front.jpg",
             "res/CubeMaps/skybox/back.jpg"
     };
@@ -106,17 +109,17 @@ void Game::GameLoop()
 
     //stbi_set_flip_vertically_on_load(false);
     //Model ourModel("res/Models/Backpack/backpack.obj");
-    //Model ourModel("res/Models/LOTR_troll/scene.gltf");
+    Model ourModel("res/Models/LOTR_troll/scene.gltf");
     //Model ourModel("res/Models/LOTR_troll/fbx/source/nice.fbx");
 
     //Model ourModel("res/Models/Player/Vampire/dancing_vampire.dae");
     //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
     //Model ourModel("res/Models/BathRoom/dae/bathroom.dae");
-    //Model ourModel("res/Models/BathRoom/gltf/scene.gltf");
+    Model ourModel1("res/Models/BathRoom/gltf/scene.gltf");
 
     //Model ourModel("res/Models/Player/Terrorist/dae/nice.dae");
     //Model ourModel("res/Models/Player/Soldier/1/dae/nice.dae");
-    Model ourModel("res/Models/Player/Final/player.gltf");
+    //Model ourModel("res/Models/Player/Final/player.gltf");
 
     //Model ourModel("res/Models/Player/Vampire/vampire.gltf");
     //Animation danceAnimation(("res/Models/Player/Terrorist/dae/nice.dae"), &ourModel);
@@ -125,9 +128,11 @@ void Game::GameLoop()
     Animation danceAnimation(("res/Models/Player/Final/player.gltf"), &ourModel, "Idle");
     Animator animator(&danceAnimation);
 
-    Terrain chaljao = Terrain("res/Terrains/HeightMaps/why.png");
+    Player::GetInstance().InitPlayer();
+    Terrain chaljao = Terrain("res/Terrains/HeightMaps/heightmap1.png");
+    t = &chaljao;
 
-    
+
     const unsigned int SCR_WIDTH = 1440;
     const unsigned int SCR_HEIGHT = 900;
 
@@ -135,41 +140,62 @@ void Game::GameLoop()
     {
         ImGui_ImplGlfwGL3_NewFrame();
 
-        
+
         float currentFrame = static_cast<float>(glfwGetTime());
         m_deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(m_window);
         animator.UpdateAnimation(m_deltaTime);
-     
+
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.001f, 100.0f);
+
+        Player::GetInstance().Draw(m_deltaTime, m_camera, animator);
+
+        glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0001f, 5000.0f);
         glm::mat4 view = m_camera.GetViewMatrix();
+
+
         {
-            ourShader.use();
+            ourShader1.use();
 
-            //// view/projection transformations
-            
-            ourShader.setMat4("projection", projection);
-            ourShader.setMat4("view", view);
+            // view/projection transformations
+            ourShader1.setMat4("projection", projection);
+            ourShader1.setMat4("view", view);
 
-            auto transforms = animator.GetFinalBoneMatrices();
-            for (int i = 0; i < transforms.size(); ++i)
-                ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+            //auto transforms = animator.GetFinalBoneMatrices();
+            //for (int i = 0; i < transforms.size(); ++i)
+            //    ourShader1.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 
 
             // render the loaded model
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-            model = glm::scale(model, glm::vec3(.001f, .001, .001));	// it's a bit too big for our scene, so scale it down
-            ourShader.setMat4("model", model);
-            ourModel.Draw(ourShader);
+            model = glm::translate(model, glm::vec3(486.0f, chaljao.getHeight(486.0f, 561.0f), 561.0f)); // translate it down so it's at the center of the scene
+            model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));	// it's a bit too big for our scene, so scale it down
+            ourShader1.setMat4("model", model);
+            ourModel.Draw(ourShader1);
         }
         {
-            chaljao.Draw(m_camera);
+            ourShader1.use();
+
+            // view/projection transformations
+            ourShader1.setMat4("projection", projection);
+            ourShader1.setMat4("view", view);
+
+            // render the loaded model
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(482.0f, chaljao.getHeight(482.0f, 564.0f), 564.0f)); // translate it down so it's at the center of the scene
+            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+            ourShader1.setMat4("model", model);
+            ourModel1.Draw(ourShader1);
+        }
+
+        
+        {
+            glDepthFunc(GL_LESS);
+            chaljao.Draw(projection, view);
         }
 
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -219,20 +245,26 @@ void Game::GameLoop()
     }
 }
 
+void Game::RenderLoop()
+{
+
+}
+
 void Game::processInput(GLFWwindow* window)
-{   if(!Renderer::GetInstance().cursorEnabled)
+{
+    if (!Renderer::GetInstance().cursorEnabled)
     {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            m_camera.ProcessKeyboard(FORWARD, m_deltaTime);
+            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, t);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime);
+            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, t);
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            m_camera.ProcessKeyboard(LEFT, m_deltaTime);
+            m_camera.ProcessKeyboard(LEFT, m_deltaTime, t);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            m_camera.ProcessKeyboard(RIGHT, m_deltaTime);
+            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, t);
         if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !(Renderer::GetInstance().cursorEnabled)) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             Renderer::GetInstance().cursorEnabled = true;
@@ -241,6 +273,18 @@ void Game::processInput(GLFWwindow* window)
     else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && Renderer::GetInstance().cursorEnabled) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         Renderer::GetInstance().cursorEnabled = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        if (Renderer::GetInstance().wireFrameEnabled)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            Renderer::GetInstance().wireFrameEnabled = false;
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            Renderer::GetInstance().wireFrameEnabled = true;
+        }
     }
 }
 
@@ -270,7 +314,7 @@ unsigned int Game::loadCubeMapSingle(const std::string& filePath)
     // Load each face using glTexSubImage2D
     for (int row = 0; row < 3; row++)
     {
-        
+
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, width);
 
         // Calculate the offset for each face in the image
@@ -332,5 +376,3 @@ unsigned int Game::loadCubemap(vector<std::string> faces)
 
     return textureID;
 }
-
-

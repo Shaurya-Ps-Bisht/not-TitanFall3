@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Terrain.h"
+
 #include <vector>
 
 enum Camera_Movement {
@@ -19,7 +21,7 @@ enum Camera_Movement {
 //default cam values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 100.0f;
+const float SPEED = 12.5f;
 const float SENS = 0.1f;
 const float FOV = 80.0f;
 
@@ -42,7 +44,7 @@ public:
 	~Camera();
 
 	glm::mat4 GetViewMatrix();
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+	void ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t);
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
 	void setCameraSpeed(float speed);

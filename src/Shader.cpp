@@ -123,6 +123,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
         glAttachShader(m_ID, tessEval);
     glLinkProgram(m_ID);
     checkCompileErrors(m_ID, "PROGRAM");
+    std::cout << "ASSIGNED: " << m_ID << "FOR "<< vertexPath<< std::endl;
     // delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);

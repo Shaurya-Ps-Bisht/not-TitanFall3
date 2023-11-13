@@ -8,7 +8,6 @@
 
 
 #include "Mesh.h"
-#include "Shader.h"
 
 #include <glad/glad.h> 
 
@@ -39,6 +38,7 @@ public:
 
 
     Model(const char* path);
+    Model() {};
     void Draw(Shader& shader);
 
 public:
