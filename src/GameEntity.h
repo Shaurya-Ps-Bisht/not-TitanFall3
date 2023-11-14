@@ -13,20 +13,22 @@
 class GameEntity
 {
 public:
-	GameEntity();
+	GameEntity(const glm::vec3& pos, const glm::vec3& scale, const Shader& shader);
 	~GameEntity();
 
-	void CreateEntity();
-	void Draw();
-	void InstancedDraw();
+	virtual void draw() const = 0;
+	void changePosition(const glm::vec3& newPosition) { position = newPosition; }
+	void changeScale(const glm::vec3& newScale) { scale = newScale; }
+	//void InstancedDraw();
 
 
 
 private:
-	glm::mat4* m_modelMatricesIns;
+	glm::vec3 position;
+	glm::vec3 scale;
+
 	//Transform m_transform;
 	Shader shaderComponent;
-	Texture m_textureComponent;
 	//Animation m_animationComponent;
 
 };

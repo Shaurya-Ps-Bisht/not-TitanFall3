@@ -34,12 +34,13 @@ private:
 private:
 	bool m_moving, m_flashlightEnabled;
 
+	Shader m_playerShader;
 	glm::vec3 m_pos;
-	float m_horizontalRotation = -90;
-	Model m_playerModel;
 	Animation m_animations;
 	Animator m_animator;
-	Shader m_playerShader;
+	Model m_playerModel;
+
+	float m_horizontalRotation = -90;
 };
 
 

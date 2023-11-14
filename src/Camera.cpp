@@ -81,10 +81,11 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 void Camera::ProcessMouseScroll(float yoffset)
 {
     m_FOV -= (float)yoffset;
+    std::cout << "SCROLLING" << std::endl;
     if (m_FOV < 1.0f)
         m_FOV = 1.0f;
-    if (m_FOV > 45.0f)
-        m_FOV = 45.0f;
+    if (m_FOV > 71.0f)
+        m_FOV = 71.0f;
 
 }
 

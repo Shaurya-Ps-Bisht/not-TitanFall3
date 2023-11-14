@@ -45,7 +45,7 @@ int Renderer::InitGlfwOGL()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    //glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -87,10 +87,11 @@ void Renderer::framebuffer_size_callback(GLFWwindow* window, int width, int heig
 
 void Renderer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    if (!Renderer::GetInstance().cursorEnabled)
+    GetInstance().m_camera->ProcessMouseScroll(static_cast<float>(yoffset));
+    /*if (!Renderer::GetInstance().cursorEnabled)
     {
-        GetInstance().m_camera->ProcessMouseScroll(static_cast<float>(yoffset));
-    }
+        
+    }*/
 }
 
 
