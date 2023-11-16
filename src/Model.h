@@ -55,9 +55,9 @@ private:
     std::map<string, BoneInfo> m_BoneInfoMap; 
     int m_BoneCounter = 0;
     
-    void SetVertexBoneDataToDefault(Vertex& vertex);
-    void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
-    void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+    void SetVertexBoneDataToDefault(VertexStruct& vertex);
+    void SetVertexBoneData(VertexStruct& vertex, int boneID, float weight);
+    void ExtractBoneWeightForVertices(std::vector<VertexStruct>& vertices, aiMesh* mesh, const aiScene* scene);
 
 private:
     void loadModel(string path);

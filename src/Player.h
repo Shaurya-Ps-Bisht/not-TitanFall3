@@ -21,7 +21,7 @@ public:
 		return instance;
 	}
 
-	void Draw(float dt, Camera& cam, Animator& anim);
+	void Draw(float dt, Camera& cam);
 	void UpdatePlayerPos(glm::vec3 posOffset);
 	void UpdatePlayerRotation(float x, float y);
 	void InitPlayer();

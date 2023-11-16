@@ -19,7 +19,7 @@ using namespace std;
 
 #define MAX_BONE_INFLUENCE 4
 
-struct Vertex {
+struct VertexStruct {
     // position
     glm::vec3 Position;
     // normal
@@ -45,13 +45,13 @@ struct TextureStruct {
 class Mesh {
 public:
     // mesh Data
-    vector<Vertex>       vertices;
+    vector<VertexStruct>       vertices;
     vector<unsigned int> indices;
     vector<TextureStruct>      textures;
     unsigned int VAO;
 
     // constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<TextureStruct> textures);
+    Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures);
 
     // render the mesh
     void Draw(Shader& shader);

@@ -5,12 +5,12 @@ Player::~Player()
 {
 }
 
-void Player::Draw(float dt, Camera& cam, Animator& anim)
+void Player::Draw(float dt, Camera& cam)
 {
     
     m_animator.UpdateAnimation(dt);
 
-    glm::mat4 projection = glm::perspective(glm::radians(cam.m_FOV), (float)1440 / (float)900, 0.0001f, 5000.0f);
+    glm::mat4 projection = cam.GetProjectionMatrix();
     glm::mat4 view = cam.GetViewMatrix();
 
     {
@@ -62,7 +62,6 @@ void Player::SetPlayerAnimations()
 {
     m_animations = Animation(("res/Models/Player/Final/player.gltf"), &m_playerModel, "Idle");
     m_animator = Animator(&m_animations);
-    std::cout << "EAa" << std::endl;
 
 }
 
@@ -70,7 +69,6 @@ void Player::SetPlayerModel()
 {
     m_playerShader = Shader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     m_playerModel = Model("res/Models/Player/Final/player.gltf");
-    std::cout << "EAs" << std::endl;
 
 }
 

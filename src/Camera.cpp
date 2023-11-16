@@ -32,12 +32,23 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain
     float velocity = m_movementSpeed * deltaTime;
 
     if (direction == FORWARD)
-    {
-        m_cameraPos += glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+    {   if(godMode)
+        {
+            m_cameraPos += m_lookVec * velocity;
+        }
+        else {
+            m_cameraPos += glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+        }
     }
     if (direction == BACKWARD)
     {
-        m_cameraPos -= glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+        if (godMode)
+        {
+            m_cameraPos -= m_lookVec * velocity;
+        }
+        else {
+            m_cameraPos -= glm::vec3(m_lookVec.x, 0.0f, m_lookVec.z) * velocity;
+        }
     }
     if (direction == LEFT)
     {
@@ -51,7 +62,8 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain
         Player::GetInstance().UpdatePlayerPos(m_camRight * velocity);
 
     }
-    m_cameraPos.y = t->getHeight(m_cameraPos.x, m_cameraPos.z) + 1.7f;
+    if(!godMode)
+        m_cameraPos.y = t->getHeight(m_cameraPos.x, m_cameraPos.z) + 1.7f;
 
 }
 
@@ -105,4 +117,9 @@ void Camera::updateCameraVectors()
 void Camera::setCameraSpeed(float speed)
 {
     m_movementSpeed = speed;
+}
+
+void Camera::setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane)
+{
+    m_projection = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
 }

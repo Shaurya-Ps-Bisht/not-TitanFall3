@@ -42,7 +42,7 @@ public:
 
 	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
 	{
-		std::string nodeName = node->name;
+		const std::string& nodeName = node->name;
 		glm::mat4 nodeTransform = node->transformation;
 
 		Bone* Bone = m_CurrentAnimation->FindBone(nodeName);
@@ -55,16 +55,16 @@ public:
 
 		glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-		auto boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
+		const auto& boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
 		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
 		{
-			int index = boneInfoMap[nodeName].id;
-			glm::mat4 offset = boneInfoMap[nodeName].offset;
-			m_FinalBoneMatrices[index] = globalTransformation * offset;
+			int index = boneInfoMap.at(nodeName).id;
+			m_FinalBoneMatrices[index] = globalTransformation * boneInfoMap.at(nodeName).offset;
 		}
 
 		for (int i = 0; i < node->childrenCount; i++)
 			CalculateBoneTransform(&node->children[i], globalTransformation);
+
 	}
 
 	std::vector<glm::mat4> GetFinalBoneMatrices()
@@ -77,6 +77,8 @@ private:
 	Animation* m_CurrentAnimation;
 	float m_CurrentTime;
 	float m_DeltaTime;
+	//using bone = std::unordered_map<>; // or something similar
+
 
 };
 

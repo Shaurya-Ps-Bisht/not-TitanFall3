@@ -11,7 +11,7 @@ void Model::Draw(Shader& shader)
         meshes[i].Draw(shader);
 }
 
-void Model::SetVertexBoneDataToDefault(Vertex& vertex)
+void Model::SetVertexBoneDataToDefault(VertexStruct& vertex)
 {
     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
     {
@@ -20,7 +20,7 @@ void Model::SetVertexBoneDataToDefault(Vertex& vertex)
     }
 }
 
-void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+void Model::SetVertexBoneData(VertexStruct& vertex, int boneID, float weight)
 {
     for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
     {
@@ -33,7 +33,7 @@ void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
     }
 }
 
-void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+void Model::ExtractBoneWeightForVertices(std::vector<VertexStruct>& vertices, aiMesh* mesh, const aiScene* scene)
 {
     auto& boneInfoMap = m_BoneInfoMap;
     int& boneCount = m_BoneCounter;
@@ -120,13 +120,13 @@ void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTran
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-    vector<Vertex> vertices;
+    vector<VertexStruct> vertices;
     vector<unsigned int> indices;
     vector<TextureStruct> textures;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
+        VertexStruct vertex;
 
         SetVertexBoneDataToDefault(vertex);
 
@@ -150,7 +150,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     // walk through each of the mesh's vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
+        VertexStruct vertex;
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vector.x = mesh->mVertices[i].x;
