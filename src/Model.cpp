@@ -5,10 +5,49 @@ Model::Model(const char* path)
     loadModel(path);
 }
 
+Model::Model(const char* path, glm::mat4* modelMatrices, unsigned int amount)
+{
+    loadModel(path);
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+    for (unsigned int i = 0; i < meshes.size(); i++) // LAZY IMPLEMENTATION, shouldnt keep mesh vao public
+    {
+        unsigned int VAO = meshes[i].VAO;
+        meshes[i].instanceAmount = amount;
+
+        glBindVertexArray(VAO);
+        // set attribute pointers for matrix (4 times vec4)
+        glEnableVertexAttribArray(7);
+        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+        glEnableVertexAttribArray(8);
+        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+        glEnableVertexAttribArray(9);
+        glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+        glEnableVertexAttribArray(10);
+        glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+        glVertexAttribDivisor(7, 1);
+        glVertexAttribDivisor(8, 1);
+        glVertexAttribDivisor(9, 1);
+        glVertexAttribDivisor(10, 1);
+
+        glBindVertexArray(0);
+    }
+
+}
+
 void Model::Draw(Shader& shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
+}
+
+void Model::DrawInstanced(Shader& shader)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+        meshes[i].DrawInstanced(shader);
 }
 
 void Model::SetVertexBoneDataToDefault(VertexStruct& vertex)
@@ -306,5 +345,14 @@ void Model::SetTransform(glm::vec3 pos, glm::vec3 axisRotation, float angle, glm
     m_axis = axisRotation;
     m_angle = angle;
     m_scale = scale;        
+}
+
+void Model::loadInstanceData(glm::mat4* modelMatrices, unsigned int amount)
+{
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
 }
 

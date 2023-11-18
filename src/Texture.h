@@ -23,7 +23,7 @@ private:
 	void genSkyBoxFromStrip(const std::string& filePath);
 
 public:
-	Texture();
+	Texture() {};
 	Texture(const std::string& path);
 	~Texture();
 

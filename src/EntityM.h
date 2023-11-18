@@ -12,6 +12,10 @@ public:
     EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath);
     // Constructor for objects with animation
     EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, const char* animationName);
+    //Constructors for objects with explicit textures
+    EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath);
+    //Constructors for objects with explicit textures and instanced rendering
+    EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, glm::mat4* modelMatrices, unsigned int amount);
     //and this is the destructorrr
     ~EntityM() {};
 
@@ -19,7 +23,7 @@ public:
     // Destructor to clean up optional objects
 
     // Draw method
-    void draw(float deltaTime, Camera& cam);
+    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime);
 
 private:
     Model m_model;
@@ -27,6 +31,8 @@ private:
     Animator m_animator; 
 
     bool hasAnimation = false;
+    bool hasExplitcitTexture = false;
+    Texture explicitTexture;
     Camera m_camera;
     glm::mat4 projection = m_camera.GetProjectionMatrix();
     glm::mat4 view = m_camera.GetViewMatrix();

@@ -17,7 +17,29 @@ EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
     m_animator(&m_animation),
     hasAnimation(true){}
 
-void EntityM::draw(float deltaTime, Camera& cam)
+EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath)
+    : Entity(initialPosition,
+        initialScale,
+        initialShader),
+    m_model(modelPath),
+    m_animation(),
+    m_animator(),
+    hasAnimation(false),
+    hasExplitcitTexture(true),
+    explicitTexture(texturePath){}
+
+EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, glm::mat4* modelMatrices, unsigned int amount)
+    : Entity(initialPosition,
+        initialScale,
+        initialShader),
+    m_model(modelPath, modelMatrices, amount),
+    m_animation(),
+    m_animator(),
+    hasAnimation(false),
+    hasExplitcitTexture(true),
+    explicitTexture(texturePath) {}
+
+void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime)
 {
     if(hasAnimation)
         m_animator.UpdateAnimation(deltaTime);
@@ -45,7 +67,31 @@ void EntityM::draw(float deltaTime, Camera& cam)
 
 
         m_shader.setMat4("model", model);
-        m_model.Draw(m_shader);
+        m_shader.setFloat("_Time", elapsedTime);
+        
+        if (hasExplitcitTexture)
+        {
+            explicitTexture.Bind();
+            if(instanced)
+            {
+                m_model.DrawInstanced(m_shader);
+            }
+            else
+            {
+                m_model.Draw(m_shader);
+            }
+        }
+        else
+        {
+            if (instanced)
+            {
+                m_model.DrawInstanced(m_shader);
+            }
+            else
+            {
+                m_model.Draw(m_shader);
+            }
+        }
     }    
 }
 

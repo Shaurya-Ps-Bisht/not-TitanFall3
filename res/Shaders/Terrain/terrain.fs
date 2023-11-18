@@ -18,7 +18,12 @@ void main()
     vec3 normal = normalize(vec3(down - up, 2.0, left - right));
 
     float h = (Height + 16)/64.0f;
-    FragColor = vec4(h, h, h, 1.0);
+    vec3 yellowColor = vec3(0.9, 0.85, 0.7);
+    vec3 rockGreyColor = vec3(0.5, 0.5, 0.5);
+    vec3 color = mix(yellowColor, rockGreyColor, clamp(h * 2.25, 0.0, 1.0));
+
+    FragColor = vec4(color, 1.0);
+
 
     // FragColor = vec4(normal, 1.0);
     // FragColor = texture(uHeightMap, TexCoords + vec2(0.0, -uTexelSize))* 64.0 - 16.0;

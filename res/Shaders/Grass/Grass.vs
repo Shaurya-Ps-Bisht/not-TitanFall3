@@ -6,13 +6,18 @@ layout (location = 7) in mat4 aInstanceMatrix;
 
 
 out vec2 TexCoords;
-
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform float _Time;
 
 void main()
 {
+    vec3 newPos = aPos;
     TexCoords = aTexCoords;    
-    gl_Position = projection * view * aInstanceMatrix *   vec4(aPos, 1.0);
+    if(newPos.y > 0.1){
+        newPos.x += sin(_Time) * 10.1;
+        newPos.z += cos(_Time * 1.4) * 10.1;
+    }
+    gl_Position = projection * view * aInstanceMatrix *   vec4(newPos, 1.0);
 }

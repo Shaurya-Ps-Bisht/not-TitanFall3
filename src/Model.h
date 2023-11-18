@@ -38,8 +38,10 @@ public:
 
 
     Model(const char* path);
+    Model(const char* path, glm::mat4* modelMatrices, unsigned int amount);
     Model() {};
     void Draw(Shader& shader);
+    void DrawInstanced(Shader& shader);
 
 public:
     auto& GetBoneInfoMap() { return m_BoneInfoMap; }
@@ -51,6 +53,7 @@ private:
     string directory;
     glm::vec3 m_position, m_axis, m_scale;
     float  m_angle;
+    bool hasBeenBinded = false;
 
     std::map<string, BoneInfo> m_BoneInfoMap; 
     int m_BoneCounter = 0;
@@ -66,6 +69,8 @@ private:
     vector<TextureStruct> loadMaterialTextures(aiMaterial* mat, aiTextureType type,string typeName);
     unsigned int TextureFromFile(const char* path, const string& directory);
     void SetTransform(glm::vec3 pos, glm::vec3 axisRotation, float angle, glm::vec3 scale);
+
+    void loadInstanceData(glm::mat4* modelMatrices, unsigned int amount);
 };
 
 

@@ -24,7 +24,7 @@ public:
 
     //virtual ~GameEntity() {};
     // Virtual method to be implemented by child classes
-    virtual void draw(float deltaTime, Camera& cam) = 0;
+    virtual void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime) = 0;
 
     // Methods to change position and scale
     void changePosition(const glm::vec3& newPosition) { m_position = newPosition; }

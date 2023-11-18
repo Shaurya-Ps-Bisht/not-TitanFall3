@@ -49,6 +49,42 @@ void Mesh::Draw(Shader& shader)
 
 }
 
+void Mesh::DrawInstanced(Shader& shader)
+{
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    unsigned int normalNr = 1;
+    unsigned int heightNr = 1;
+    for (unsigned int i = 0; i < textures.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
+        // retrieve texture number (the N in diffuse_textureN)
+        string number;
+        string name = textures[i].type;
+        if (name == "texture_diffuse")
+            number = std::to_string(diffuseNr++);
+        else if (name == "texture_specular")
+            number = std::to_string(specularNr++); // transfer unsigned int to string
+        else if (name == "texture_normal")
+            number = std::to_string(normalNr++); // transfer unsigned int to string
+        else if (name == "texture_height")
+            number = std::to_string(heightNr++); // transfer unsigned int to string
+
+        // now set the sampler to the correct texture unit
+        glUniform1i(glGetUniformLocation(shader.m_ID, (name + number).c_str()), i);
+        // and finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+    }
+
+    // draw mesh
+    glBindVertexArray(VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceAmount);
+    glBindVertexArray(0);
+
+    // always good practice to set everything back to defaults once configured.
+    glActiveTexture(GL_TEXTURE0);
+}
+
 void Mesh::setupMesh()
 {
     glGenVertexArrays(1, &VAO);
@@ -114,4 +150,25 @@ void Mesh::SetTransformationMatrix(const glm::mat4& transformationMatrix)
 
     // Recreate the mesh with the updated vertices
     setupMesh();
+}
+
+void Mesh::setupInstanceMatrix()
+{
+    //glBindVertexArray(VAO);
+    //glEnableVertexAttribArray(7);
+    //glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+    //glEnableVertexAttribArray(8);
+    //glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+    //glEnableVertexAttribArray(9);
+    //glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+    //glEnableVertexAttribArray(10);
+    //glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+    //glVertexAttribDivisor(7, 1);
+    //glVertexAttribDivisor(8, 1);
+    //glVertexAttribDivisor(9, 1);
+    //glVertexAttribDivisor(10, 1);
+
+    //glBindVertexArray(0);
+
 }

@@ -41,7 +41,7 @@ EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
 	glBindVertexArray(0);
 }
 
-void EntityV::draw(float deltaTime, Camera& cam)
+void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime)
 {
 	glm::mat4 projection = cam.GetProjectionMatrix();
 	glm::mat4 view = cam.GetViewMatrix();

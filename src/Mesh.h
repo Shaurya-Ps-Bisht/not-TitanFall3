@@ -49,13 +49,18 @@ public:
     vector<unsigned int> indices;
     vector<TextureStruct>      textures;
     unsigned int VAO;
+    unsigned int instanceAmount;
 
     // constructor
     Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures);
 
     // render the mesh
     void Draw(Shader& shader);
+    void DrawInstanced(Shader& shader);
     void SetTransformationMatrix(const glm::mat4& transformationMatrix);
+
+private:
+    void setupInstanceMatrix();
     
 
 private:

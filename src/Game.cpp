@@ -17,11 +17,10 @@
 #include "Entity.h"
 
 
-
 Game::Game()
 {
     m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
-    m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0001f, 5000.0f);
+    m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.01f, 5000.0f);
     Renderer::GetInstance().setCamera(&m_camera);
 }
 
@@ -37,8 +36,61 @@ void Game::Run()
 void Game::GameLoop()
 {
     float lastFrame = 0.0;
+
+    Terrain chaljao = Terrain("res/Terrains/HeightMaps/heightmap1.png");
+    m_terrain = &chaljao;
+
+    unsigned int amount = 500000;
+    glm::mat4* modelMatrices;
+    modelMatrices = new glm::mat4[amount];
+    srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
+    float radius = 150.0;
+    float offset = 75.0f;
+    float startAngle = -120.0f;
+    float endAngle = 90.0f;
+
+    for (unsigned int i = 0; i < amount; i++)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+
+        // Calculate the angle within the specified range
+        float angle = glm::mix(startAngle, endAngle, static_cast<float>(i) / static_cast<float>(amount - 1));
+
+        // Rest of your instance positioning code remains the same
+        float displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+        float x = -sin(glm::radians(angle)) * radius + displacement;
+
+        displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+        float z = -cos(glm::radians(angle)) * radius + displacement;
+
+
+        //displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        //float y = displacement * 0.4f; // keep height of asteroid field smaller compared to width of x and z
+        x += 490.0f;
+        z += 620.0f;
+        float y = m_terrain->getHeight(x, z) + 1.0f;
+
+
+        model = glm::translate(model, glm::vec3(x, y, z) );
+
+        // 2. scale: Scale between 0.05 and 0.25f
+        //float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
+        float scale = 0.01f * (1.0f - abs(displacement) / (offset * 3.00f));
+        
+        model = glm::scale(model, glm::vec3(scale));
+
+        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+        float rotAngle = static_cast<float>((rand() % 360));
+        //model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+        // 4. now add to list of matrices
+        modelMatrices[i] = model;
+    }
+
+
     //Shader ourShader1("res/Shaders/3.3.shader.vs", "res/Shaders/3.3.shader.fs");
     Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
+    Shader grassShader("res/Shaders/Grass/Grass.vs", "res/Shaders/Grass/Grass.fs");
     Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader skyboxShader("res/Shaders/Skybox/skybox.vs", "res/Shaders/Skybox/skybox.fs");
 
@@ -112,7 +164,7 @@ void Game::GameLoop()
     skyboxShader.setInt("skybox", 0);
 
     //Model ourModel("res/Models/Backpack/backpack.obj");
-    Model ourModel("res/Models/LOTR_troll/scene.gltf");
+    
     //Model ourModel("res/Models/LOTR_troll/fbx/source/nice.fbx");
 
     //Model ourModel("res/Models/Player/Vampire/dancing_vampire.dae");
@@ -125,20 +177,21 @@ void Game::GameLoop()
     Model huh4("res/Models/Player/Final/player.gltf");*/
 
     //Model ourModel("res/Models/Player/Vampire/vampire.gltf");
+    Model ourModel("res/Models/LOTR_troll/scene.gltf");
 
 
-    Terrain chaljao = Terrain("res/Terrains/HeightMaps/heightmap1.png");
-    m_terrain = &chaljao;
+    
     Player::GetInstance().InitPlayer();
-    glm::vec3 a = glm::vec3(500.0f, chaljao.getHeight(500.0f, 570.0f), 570.0f);
+    glm::vec3 a = glm::vec3(500.0f, chaljao.getHeight(500.0f, 570.0f) + 4.0f, 570.0f);
     glm::vec3 b = glm::vec3(.01f, .01f, .01f);
 
     glm::vec3 d = glm::vec3(10.0f, 10.0f, 10.0f);
-    glm::vec3 c = glm::vec3(620.0f, chaljao.getHeight(620.0f, 570.0f), 570.0f);
-    EntityM solja(a, b, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
+    glm::vec3 c = glm::vec3(620.0f, chaljao.getHeight(620.0f, 570.0f) + 50.0f, 570.0f);
     //EntityM monsta(c, b, ourShader1, "res/Models/LOTR_troll/scene.gltf");
-
+    EntityM solja(a, b, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
+    EntityM grass("res/textures/Grass/grass.png",a, b, grassShader, "res/Models/Grass/grass.fbx", modelMatrices, amount);
     EntityV goodCube(c, d, unlitShader, "SPHERE");
+
     
     
 
@@ -157,13 +210,14 @@ void Game::GameLoop()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        solja.draw(m_deltaTime, m_camera);
+        //solja.draw(m_deltaTime, m_camera, false);
         //monsta.draw(m_deltaTime, m_camera);
-        goodCube.draw(m_deltaTime, m_camera);
+        //goodCube.draw(m_deltaTime, m_camera, false);
+        grass.draw(m_deltaTime, m_camera, true, static_cast<float>(glfwGetTime()));
         Player::GetInstance().Draw(m_deltaTime, m_camera);
 
 
-        glm::mat4 projection = glm::perspective(glm::radians(m_camera.m_FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0001f, 5000.0f);
+        glm::mat4 projection = m_camera.GetProjectionMatrix();
         glm::mat4 view = m_camera.GetViewMatrix();
 
         chaljao.Draw(projection, view);        
@@ -202,7 +256,7 @@ void Game::GameLoop()
                     m_camera.godMode = true;
         }
         {
-            static float inputNumber = 0.5f; // Default value
+            static float inputNumber = 50.0f; // Default value
 
             if (ImGui::InputFloat("Movement Speed", &inputNumber, 1.0f, 10.0f)) {
                 m_camera.setCameraSpeed(inputNumber);
