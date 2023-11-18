@@ -18,12 +18,12 @@ public:
     EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, glm::mat4* modelMatrices, unsigned int amount);
     //and this is the destructorrr
     ~EntityM() {};
-
-
     // Destructor to clean up optional objects
 
+
+
     // Draw method
-    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime);
+    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight);
 
 private:
     Model m_model;

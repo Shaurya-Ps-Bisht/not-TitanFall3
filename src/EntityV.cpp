@@ -41,7 +41,7 @@ EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
 	glBindVertexArray(0);
 }
 
-void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime)
+void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight)
 {
 	glm::mat4 projection = cam.GetProjectionMatrix();
 	glm::mat4 view = cam.GetViewMatrix();
@@ -49,6 +49,13 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 	m_shader.use();
 	m_shader.setMat4("projection", projection);
 	m_shader.setMat4("view", view);
+
+	//Lighting setup
+	m_shader.setVec3("viewPos", cam.m_cameraPos);
+	m_shader.setVec3("dirLight.direction", dLight.m_direction);
+	m_shader.setVec3("dirLight.color", dLight.m_color);
+
+
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, m_position); // translate it down so it's at the center of the scene

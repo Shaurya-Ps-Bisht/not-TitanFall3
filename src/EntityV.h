@@ -13,7 +13,7 @@ public:
     ~EntityV() {};
 
     // Draw method
-    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime);
+    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight);
 private:
     void getVertexData(const char* shape);
 

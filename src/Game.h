@@ -7,7 +7,15 @@
 #include <string>
 #include "Camera.h"
 #include <vector>
+
+#include "lightDir.h"
 //#include "Player.h"
+
+//struct DirLight {
+//	glm::vec3 direction;
+//	glm::vec4 color;
+//};
+
 
 class Game
 {
@@ -25,6 +33,7 @@ public:
 
 public:
 	bool godMode;
+	lightDir m_dirLight;
 
 private:
 	void GameLoop();

@@ -39,7 +39,7 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
     hasExplitcitTexture(true),
     explicitTexture(texturePath) {}
 
-void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime)
+void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight)
 {
     if(hasAnimation)
         m_animator.UpdateAnimation(deltaTime);
@@ -51,6 +51,11 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
         m_shader.use();
         m_shader.setMat4("projection", projection);
         m_shader.setMat4("view", view);
+
+        //Lighting setup
+        m_shader.setVec3("viewPos", cam.m_cameraPos);
+        m_shader.setVec3("dirLight.direction", dLight.m_direction);
+        m_shader.setVec3("dirLight.color", dLight.m_color);
 
         if(hasAnimation)
         {

@@ -247,6 +247,7 @@
     <ClInclude Include="src\EntityV.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\Entity.h" />
+    <ClInclude Include="src\lightDir.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Player.h" />

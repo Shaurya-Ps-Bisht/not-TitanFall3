@@ -8,16 +8,20 @@ uniform mat4 view;
 in vec2 TexCoord[];
 out vec2 TextureCoord[];
 
+in vec3 FragPos[];
+out vec3 FragPosP[];
+
 void main()
 {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
+    FragPosP[gl_InvocationID] = FragPos[gl_InvocationID];
 
     if(gl_InvocationID == 0)
     {
         const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 64;
-        const float MIN_DISTANCE = 20;
+        const float MIN_DISTANCE = 50;
         const float MAX_DISTANCE = 800;
 
         vec4 eyeSpacePos00 = view * model * gl_in[0].gl_Position;

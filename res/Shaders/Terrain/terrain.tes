@@ -9,6 +9,9 @@ uniform mat4 projection;
 in vec2 TextureCoord[];
 out vec2 TexCoords;
 
+in vec3 FragPosP[];
+out vec3 FragPos;
+
 out float Height;
 
 void main()
@@ -26,6 +29,7 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
     TexCoords = texCoord;
 
+   
 
 
     Height = texture(heightMap, texCoord).x * 100.0 - 16.0;
@@ -42,6 +46,7 @@ void main()
     vec4 p0 = (p01 - p00) * u + p00;
     vec4 p1 = (p11 - p10) * u + p10;
     vec4 p = (p1 - p0) * v + p0 + normal * Height;
+    FragPos = vec3(p.xyz);
 
     gl_Position = projection * view * model * p;
 }

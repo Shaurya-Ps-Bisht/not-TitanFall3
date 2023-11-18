@@ -5,7 +5,7 @@ Player::~Player()
 {
 }
 
-void Player::Draw(float dt, Camera& cam)
+void Player::Draw(float dt, Camera& cam, lightDir dLight)
 {
     
     m_animator.UpdateAnimation(dt);
@@ -17,6 +17,12 @@ void Player::Draw(float dt, Camera& cam)
         m_playerShader.use();
         m_playerShader.setMat4("projection", projection);
         m_playerShader.setMat4("view", view);
+
+        //Lighting setup
+        m_playerShader.setVec3("viewPos", cam.m_cameraPos);
+        m_playerShader.setVec3("dirLight.direction", dLight.m_direction);
+        m_playerShader.setVec3("dirLight.color", dLight.m_color);
+
 
         auto transforms = m_animator.GetFinalBoneMatrices();
         for (int i = 0; i < transforms.size(); ++i)

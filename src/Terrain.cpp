@@ -2,7 +2,9 @@
 
 Terrain::Terrain(const char* mapPath)
 {
+    loadSand();
     GLint maxTessLevel;
+    
     glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
     std::cout << "Max available tess level: " << maxTessLevel << std::endl;
 
@@ -108,10 +110,15 @@ Terrain::~Terrain()
 
 }
 
-void Terrain::Draw(glm::mat4 projection , glm::mat4 view)
+void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::vec3 viewPos)
 {
     int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
     m_terrainShader.use();
+    m_terrainShader.setInt("uHeightMap", 0);
+    m_terrainShader.setInt("sandTex", 1);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_sand);
     m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
 
     // view/projection transformations
@@ -121,6 +128,11 @@ void Terrain::Draw(glm::mat4 projection , glm::mat4 view)
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
     m_terrainShader.setMat4("model", model);
+
+    //Lighting setup
+    m_terrainShader.setVec3("viewPos", viewPos);
+    m_terrainShader.setVec3("dirLight.direction", dLight.m_direction);
+    m_terrainShader.setVec3("dirLight.color", dLight.m_color);
 
     // render the 
     glActiveTexture(GL_TEXTURE0);
@@ -179,6 +191,27 @@ float Terrain::getHeight(float x, float z)
     else
     {
         return 0.0f;
+    }
+}
+
+void Terrain::loadSand()
+{
+    int width, height, bpp;
+    unsigned char * m_LocalBuffer = stbi_load("res/textures/sand/sand1.jpg", &width, &height, &bpp, 4);
+
+    glGenTextures(1, &m_sand);
+    glBindTexture(GL_TEXTURE_2D, m_sand);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (m_LocalBuffer) {
+        stbi_image_free(m_LocalBuffer);
     }
 }
 

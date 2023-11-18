@@ -20,8 +20,9 @@
 Game::Game()
 {
     m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
-    m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.01f, 5000.0f);
+    m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 5000.0f);
     Renderer::GetInstance().setCamera(&m_camera);
+    m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 Game::~Game()
@@ -44,10 +45,10 @@ void Game::GameLoop()
     glm::mat4* modelMatrices;
     modelMatrices = new glm::mat4[amount];
     srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-    float radius = 150.0;
+    float radius = 300.0;
     float offset = 75.0f;
-    float startAngle = -120.0f;
-    float endAngle = 90.0f;
+    float startAngle = -20.0f;
+    float endAngle = 20.0f;
 
     for (unsigned int i = 0; i < amount; i++)
     {
@@ -63,11 +64,11 @@ void Game::GameLoop()
         displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
         float z = -cos(glm::radians(angle)) * radius + displacement;
 
-
+         
         //displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         //float y = displacement * 0.4f; // keep height of asteroid field smaller compared to width of x and z
         x += 490.0f;
-        z += 620.0f;
+        z += 750.0f;
         float y = m_terrain->getHeight(x, z) + 1.0f;
 
 
@@ -75,7 +76,7 @@ void Game::GameLoop()
 
         // 2. scale: Scale between 0.05 and 0.25f
         //float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
-        float scale = 0.01f * (1.0f - abs(displacement) / (offset * 3.00f));
+        float scale = 0.01f ;
         
         model = glm::scale(model, glm::vec3(scale));
 
@@ -182,13 +183,17 @@ void Game::GameLoop()
 
     
     Player::GetInstance().InitPlayer();
-    glm::vec3 a = glm::vec3(500.0f, chaljao.getHeight(500.0f, 570.0f) + 4.0f, 570.0f);
-    glm::vec3 b = glm::vec3(.01f, .01f, .01f);
+    glm::vec3 a = glm::vec3(500.0f, chaljao.getHeight(500.0f, 570.0f) + 10.0f, 570.0f);
+    glm::vec3 b = glm::vec3(1.01f, 1.01f, 1.01f);
 
     glm::vec3 d = glm::vec3(10.0f, 10.0f, 10.0f);
     glm::vec3 c = glm::vec3(620.0f, chaljao.getHeight(620.0f, 570.0f) + 50.0f, 570.0f);
     //EntityM monsta(c, b, ourShader1, "res/Models/LOTR_troll/scene.gltf");
     EntityM solja(a, b, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
+
+    glm::vec3 ExLocation = glm::vec3(422.0f, chaljao.getHeight(422.0f, 408.0f) + 10.0f, 408.0f);
+
+    EntityM Exterior(ExLocation, b, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
     EntityM grass("res/textures/Grass/grass.png",a, b, grassShader, "res/Models/Grass/grass.fbx", modelMatrices, amount);
     EntityV goodCube(c, d, unlitShader, "SPHERE");
 
@@ -212,15 +217,16 @@ void Game::GameLoop()
 
         //solja.draw(m_deltaTime, m_camera, false);
         //monsta.draw(m_deltaTime, m_camera);
-        //goodCube.draw(m_deltaTime, m_camera, false);
-        grass.draw(m_deltaTime, m_camera, true, static_cast<float>(glfwGetTime()));
-        Player::GetInstance().Draw(m_deltaTime, m_camera);
+        goodCube.draw(m_deltaTime, m_camera, false, static_cast<float>(glfwGetTime()), m_dirLight);
+        grass.draw(m_deltaTime, m_camera, true, static_cast<float>(glfwGetTime()), m_dirLight);
+        Exterior.draw(m_deltaTime, m_camera, false, static_cast<float>(glfwGetTime()), m_dirLight);
+        Player::GetInstance().Draw(m_deltaTime, m_camera, m_dirLight);
 
 
         glm::mat4 projection = m_camera.GetProjectionMatrix();
         glm::mat4 view = m_camera.GetViewMatrix();
 
-        chaljao.Draw(projection, view);        
+        chaljao.Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), m_dirLight, m_camera.m_cameraPos);
 
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
         skyboxShader.use();
