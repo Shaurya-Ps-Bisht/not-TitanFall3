@@ -123,3 +123,8 @@ void Camera::setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPl
 {
     m_projection = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
 }
+
+void Camera::setCameraPos(glm::vec3 position)
+{
+    m_cameraPos = position;
+}

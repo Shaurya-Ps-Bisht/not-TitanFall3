@@ -1,9 +1,11 @@
 #include "EntityV.h"
 
-EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* shape)
+EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, float angleP, glm::vec3 axisP, Shader& initialShader, const char* shape)
 	:Entity(initialPosition,
 		initialScale,
-		initialShader)
+		initialShader),
+	angle(angleP),
+	axis(axisP)
 {
 	getVertexData(shape);
 
@@ -41,12 +43,15 @@ EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
 	glBindVertexArray(0);
 }
 
-void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight)
+void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
 {
 	glm::mat4 projection = cam.GetProjectionMatrix();
 	glm::mat4 view = cam.GetViewMatrix();
 
 	m_shader.use();
+	//m_shader.setInt("texture_diffuse1", 0);
+	//m_shader.setInt("shadowMap", 2);
+
 	m_shader.setMat4("projection", projection);
 	m_shader.setMat4("view", view);
 
@@ -54,11 +59,13 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 	m_shader.setVec3("viewPos", cam.m_cameraPos);
 	m_shader.setVec3("dirLight.direction", dLight.m_direction);
 	m_shader.setVec3("dirLight.color", dLight.m_color);
+	m_shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
+	model = glm::rotate(model, glm::radians(angle), axis);
 	model = glm::scale(model, m_scale);	// it's a bit too big for our scene, so scale it down
 	m_shader.setMat4("model", model);
 
@@ -66,6 +73,27 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 
+}
+
+void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
+{
+	shader.use();
+	shader.setInt("texture_diffuse1", 0);
+	shader.setInt("shadowMap", 2);
+	
+
+	//Lighting setup
+
+
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
+	model = glm::rotate(model, glm::radians(angle), axis);
+	model = glm::scale(model, m_scale);	// it's a bit too big for our scene, so scale it down
+	shader.setMat4("model", model);
+
+	glBindVertexArray(m_vao);
+	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(0);
 }
 
 void EntityV::getVertexData(const char* shape)

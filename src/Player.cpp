@@ -5,7 +5,7 @@ Player::~Player()
 {
 }
 
-void Player::Draw(float dt, Camera& cam, lightDir dLight)
+void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint>& lightPoints)
 {
     
     m_animator.UpdateAnimation(dt);
@@ -22,6 +22,19 @@ void Player::Draw(float dt, Camera& cam, lightDir dLight)
         m_playerShader.setVec3("viewPos", cam.m_cameraPos);
         m_playerShader.setVec3("dirLight.direction", dLight.m_direction);
         m_playerShader.setVec3("dirLight.color", dLight.m_color);
+
+        for (int i = 0; i < lightPoints.size(); ++i)
+        {
+            std::string indexStr = std::to_string(i);
+
+            m_playerShader.setVec3("pointLights[" + indexStr + "].position", lightPoints[i].m_pos);
+            m_playerShader.setVec3("pointLights[" + indexStr + "].color", lightPoints[i].m_color);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].constant", lightPoints[i].constant);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].linear", lightPoints[i].linear);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].quadratic", lightPoints[i].quadratic);
+
+            //std::cout << "SAD" << lightPoints[i].linear << std::endl;
+        }
 
 
         auto transforms = m_animator.GetFinalBoneMatrices();

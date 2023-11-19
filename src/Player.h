@@ -9,6 +9,7 @@
 #include "Animation.h"
 #include "Animator.h"
 #include "lightDir.h"
+#include "lightPoint.h"
 
 #include "Camera.h"
 
@@ -22,7 +23,7 @@ public:
 		return instance;
 	}
 
-	void Draw(float dt, Camera& cam, lightDir dLight);
+	void Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint>& lightPoints);
 	void UpdatePlayerPos(glm::vec3 posOffset);
 	void UpdatePlayerRotation(float x, float y);
 	void InitPlayer();

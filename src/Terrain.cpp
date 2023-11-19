@@ -2,7 +2,6 @@
 
 Terrain::Terrain(const char* mapPath)
 {
-    loadSand();
     GLint maxTessLevel;
     
     glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
@@ -17,6 +16,7 @@ Terrain::Terrain(const char* mapPath)
 
     // load and create a texture
     // -------------------------
+    loadSand();
     glGenTextures(1, &m_textureID);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureID);
@@ -116,6 +116,7 @@ void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::
     m_terrainShader.use();
     m_terrainShader.setInt("uHeightMap", 0);
     m_terrainShader.setInt("sandTex", 1);
+    m_terrainShader.setInt("shadowMap", 2);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);
@@ -141,6 +142,31 @@ void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 }
 
+void Terrain::DrawDepth(Shader& shader)
+{
+    int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
+    shader.use();
+    shader.setInt("uHeightMap", 0);
+    shader.setInt("sandTex", 1);
+    shader.setInt("shadowMap", 2);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_sand);
+    m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
+
+    // view/projection transformations
+
+    // world transformation
+    glm::mat4 model = glm::mat4(1.0f);
+    m_terrainShader.setMat4("model", model);
+
+    // render the 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_textureID);
+    glBindVertexArray(m_terrainVAO);
+    glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+}
+
 void Terrain::LoadFromFile(const char* filename)
 {
     
@@ -155,7 +181,7 @@ float Terrain::getHeight(float x, float z)
 
         if (x < 0 || z < 0 || x >= m_ResolutionWidth - 1 || z >= m_ResolutionHeight - 1)
         {
-            return 0.0f; // Adjusted boundary conditions
+            return -100.0f; // Adjusted boundary conditions
         }
 
         // Get the integer coordinates of the top-left corner of the cell

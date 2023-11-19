@@ -17,9 +17,11 @@ class Terrain
 {
 public:
 	Terrain(const char* mapPath);
+	//Terrain() {};
 	~Terrain();
 
 	void Draw(glm::mat4 projection, glm::mat4 view, lightDir dLight, glm::vec3 viewPos);
+	void DrawDepth(Shader& shader);
 	void LoadFromFile(const char* filename);
 	float getHeight(float x, float y);
 

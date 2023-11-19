@@ -21,7 +21,7 @@ enum Camera_Movement {
 //default cam values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 50.0f;
+const float SPEED = 5.0f;
 const float SENS = 0.1f;
 const float FOV = 70.0f;
 
@@ -52,6 +52,7 @@ public:
 	void ProcessMouseScroll(float yoffset);
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
+	void setCameraPos(glm::vec3 position);
 
 	glm::mat4& GetProjectionMatrix() { return m_projection; }
 
