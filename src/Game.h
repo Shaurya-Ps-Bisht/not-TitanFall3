@@ -54,6 +54,7 @@ public:
 	bool godMode;
 	lightDir m_dirLight;
 	std::vector<lightPoint> m_pointLights;
+	glm::mat4 lightSpaceMatrix;
 
 
 private:
@@ -68,8 +69,6 @@ private:
 	
 
 	void stateCheck();
-	void initDepthFBO();
-	void depthRender(Shader& simpleDepthShader);
 
 private:
 	int level = 1;
@@ -84,8 +83,8 @@ private:
 	
 	SkyBox m_skyBox;
 	float m_deltaTime;
-	const unsigned int SCR_WIDTH = 1440;
-	const unsigned int SCR_HEIGHT = 900;
+	const unsigned int SCR_WIDTH = 1280;
+	const unsigned int SCR_HEIGHT = 720;
 	Shader m_skyShader;
 	unsigned int m_skyTexture;
 	Terrain* m_terrain;

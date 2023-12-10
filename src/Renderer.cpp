@@ -11,7 +11,7 @@ Renderer::~Renderer()
 
 void Renderer::Run()
 {
-    SetWindowProp(1440, 900);
+    SetWindowProp(1280, 720);
     InitGlfwOGL();
 }
 

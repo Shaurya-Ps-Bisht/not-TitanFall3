@@ -127,8 +127,8 @@ void EntityM::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, ligh
 
     {
         shader.use();
-        shader.setInt("texture_diffuse1", 0);
-        shader.setInt("shadowMap", 2);
+        /*shader.setInt("texture_diffuse1", 0);
+        shader.setInt("shadowMap", 2);*/
         //Lighting setup
         //shader.setVec3("viewPos", cam.m_cameraPos);
         

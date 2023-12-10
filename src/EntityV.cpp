@@ -78,8 +78,8 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
 {
 	shader.use();
-	shader.setInt("texture_diffuse1", 0);
-	shader.setInt("shadowMap", 2);
+	/*shader.setInt("texture_diffuse1", 0);
+	shader.setInt("shadowMap", 2);*/
 	
 
 	//Lighting setup
