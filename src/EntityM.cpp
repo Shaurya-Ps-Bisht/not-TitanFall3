@@ -49,9 +49,6 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
     
     {
         m_shader.use();
-        m_shader.setInt("texture_diffuse1", 0);
-        m_shader.setInt("shadowMap", 2);
-        //m_shader.setInt("shadowMap", 1);
 
         m_shader.setMat4("projection", projection);
         m_shader.setMat4("view", view);

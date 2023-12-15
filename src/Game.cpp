@@ -17,13 +17,7 @@ void renderQuad()
              1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
              1.0f,  0.5f, 0.0f, 1.0f, 0.0f,
         };
-        //float quadVertices[] = {
-        //    // positions        // texture Coords
-        //     -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-        //     -1.0f,  -1.0f, 0.0f, 0.0f, 0.0f,
-        //     1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-        //     1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-        //};
+
         // setup plane VAO
         glGenVertexArrays(1, &quadVAO);
         glGenBuffers(1, &quadVBO);
@@ -59,281 +53,142 @@ Game::~Game()
 }
 
 void Game::Run()
-{    
-    Shader simpleDepthShader("res/Shaders/Depth/Depth.vs", "res/Shaders/Depth/Depth.fs");
-    Shader debugDepthQuad("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
-
-
-    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    unsigned int depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-    // create depth texture
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    debugDepthQuad.use();
-    debugDepthQuad.setInt("depthMap", 0);
-
-    
+{
+    initDirDepth();
     initEntities();
-    //GameLoop();
-    {
-        float lastFrame = 0.0;
-        float lev1timeChange = 0.0f;
-        float lev3timeChange = 0.0f;
-
-
-        while (!glfwWindowShouldClose(m_window))
-        {
-
-            ImGui_ImplGlfwGL3_NewFrame();
-
-            float currentFrame = static_cast<float>(glfwGetTime());
-            m_deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            processInput(m_window);
-
-
-            //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
-            if (level == 1) {
-                if (
-                    //m_camera.m_cameraPos.x <= 116.0f
-                    1) {
-                    level = 2;
-                    m_camera.setCameraSpeed(200.0f);
-                    m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-                    lev1timeChange = currentFrame;
-                }
-            }
-            else if (level == 2)
-            {
-                m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
-                if (currentFrame - lev1timeChange > 0.0f)
-                {
-                    //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
-                    level = 3;
-                }
-            }
-            /*else if(level == 3)
-            {
-                m_dirLight.m_color.r -= 0.0005;
-                m_dirLight.m_color.g -= 0.0005;
-                m_dirLight.m_color.b -= 0.0005;
-                if (m_camera.m_cameraPos.z >= 509.0f) {
-                    lev3timeChange = currentFrame;
-                    level = 4;
-
-                    addLightPoint(bMoonLoc, glm::vec3(10.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.128f);
-                }
-            }
-            else if (level == 4) {
-                m_dirLight.m_color.r -= 0.0005;
-                m_dirLight.m_color.g -= 0.0005;
-                m_dirLight.m_color.b -= 0.0005;
-                if (currentFrame - lev3timeChange < 5.0f)
-                {
-                    bMoonObject.m_position.y += (currentFrame - lev3timeChange)/20;
-                    for (size_t i = 3; i < m_pointLights.size(); i += 4) {
-                        m_pointLights[i].m_pos.x += (currentFrame - lev3timeChange)/20;
-                        m_pointLights[i].m_pos.y += (currentFrame - lev3timeChange)/20;
-                        m_pointLights[i].m_pos.z += (currentFrame - lev3timeChange)/20;
-                    }
-
-                    bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-
-                }
-                else {
-                    level = 5;
-                }
-            }*/
-            /*else {
-                bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-            }*/
-
-            float near_plane = 100.0f, far_plane = 2000.0f;
-            {
-                glm::mat4 lightProjection, lightView;
-                lightProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, near_plane, far_plane);
-                lightView = glm::lookAt(glm::vec3(-442.0f, 75.0f, -451.0f), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-                lightSpaceMatrix = lightProjection * lightView;
-                // render scene from light's point of view
-                simpleDepthShader.use();
-                simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-                glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-                glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-                    glClear(GL_DEPTH_BUFFER_BIT);
-                    for (const auto& obj : m_entities) {
-                        glActiveTexture(GL_TEXTURE2);
-                        glBindTexture(GL_TEXTURE_2D, depthMap);
-
-                        obj->drawDirLight(m_deltaTime, m_camera, currentFrame, m_dirLight, simpleDepthShader);
-                    }
-
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-                // reset viewport
-                glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            }
-
-            if (level != 2)
-            {
-                RenderLoop();
-            }
-
-
-            debugDepthQuad.use();
-            debugDepthQuad.setFloat("near_plane", near_plane);
-            debugDepthQuad.setFloat("far_plane", far_plane);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, depthMap);
-            renderQuad();
-
-
-            ImGui::Render();
-            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-
-            glfwSwapBuffers(m_window);
-            glfwPollEvents();
-        }
-    }
+    GameLoop();
 }
 
 void Game::GameLoop()
-{
-    //float lastFrame = 0.0;
-    //float lev1timeChange = 0.0f;
-    //float lev3timeChange = 0.0f;
+{    
+    float lastFrame = 0.0;
+    float lev1timeChange = 0.0f;
+    float lev3timeChange = 0.0f;
 
 
-    //while (!glfwWindowShouldClose(m_window))
-    //{
+    while (!glfwWindowShouldClose(m_window))
+    {
 
-    //    ImGui_ImplGlfwGL3_NewFrame();
+        ImGui_ImplGlfwGL3_NewFrame();
 
-    //    float currentFrame = static_cast<float>(glfwGetTime());
-    //    m_deltaTime = currentFrame - lastFrame;
-    //    lastFrame = currentFrame;
-    //    
-
-    //   
-    //    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //    processInput(m_window);
+        float currentFrame = static_cast<float>(glfwGetTime());
+        m_deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
 
-    //    //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
-    //    if (level == 1) {
-    //        if (
-    //            //m_camera.m_cameraPos.x <= 116.0f
-    //            1) {
-    //            level = 2;
-    //            m_camera.setCameraSpeed(7.0f);
-    //            m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    //            lev1timeChange = currentFrame;
-    //        }
-    //    }
-    //    else if (level == 2)
-    //    {
-    //        m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
-    //        if (currentFrame - lev1timeChange > 0.0f)
-    //        {
-    //            //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
-    //            level = 3;
-    //        }
-    //    }
-    //    /*else if(level == 3)
-    //    {
-    //        m_dirLight.m_color.r -= 0.0005;
-    //        m_dirLight.m_color.g -= 0.0005;
-    //        m_dirLight.m_color.b -= 0.0005;
-    //        if (m_camera.m_cameraPos.z >= 509.0f) {
-    //            lev3timeChange = currentFrame;
-    //            level = 4;
-    //            
-    //            addLightPoint(bMoonLoc, glm::vec3(10.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.128f);
-    //        }
-    //    }
-    //    else if (level == 4) {
-    //        m_dirLight.m_color.r -= 0.0005;
-    //        m_dirLight.m_color.g -= 0.0005;
-    //        m_dirLight.m_color.b -= 0.0005;
-    //        if (currentFrame - lev3timeChange < 5.0f)
-    //        {
-    //            bMoonObject.m_position.y += (currentFrame - lev3timeChange)/20;
-    //            for (size_t i = 3; i < m_pointLights.size(); i += 4) {
-    //                m_pointLights[i].m_pos.x += (currentFrame - lev3timeChange)/20;
-    //                m_pointLights[i].m_pos.y += (currentFrame - lev3timeChange)/20;
-    //                m_pointLights[i].m_pos.z += (currentFrame - lev3timeChange)/20;
-    //            }
 
-    //            bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-    //            
-    //        }
-    //        else {
-    //            level = 5;
-    //        }
-    //    }*/
-    //    /*else {
-    //        bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-    //    }*/
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //    {
-    //        glm::mat4 lightProjection, lightView;
-    //        glm::mat4 lightSpaceMatrix;
-    //        float near_plane = 1.0f, far_plane = 7.5f;
-    //        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    //        lightView = glm::lookAt(m_dirLight.m_direction, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    //        lightSpaceMatrix = lightProjection * lightView;
-    //        // render scene from light's point of view
-    //        simpleDepthShader.use();
-    //        simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+        processInput(m_window);
 
-    //        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    //        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    //        glClear(GL_DEPTH_BUFFER_BIT);
-    //        glActiveTexture(GL_TEXTURE0);
-    //        glBindTexture(GL_TEXTURE_2D, woodTexture);
-    //        renderScene(simpleDepthShader);
-    //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //        // reset viewport
-    //        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    //        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
+        if (level == 1) {
+            if (
+                //m_camera.m_cameraPos.x <= 116.0f
+                1) {
+                level = 2;
+                m_camera.setCameraSpeed(200.0f);
+                m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+                lev1timeChange = currentFrame;
+            }
+        }
+        else if (level == 2)
+        {
+            m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
+            if (currentFrame - lev1timeChange > 0.0f)
+            {
+                //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
+                level = 3;
+            }
+        }
+        /*else if(level == 3)
+        {
+            m_dirLight.m_color.r -= 0.0005;
+            m_dirLight.m_color.g -= 0.0005;
+            m_dirLight.m_color.b -= 0.0005;
+            if (m_camera.m_cameraPos.z >= 509.0f) {
+                lev3timeChange = currentFrame;
+                level = 4;
 
-    //    }
+                addLightPoint(bMoonLoc, glm::vec3(10.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.128f);
+            }
+        }
+        else if (level == 4) {
+            m_dirLight.m_color.r -= 0.0005;
+            m_dirLight.m_color.g -= 0.0005;
+            m_dirLight.m_color.b -= 0.0005;
+            if (currentFrame - lev3timeChange < 5.0f)
+            {
+                bMoonObject.m_position.y += (currentFrame - lev3timeChange)/20;
+                for (size_t i = 3; i < m_pointLights.size(); i += 4) {
+                    m_pointLights[i].m_pos.x += (currentFrame - lev3timeChange)/20;
+                    m_pointLights[i].m_pos.y += (currentFrame - lev3timeChange)/20;
+                    m_pointLights[i].m_pos.z += (currentFrame - lev3timeChange)/20;
+                }
 
-    //    if(level != 2)
-    //    {
-    //        RenderLoop();
-    //    }  
+                bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
 
-    //    ImGui::Render();
-    //    ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+            }
+            else {
+                level = 5;
+            }
+        }*/
+        /*else {
+            bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
+        }*/
 
-    //    glfwSwapBuffers(m_window);
-    //    glfwPollEvents();
-    //}
+        float near_plane = 100.0f, far_plane = 2000.0f;
+        {
+            glm::mat4 lightProjection, lightView;
+            lightProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, near_plane, far_plane);
+            lightView = glm::lookAt(glm::vec3(-442.0f, 75.0f, -451.0f), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+            lightSpaceMatrix = lightProjection * lightView;
+            // render scene from light's point of view
+            simpleDepthShader.use();
+            simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+            glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+            glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+                //glCullFace(GL_FRONT);
+                for (const auto& obj : m_entities) {
+                    glActiveTexture(GL_TEXTURE2);
+                    glBindTexture(GL_TEXTURE_2D, depthMap);
+
+                    obj->drawDirLight(m_deltaTime, m_camera, currentFrame, m_dirLight, simpleDepthShader);
+                }
+                //glCullFace(GL_BACK);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // reset viewport
+            glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        }
+
+        if (level != 2)
+        {
+            RenderLoop();
+        }
+
+        debugDepthQuad.use();
+        debugDepthQuad.setFloat("near_plane", near_plane);
+        debugDepthQuad.setFloat("far_plane", far_plane);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+        renderQuad();
+
+
+        ImGui::Render();
+        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+    }
 }
 
 void Game::RenderLoop()
@@ -344,7 +199,7 @@ void Game::RenderLoop()
     Player::GetInstance().Draw(m_deltaTime, m_camera, m_dirLight, m_pointLights);
     if (level == 3 || level == 4 || level == 5)
     {
-        //m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), m_dirLight, m_camera.m_cameraPos);
+        m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), m_dirLight, m_camera.m_cameraPos);
         m_skyBox.draw(m_camera, m_dirLight.m_color);
     }
 
@@ -352,8 +207,8 @@ void Game::RenderLoop()
     glBindTexture(GL_TEXTURE_2D, depthMap);
 
     for (const auto& obj : m_entities) {
-        glActiveTexture(GL_TEXTURE0+2);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        /*glActiveTexture(GL_TEXTURE0+2);
+        glBindTexture(GL_TEXTURE_2D, depthMap);*/
 
         obj->draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, lightSpaceMatrix);
     }
@@ -489,6 +344,33 @@ void Game::stateCheck()
     //if()
 }
 
+void Game::initDirDepth()
+{
+    simpleDepthShader = Shader("res/Shaders/Depth/Depth.vs", "res/Shaders/Depth/Depth.fs");
+    debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
+    glGenFramebuffers(1, &depthMapFBO);
+    // create depth texture
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    debugDepthQuad.use();
+    debugDepthQuad.setInt("depthMap", 0);
+
+}
+
 
 void Game::initEntities()
 {
@@ -561,8 +443,8 @@ void Game::initEntities()
 
 
 
-    glm::vec3 bMoonLoc = (glm::vec3(437.3f, m_terrain->getHeight(437.3f, 435.6f), 435.6f));
-    glm::vec3 bMoonScale = glm::vec3(2.0f, 2.0f, 2.0f);
+    glm::vec3 bMoonLoc = (glm::vec3(407.3f, m_terrain->getHeight(407.3f, 365.6f) + 20.0f, 365.6f));
+    glm::vec3 bMoonScale = glm::vec3(3.0f, 3.0f, 3.0f);
     //EntityV bMoonObject = EntityV(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bMoon, "SPHERE");
     
 
