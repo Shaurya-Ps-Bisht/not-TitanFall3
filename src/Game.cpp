@@ -222,7 +222,7 @@ void Game::RenderLoop()
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y, m_camera.m_cameraPos.z);
         ImGui::Text("Height: %.3f ", m_terrain->getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z));
-        if (ImGui::Button("GOD MODE"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
+        if (ImGui::Button("GOD MODE"))                           
             m_camera.godMode = !m_camera.godMode;
     }
     {

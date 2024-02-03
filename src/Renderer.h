@@ -47,11 +47,9 @@ private:
 
 
 private:
-	Renderer() {};
+	//Renderer() {};
 	void SetWindowProp(int width, int height);
 	int InitGlfwOGL();
-
-	void InitMesh();
 
 };
 

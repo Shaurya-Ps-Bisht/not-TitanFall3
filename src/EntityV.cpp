@@ -1,9 +1,7 @@
 #include "EntityV.h"
 
 EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, float angleP, glm::vec3 axisP, Shader& initialShader, const char* shape)
-	:Entity(initialPosition,
-		initialScale,
-		initialShader),
+	:Entity(initialPosition,initialScale,initialShader),
 	angle(angleP),
 	axis(axisP)
 {
@@ -80,7 +78,7 @@ void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, ligh
 	shader.use();
 	/*shader.setInt("texture_diffuse1", 0);
 	shader.setInt("shadowMap", 2);*/
-	
+
 
 	//Lighting setup
 
@@ -99,15 +97,16 @@ void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, ligh
 void EntityV::getVertexData(const char* shape)
 {
 	m_shape = m_shape->FetchShape(shape);
-	m_shape->InitVertexData();
-	numVertices = m_shape->GetVertexDataCount();
-	numIndices = m_shape->GetIndexDataCount();
-	m_indices = m_shape->GetIndexData();
+	m_shape->initVertexData();
 
+	m_indices = m_shape->getIndexData();
+	numIndices = m_shape->getIndexData().size();
+
+	numVertices = m_shape->getVertex().size();
 	for (size_t i = 0; i < numVertices; ++i)
 	{
-		vertexPos.push_back(m_shape->GetVertexData()[i].GetPos());
-		vertexUv.push_back(m_shape->GetVertexData()[i].GetTex());
-		vertexNorms.push_back(m_shape->GetVertexData()[i].GetNormals());
+		vertexPos.push_back(m_shape->getVertex()[i].pos);
+		vertexUv.push_back(m_shape->getVertex()[i].tex);
+		vertexNorms.push_back(m_shape->getVertex()[i].normals);
 	}
 }

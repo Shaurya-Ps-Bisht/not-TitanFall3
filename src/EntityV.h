@@ -29,7 +29,7 @@ private:
     unsigned int m_vao, m_vbo, m_tbo, m_nbo, m_ibo;
     std::vector<glm::vec2> vertexUv;
     std::vector<glm::vec3> vertexNorms;
-    unsigned int* m_indices;
+    std::vector<unsigned int> m_indices;
 
     float angle;
     glm::vec3 axis;

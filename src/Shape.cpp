@@ -4,245 +4,114 @@
 class Quad : public Shape
 {
 public:
-	virtual void InitVertexData() override
+	virtual void initVertexData() override
 	{
-		m_quadVertices.push_back(Vertex(glm::vec3(-1.0f, -1.0f, 0.0f),  glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_quadVertices.push_back(Vertex(glm::vec3(1.0f, -1.0f, 0.0f),	glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_quadVertices.push_back(Vertex(glm::vec3(1.0f, 1.0f, 0.0f),	glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_quadVertices.push_back(Vertex(glm::vec3(-1.0f, 1.0f, 0.0f),	glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	}
+		m_vertices.push_back(Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		m_vertices.push_back(Vertex(glm::vec3(1.0f, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		m_vertices.push_back(Vertex(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		m_vertices.push_back(Vertex(glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 
-	virtual std::vector<Vertex> GetVertexData() override
-	{
-		return m_quadVertices;
+		m_indices.insert(m_indices.end(), { 0, 1, 2, 2, 3, 0 });
 	}
-
-	virtual unsigned int GetVertexDataCount() override
-	{
-		return m_quadVertices.size();
-	}
-
-	virtual unsigned int* GetIndexData() override
-	{
-		return m_quadIndices;
-	}
-
-	virtual unsigned int GetIndexDataCount() override
-	{
-		return (sizeof(m_quadIndices) / sizeof(m_quadIndices[0]));
-	}
-
-private:
-	std::vector<Vertex> m_quadVertices;
-	unsigned int m_quadIndices[6] =
-	{
-		0, 1, 2,
-		2, 3, 0
-	};
 };
 
 class Cube : public Shape
 {
-	virtual void InitVertexData() override
+	virtual void initVertexData() override
 	{
-		// Cube is drawn in a counter-clockwise winding format to allow for face culling
-		// Front face
-		std::vector<glm::vec3> frontFacePos;
-		frontFacePos.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
-		frontFacePos.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
-		frontFacePos.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
-		frontFacePos.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
+		std::vector<std::vector<glm::vec3>> facePositions = {
+			{glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(-0.5f, 0.5f, 0.5f)},  // Front
+			{glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec3(0.5f, 0.5f, -0.5f)},  // Back
+			{glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(0.5f, -0.5f, -0.5f), glm::vec3(0.5f, 0.5f, -0.5f), glm::vec3(0.5f, 0.5f, 0.5f)},  // Right
+			{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(-0.5f, 0.5f, -0.5f)},  // Left
+			{glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.5f, 0.5f, -0.5f), glm::vec3(-0.5f, 0.5f, -0.5f)},  // Top
+			{glm::vec3(0.5f, -0.5f, 0.5f), glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.5f, -0.5f, -0.5f)}   // Bottom
+		};
 
-		std::vector<glm::vec2> textures;
-		textures.push_back(glm::vec2(0.0f, 0.0f));
-		textures.push_back(glm::vec2(1.0f, 0.0f));
-		textures.push_back(glm::vec2(1.0f, 1.0f));
-		textures.push_back(glm::vec2(0.0f, 1.0f));
+		std::vector<glm::vec2> textures = {glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f)};
 
+		for (const auto& facePos : facePositions) {
+			for (int i = 0; i < 4; ++i) {
+				int textureIndex = i % 4;
+				int nextTextureIndex = (i + 1) % 4;
 
-		m_cubeVertices.push_back(Vertex(frontFacePos.at(0), textures.at(0), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_cubeVertices.push_back(Vertex(frontFacePos.at(1), textures.at(1), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_cubeVertices.push_back(Vertex(frontFacePos.at(2), textures.at(2), glm::vec3(0.0f, 0.0f, 1.0f)));
-		m_cubeVertices.push_back(Vertex(frontFacePos.at(3), textures.at(3), glm::vec3(0.0f, 0.0f, 1.0f)));
-
-		// Calculate tangents for back face
-		std::vector<glm::vec3> backFacePos;
-		backFacePos.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
-		backFacePos.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
-		backFacePos.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
-		backFacePos.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
-
-
-		// Back face
-		m_cubeVertices.push_back(Vertex(backFacePos.at(0), textures.at(0), glm::vec3(0.0f, 0.0f, -1.0f)));
-		m_cubeVertices.push_back(Vertex(backFacePos.at(1), textures.at(1), glm::vec3(0.0f, 0.0f, -1.0f)));
-		m_cubeVertices.push_back(Vertex(backFacePos.at(2), textures.at(2), glm::vec3(0.0f, 0.0f, -1.0f)));
-		m_cubeVertices.push_back(Vertex(backFacePos.at(3), textures.at(3), glm::vec3(0.0f, 0.0f, -1.0f)));
-
-		// Calculate tangents for right face
-		std::vector<glm::vec3> rightFacePos;
-		rightFacePos.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
-		rightFacePos.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
-		rightFacePos.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
-		rightFacePos.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
-
-
-		// Right face
-		m_cubeVertices.push_back(Vertex(rightFacePos.at(0), textures.at(0), glm::vec3(1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(rightFacePos.at(1), textures.at(1), glm::vec3(1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(rightFacePos.at(2), textures.at(2), glm::vec3(1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(rightFacePos.at(3), textures.at(3), glm::vec3(1.0f, 0.0f, 0.0f)));
-
-		// Calculate tangents for left face
-		std::vector<glm::vec3> leftFacePos;
-		leftFacePos.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
-		leftFacePos.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
-		leftFacePos.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
-		leftFacePos.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
-
-
-		// Left face
-		m_cubeVertices.push_back(Vertex(leftFacePos.at(0), textures.at(0), glm::vec3(-1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(leftFacePos.at(1), textures.at(1), glm::vec3(-1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(leftFacePos.at(2), textures.at(2), glm::vec3(-1.0f, 0.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(leftFacePos.at(3), textures.at(3), glm::vec3(-1.0f, 0.0f, 0.0f)));
-
-		// Calculate tangents for top face
-		std::vector<glm::vec3> topFacePos;
-		topFacePos.push_back(glm::vec3(-0.5f, 0.5f, 0.5f));
-		topFacePos.push_back(glm::vec3(0.5f, 0.5f, 0.5f));
-		topFacePos.push_back(glm::vec3(0.5f, 0.5f, -0.5f));
-		topFacePos.push_back(glm::vec3(-0.5f, 0.5f, -0.5f));
-
-
-		// Top face
-		m_cubeVertices.push_back(Vertex(topFacePos.at(0), textures.at(0), glm::vec3(0.0f, 1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(topFacePos.at(1), textures.at(1), glm::vec3(0.0f, 1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(topFacePos.at(2), textures.at(2), glm::vec3(0.0f, 1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(topFacePos.at(3), textures.at(3), glm::vec3(0.0f, 1.0f, 0.0f)));
-
-		// Calculate tangents for bottom face
-		std::vector<glm::vec3> bottomFacePos;
-		bottomFacePos.push_back(glm::vec3(0.5f, -0.5f, 0.5f));
-		bottomFacePos.push_back(glm::vec3(-0.5f, -0.5f, 0.5f));
-		bottomFacePos.push_back(glm::vec3(-0.5f, -0.5f, -0.5f));
-		bottomFacePos.push_back(glm::vec3(0.5f, -0.5f, -0.5f));
-
-
-		// Bottom face
-		m_cubeVertices.push_back(Vertex(bottomFacePos.at(0), textures.at(0), glm::vec3(0.0f, -1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(bottomFacePos.at(1), textures.at(1), glm::vec3(0.0f, -1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(bottomFacePos.at(2), textures.at(2), glm::vec3(0.0f, -1.0f, 0.0f)));
-		m_cubeVertices.push_back(Vertex(bottomFacePos.at(3), textures.at(3), glm::vec3(0.0f, -1.0f, 0.0f)));
+				m_vertices.push_back(Vertex(facePos[i], textures[textureIndex], CalculateNormal(facePos)));
+			}
+		}
+		m_indices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20 };
 	}
 
-	virtual std::vector<Vertex> GetVertexData() override
-	{
-		return m_cubeVertices;
+	glm::vec3 CalculateNormal(const std::vector<glm::vec3>& vertices) {
+		glm::vec3 edge1 = vertices[1] - vertices[0];
+		glm::vec3 edge2 = vertices[2] - vertices[0];
+		return glm::normalize(glm::cross(edge1, edge2));
 	}
-
-	virtual unsigned int GetVertexDataCount() override
-	{
-		return m_cubeVertices.size();
-	}
-
-	virtual unsigned int* GetIndexData() override
-	{
-		return m_cubeIndices;
-	}
-
-	virtual unsigned int GetIndexDataCount() override
-	{
-		return (sizeof(m_cubeIndices) / sizeof(m_cubeIndices[0]));
-	}
-
-private:
-	std::vector<Vertex> m_cubeVertices;
-	unsigned int m_cubeIndices[36] =
-	{
-		0, 1, 2,
-		2, 3, 0,
-
-		4, 5, 6,
-		6, 7, 4,
-
-		8, 9, 10,
-		10, 11, 8,
-
-		12, 13, 14,
-		14, 15, 12,
-
-		16, 17, 18,
-		18, 19, 16,
-
-		20, 21, 22,
-		22, 23, 20
-	};
 };
 
 class Sphere : public Shape
 {
-	virtual void InitVertexData() override
+	virtual void initVertexData() override
 	{
-		float phyStep = m_PI / (float)m_stacks;
-		float thetaStep = 2.0f * m_PI / (float)m_slices;
+		float sectorStep = 2 * m_PI / m_sectors;
+		float stackStep = m_PI / m_stacks;
 
-		for (int i = 0; i <= m_stacks; ++i) 
-		{
-			float phi = i * phyStep;
+		// Iterate over stacks
+		for (int i = 0; i <= m_stacks; ++i) {
+			float stackAngle = m_PI / 2 - i * stackStep;
+			float xy = m_radius * cosf(stackAngle);
+			float z = m_radius * sinf(stackAngle);
 
-			for (int j = 0; j <= m_slices; ++j)
-			{
-				float theta = j * thetaStep;
+			// Add vertices for the current stack
+			for (int j = 0; j <= m_sectors; ++j) {
+				float sectorAngle = j * sectorStep;
 
-				float x = cosf(theta) * sinf(phi);
-				float y = cosf(phi);
-				float z = sinf(theta) * sinf(phi);
+				// Calculate vertex position
+				float x = xy * cosf(sectorAngle);
+				float y = xy * sinf(sectorAngle);
 
-				m_sphereVertices.push_back(Vertex(glm::vec3(x * m_radius, y * m_radius, z * m_radius), glm::vec2(theta / (m_PI * 2.0f), phi / m_PI), glm::vec3(x, y, z)));
+
+				// Calculate normalized vertex normal
+				float lengthInv = 1.0f / m_radius;
+				float nx = x * lengthInv;
+				float ny = y * lengthInv;
+				float nz = z * lengthInv;
+
+				// Calculate vertex texture coordinates
+				float s = static_cast<float>(j) / m_sectors;
+				float t = static_cast<float>(i) / m_stacks;
+
+				m_vertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec2(s,t), glm::vec3(nx, ny, nz)));
 			}
 		}
 
-		for (int i = 0; i < m_slices * m_stacks + m_slices; ++i) 
-		{
-			m_sphereIndices.push_back(i);
-			m_sphereIndices.push_back(i + m_slices + 1);
-			m_sphereIndices.push_back(i + m_slices);
+		// Generate triangle indices
+		for (int i = 0; i < m_stacks; ++i) {
+			int k1 = i * (m_sectors + 1);
+			int k2 = k1 + m_sectors + 1;
 
-			m_sphereIndices.push_back(i + m_slices + 1);
-			m_sphereIndices.push_back(i);
-			m_sphereIndices.push_back(i + 1);
+			for (int j = 0; j < m_sectors; ++j, ++k1, ++k2) {
+				// Two triangles per sector except for first and last stacks
+				if (i > 0) {
+					m_indices.push_back(k1);
+					m_indices.push_back(k2);
+					m_indices.push_back(k1 + 1);
+				}
+				if (i < m_stacks - 1) {
+					m_indices.push_back(k1 + 1);
+					m_indices.push_back(k2);
+					m_indices.push_back(k2 + 1);
+				}
+			}
 		}
 	}
 
-	virtual unsigned int GetVertexDataCount() override
-	{
-		return m_sphereVertices.size();
-	}
-
-	virtual std::vector<Vertex> GetVertexData() override
-	{
-		return m_sphereVertices;
-	}
-
-	virtual unsigned int* GetIndexData() override
-	{
-		return &m_sphereIndices[0];
-	}
-
-	virtual unsigned int GetIndexDataCount() override
-	{
-		return m_sphereIndices.size();
-	}
+	
 
 private:
 	int m_stacks = 75;
-	int m_slices = 75;
+	int m_sectors = 75;
 	int m_radius = 3;
 	const float m_PI = 3.14159265359f;
-
-	std::vector<Vertex> m_sphereVertices;
-	std::vector<unsigned int> m_sphereIndices;
 };
 
 Shape* Shape::FetchShape(const std::string& shape)

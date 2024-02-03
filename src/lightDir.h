@@ -17,6 +17,10 @@ public:
 		m_color = color;
 	};
 
+	/*std::vector<glm::mat4> getLightSpaceMatrices();
+	glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane);*/
+
+
 
 	glm::vec3 m_direction;
 	glm::vec3 m_color;

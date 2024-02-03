@@ -53,6 +53,7 @@ public:
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
 	void setCameraPos(glm::vec3 position);
+	std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& projview);
 
 	glm::mat4& GetProjectionMatrix() { return m_projection; }
 
