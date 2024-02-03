@@ -239,6 +239,34 @@ void Game::RenderLoop()
             m_dirLight.m_color = dirLightColor;
         }
     }
+     if(1)
+    {
+        static float _Scale = 1.42f;
+        static float _StepScale = 4.0f;
+        static float _Steps = 200;
+        static float _MinHeight = 409.0f;
+        static float _MaxHeight = 500.0f;
+        static float _FadeDistance = 10.0f;
+        static glm::vec4 _SunDir = glm::vec4(21.2000008, -1.20000005, 1.20000005, -1.35000002);
+
+        ImGui::SliderFloat("_Scale", &_Scale, 0.1f, 10.0f);
+        ImGui::SliderFloat("_StepScale", &_StepScale, 0.1f, 100.0f);
+        ImGui::SliderFloat("_Steps", &_Steps, 1.0f, 200.0f);
+        ImGui::SliderFloat("_MinHeight", &_MinHeight, 0.0f, 50.0f + 407.3f);
+        ImGui::SliderFloat("_MaxHeight", &_MaxHeight, 60.0f + 407.3f, 1000.0f + 407.3f);
+        ImGui::SliderFloat("_FadeDistance", &_FadeDistance, 0.0f, 10.0f);
+
+        ImGui::SliderFloat4("_SunDir", glm::value_ptr(_SunDir), -1.0f, 1.0f);
+
+        m_entities[7]->m_shader.use();
+        m_entities[7]->m_shader.setFloat("_Scale", _Scale);
+        m_entities[7]->m_shader.setFloat("_StepScale", _StepScale);
+        m_entities[7]->m_shader.setFloat("_Steps", _Steps);
+        m_entities[7]->m_shader.setFloat("_MinHeight", _MinHeight);
+        m_entities[7]->m_shader.setFloat("_MaxHeight", _MaxHeight);
+        m_entities[7]->m_shader.setFloat("_FadeDistance", _FadeDistance);
+        m_entities[7]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
+    }
 
     {
         static float inputNumber = 5.0f; // Default value
@@ -375,13 +403,12 @@ void Game::initDirDepth()
 void Game::initEntities()
 {
     Shader bulbShader("res/Shaders/Bulb/Bulb.vs", "res/Shaders/Bulb/Bulb.fs");
-    glm::vec3 lightPos1 = glm::vec3(131.430f, -97.5f, 1054.057f);
     glm::vec3 lightScale1 = glm::vec3(0.025f, 0.025f, 0.025f);
-    addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
 
+    glm::vec3 lightPos1 = glm::vec3(131.430f, -97.5f, 1054.057f);
+    addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     glm::vec3 lightPos2 = glm::vec3(137.385f, -97.5f, 1060.065f);
     addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
-
     glm::vec3 lightPos3 = glm::vec3(120.423, -97.5f, 1065.115f);
     addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
 
@@ -436,15 +463,29 @@ void Game::initEntities()
     Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader seaShader("res/Shaders/Sea/sea.vs", "res/Shaders/Sea/sea.fs");
     Shader bMoon("res/Shaders/Bulb/bMoon/bMoon.vs", "res/Shaders/Bulb/bMoon/bMoon.fs");
+    Shader vFog("res/Shaders/VolumetricFog/VolumetricFog.vs", "res/Shaders/VolumetricFog/VolumetricFog.fs");
+
+    std::cout << "DASDSA "<< vFog.m_ID <<std::endl;
 
     unlitShader.use();
     unlitShader.setInt("texture_diffuse1", 0);
     unlitShader.setInt("shadowMap", 2);
 
+    vFog.use();
+    vFog.setFloat("_Scale", 2.41);
+    vFog.setFloat("_StepScale", 4.3);
+    vFog.setFloat("_Steps", 200);
+    vFog.setFloat("_MinHeight", 0);
+    vFog.setFloat("_MaxHeight", 10);
+    vFog.setFloat("_FadeDistance", 10);
+    vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));
 
 
     glm::vec3 bMoonLoc = (glm::vec3(407.3f, m_terrain->getHeight(407.3f, 365.6f) + 20.0f, 365.6f));
     glm::vec3 bMoonScale = glm::vec3(3.0f, 3.0f, 3.0f);
+
+    glm::vec3 vFogLoc = (glm::vec3(407.3f, 407.3f, 365.6f));
+    glm::vec3 vFogScale = glm::vec3(2000.0f, 100.0f, 2000.0f);
     //EntityV bMoonObject = EntityV(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bMoon, "SPHERE");
     
 
@@ -479,8 +520,8 @@ void Game::initEntities()
     std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>(InLocation, InScale, unlitShader, "res/Models/House/Interior/Interior.gltf");
     std::unique_ptr<EntityM> Boat = std::make_unique<EntityM>(boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
     std::unique_ptr<EntityM> sea = std::make_unique<EntityM>(seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
+    std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), vFog, "CUBE");
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
-
 
 
     //m_entitiesInstanced.push_back(std::move(grass));
@@ -494,6 +535,7 @@ void Game::initEntities()
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
     m_entities.push_back(std::move(sea));
+    m_entities.push_back(std::move(vFogObject));
     m_entities.push_back(std::move(bMoonObject));
 
 }
