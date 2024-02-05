@@ -1,6 +1,7 @@
 #include "Camera.h"
-#include <iostream>
 #include "Player.h"
+
+#include <iostream>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     :m_lookVec(glm::vec3(0.0f, 0.0f, -1.0f)), m_movementSpeed(SPEED), m_mouseSens(SENS), m_FOV(FOV), m_cameraPos(position),
@@ -121,6 +122,9 @@ void Camera::setCameraSpeed(float speed)
 
 void Camera::setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane)
 {
+    m_aspectRatio = aspectRatio;
+    m_nearPlane = nearPlane;
+    m_farPlane = farPlane;
     m_projection = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
 }
 
@@ -129,23 +133,4 @@ void Camera::setCameraPos(glm::vec3 position)
     m_cameraPos = position;
 }
 
-std::vector<glm::vec4> Camera::getFrustumCornersWorldSpace(const glm::mat4& projview)
-{
-    const auto inv = glm::inverse(projview);
 
-    std::vector<glm::vec4> frustumCorners;
-    for (unsigned int x = 0; x < 2; ++x)
-    {
-        for (unsigned int y = 0; y < 2; ++y)
-        {
-            for (unsigned int z = 0; z < 2; ++z)
-            {
-                const glm::vec4 pt = inv * glm::vec4(2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f);
-                frustumCorners.push_back(pt / pt.w);
-            }
-        }
-    }
-
-    return frustumCorners;
-
-}

@@ -43,7 +43,6 @@ Game::Game()
     m_camera = Camera(glm::vec3(127.362f, -98.5f, 1056.149f));
     m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 5000.0f);
     Renderer::GetInstance().setCamera(&m_camera);
-    m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 }
 
@@ -54,8 +53,13 @@ Game::~Game()
 
 void Game::Run()
 {
+    m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     initDirDepth();
     initEntities();
+    debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
+    /*debugDepthQuad.use();
+    debugDepthQuad.setInt("shadowMap", 3);*/
+
     GameLoop();
 }
 
@@ -90,7 +94,7 @@ void Game::GameLoop()
                 1) {
                 level = 2;
                 m_camera.setCameraSpeed(200.0f);
-                m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+                
                 lev1timeChange = currentFrame;
             }
         }
@@ -103,84 +107,24 @@ void Game::GameLoop()
                 level = 3;
             }
         }
-        /*else if(level == 3)
-        {
-            m_dirLight.m_color.r -= 0.0005;
-            m_dirLight.m_color.g -= 0.0005;
-            m_dirLight.m_color.b -= 0.0005;
-            if (m_camera.m_cameraPos.z >= 509.0f) {
-                lev3timeChange = currentFrame;
-                level = 4;
-
-                addLightPoint(bMoonLoc, glm::vec3(10.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.128f);
-            }
-        }
-        else if (level == 4) {
-            m_dirLight.m_color.r -= 0.0005;
-            m_dirLight.m_color.g -= 0.0005;
-            m_dirLight.m_color.b -= 0.0005;
-            if (currentFrame - lev3timeChange < 5.0f)
-            {
-                bMoonObject.m_position.y += (currentFrame - lev3timeChange)/20;
-                for (size_t i = 3; i < m_pointLights.size(); i += 4) {
-                    m_pointLights[i].m_pos.x += (currentFrame - lev3timeChange)/20;
-                    m_pointLights[i].m_pos.y += (currentFrame - lev3timeChange)/20;
-                    m_pointLights[i].m_pos.z += (currentFrame - lev3timeChange)/20;
-                }
-
-                bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-
-            }
-            else {
-                level = 5;
-            }
-        }*/
-        /*else {
-            bMoonObject.draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, glm::mat4());
-        }*/
 
         float near_plane = 100.0f, far_plane = 2000.0f;
-        {
-            glm::mat4 lightProjection, lightView;
-            lightProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, near_plane, far_plane);
-            lightView = glm::lookAt(glm::vec3(-442.0f, 75.0f, -451.0f), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-            lightSpaceMatrix = lightProjection * lightView;
-            // render scene from light's point of view
-            simpleDepthShader.use();
-            simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-            glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-            glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-                //glCullFace(GL_FRONT);
-                for (const auto& obj : m_entities) {
-                    glActiveTexture(GL_TEXTURE2);
-                    glBindTexture(GL_TEXTURE_2D, depthMap);
-
-                    obj->drawDirLight(m_deltaTime, m_camera, currentFrame, m_dirLight, simpleDepthShader);
-                }
-                //glCullFace(GL_BACK);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-            // reset viewport
-            glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        }
 
         if (level != 2)
         {
+            RenderShadowMaps(currentFrame);
             RenderLoop();
         }
 
         debugDepthQuad.use();
-        debugDepthQuad.setFloat("near_plane", near_plane);
-        debugDepthQuad.setFloat("far_plane", far_plane);
+        debugDepthQuad.setInt("layer", debugLayer);
+
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
+
         renderQuad();
+
+        
 
 
         ImGui::Render();
@@ -195,6 +139,9 @@ void Game::RenderLoop()
 {    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, m_dirLight.m_lightDepthMaps);
+
     float currentFrame = static_cast<float>(glfwGetTime());
     Player::GetInstance().Draw(m_deltaTime, m_camera, m_dirLight, m_pointLights);
     if (level == 3 || level == 4 || level == 5)
@@ -203,8 +150,6 @@ void Game::RenderLoop()
         m_skyBox.draw(m_camera, m_dirLight.m_color);
     }
 
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
 
     for (const auto& obj : m_entities) {
         /*glActiveTexture(GL_TEXTURE0+2);
@@ -244,9 +189,9 @@ void Game::RenderLoop()
         static float _Scale = 1.42f;
         static float _StepScale = 4.0f;
         static float _Steps = 200;
-        static float _MinHeight = 409.0f;
-        static float _MaxHeight = 500.0f;
-        static float _FadeDistance = 10.0f;
+        static float _MinHeight = 0;
+        static float _MaxHeight = 1000.0f + 407.3f;
+        static float _FadeDistance = 100.0f;
         static glm::vec4 _SunDir = glm::vec4(21.2000008, -1.20000005, 1.20000005, -1.35000002);
 
         ImGui::SliderFloat("_Scale", &_Scale, 0.1f, 10.0f);
@@ -254,7 +199,7 @@ void Game::RenderLoop()
         ImGui::SliderFloat("_Steps", &_Steps, 1.0f, 200.0f);
         ImGui::SliderFloat("_MinHeight", &_MinHeight, 0.0f, 50.0f + 407.3f);
         ImGui::SliderFloat("_MaxHeight", &_MaxHeight, 60.0f + 407.3f, 1000.0f + 407.3f);
-        ImGui::SliderFloat("_FadeDistance", &_FadeDistance, 0.0f, 10.0f);
+        ImGui::SliderFloat("_FadeDistance", &_FadeDistance, 0.0f, 1000.0f);
 
         ImGui::SliderFloat4("_SunDir", glm::value_ptr(_SunDir), -1.0f, 1.0f);
 
@@ -279,85 +224,53 @@ void Game::RenderLoop()
     
 }
 
-void Game::processInput(GLFWwindow* window)
+void Game::RenderShadowMaps(float currentFrame)
 {
+    const auto lightMatrices = m_dirLight.getLightSpaceMatrices(m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV, m_camera.m_aspectRatio);
+    
+    /*for (const auto& matrix : lightMatrices) {
+        std::cout << "Matrix:\n";
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                std::cout << matrix[i][j] << " ";
+            }
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+    }*/
 
-    if (!Renderer::GetInstance().cursorEnabled)
+
+    
+    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+    for (size_t i = 0; i < lightMatrices.size(); ++i)
     {
-        {
-            bool isWPressed = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
-            bool isSPressed = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
-            bool isAPressed = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
-            bool isDPressed = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
-
-            // Check if any movement key is pressed
-            //bool isMovingNow = isWPressed || isSPressed || isAPressed || isDPressed;
-
-            //// If the player starts moving and there is no ongoing sound, play the audio once
-            //if (isMovingNow && !playerRuning) {
-            //    // Play your audio here using irrklang
-            //    walkingSound = level == 1 ? 
-            //        SoundEngine->play2D("res/Audio/Player/walk_wood.mp3", false, false, true):
-            //        SoundEngine->play2D("res/Audio/Player/run_grass.mp3", false, false, true);
-            //}
-
-            //// If the player stops moving and there is an ongoing sound, stop the audio
-            //if (!isMovingNow && playerRuning && walkingSound) {
-            //    walkingSound->stop();
-            //    walkingSound->drop();  // Release the sound
-            //    walkingSound = nullptr;  // Reset the pointer
-            //}
-
-            //// Update the playerRuning flag
-            //playerRuning = isMovingNow;
-
-
-
-        }
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-
-
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        {
-            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, m_terrain);
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        {
-            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, m_terrain);
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        {
-            m_camera.ProcessKeyboard(LEFT, m_deltaTime, m_terrain);
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        {
-            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, m_terrain);
-        }
-
-
-        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !(Renderer::GetInstance().cursorEnabled)) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            Renderer::GetInstance().cursorEnabled = true;
-        }
+        glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
     }
-    else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && Renderer::GetInstance().cursorEnabled) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        Renderer::GetInstance().cursorEnabled = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    
+    simpleDepthShader.use();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_dirLight.m_lightFBO);
+    glViewport(0, 0, m_dirLight.m_depthMapResolution, m_dirLight.m_depthMapResolution);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_FRONT);  // peter panning
     {
-        if (Renderer::GetInstance().wireFrameEnabled)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            Renderer::GetInstance().wireFrameEnabled = false;
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            Renderer::GetInstance().wireFrameEnabled = true;
+        for (const auto& obj : m_entities) {
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
+
+            obj->drawDirLight(m_deltaTime, m_camera, currentFrame, m_dirLight, simpleDepthShader);
         }
     }
+
+    glCullFace(GL_BACK);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+
 
 void Game::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q)
 {
@@ -374,30 +287,23 @@ void Game::stateCheck()
 
 void Game::initDirDepth()
 {
-    simpleDepthShader = Shader("res/Shaders/Depth/Depth.vs", "res/Shaders/Depth/Depth.fs");
-    debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
-    glGenFramebuffers(1, &depthMapFBO);
-    // create depth texture
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glGenBuffers(1, &matricesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    debugDepthQuad.use();
-    debugDepthQuad.setInt("depthMap", 0);
+
+    //m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+
+    simpleDepthShader = Shader("res/Shaders/Depth/CSM/dir_csm.vs", "res/Shaders/Depth/CSM/dir_csm.fs", "res/Shaders/Depth/CSM/dir_csm.gs");
+    debugCascadeShader = Shader("res/Shaders/Depth/DebugCascade/debug_cascade.vs", "res/Shaders/Depth/DebugCascade/debug_cascade.fs");
+
+    m_dirLight.configureLightFBO();
 
 }
+
 
 
 void Game::initEntities()
@@ -465,7 +371,6 @@ void Game::initEntities()
     Shader bMoon("res/Shaders/Bulb/bMoon/bMoon.vs", "res/Shaders/Bulb/bMoon/bMoon.fs");
     Shader vFog("res/Shaders/VolumetricFog/VolumetricFog.vs", "res/Shaders/VolumetricFog/VolumetricFog.fs");
 
-    std::cout << "DASDSA "<< vFog.m_ID <<std::endl;
 
     unlitShader.use();
     unlitShader.setInt("texture_diffuse1", 0);
@@ -535,62 +440,155 @@ void Game::initEntities()
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
     m_entities.push_back(std::move(sea));
-    m_entities.push_back(std::move(vFogObject));
     m_entities.push_back(std::move(bMoonObject));
+    //m_entities.push_back(std::move(vFogObject));
 
 }
-//unsigned int Game::loadCubeMapSingle(const std::string& filePath)
-//{
-//    unsigned int textureID;
-//    glGenTextures(1, &textureID);
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-//
-//    int width, height, nrChannels;
-//    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
-//
-//    if (!data)
-//    {
-//        std::cout << "Cubemap texture failed to load at path: " << filePath << std::endl;
-//        stbi_image_free(data);
-//        return 0; // Return 0 to indicate failure
-//    }
-//
-//    // Assuming the image has 3 rows and 4 columns
-//    int faceWidth = width / 4;
-//    int faceHeight = height / 3;
-//
-//    // Set the unpack parameters
-//    glPixelStorei(GL_UNPACK_ROW_LENGTH, width);
-//
-//    // Load each face using glTexSubImage2D
-//    for (int row = 0; row < 3; row++)
-//    {
-//
-//        glPixelStorei(GL_UNPACK_SKIP_PIXELS, width);
-//
-//        // Calculate the offset for each face in the image
-//        //int xOffset = col * faceWidth;
-//        int yOffset = row * faceHeight;
-//
-//        // Calculate the target face in the GL_TEXTURE_CUBE_MAP
-//        //int targetFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X + (row * 2 + (col > 1 ? 1 : 0));
-//
-//        //// Set the texture image for the current face using glTexSubImage2D
-//        //glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-//    }
-//
-//    stbi_image_free(data);
-//
-//    // Reset unpack parameters to default
-//    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-//
-//    // Set texture parameters
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-//
-//    return textureID;
-//
-//}
+
+void Game::processInput(GLFWwindow* window)
+{
+
+    if (!Renderer::GetInstance().cursorEnabled)
+    {
+        {
+            bool isWPressed = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
+            bool isSPressed = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
+            bool isAPressed = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+            bool isDPressed = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+
+        }
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, m_terrain);
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, m_terrain);
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            m_camera.ProcessKeyboard(LEFT, m_deltaTime, m_terrain);
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, m_terrain);
+        }
+
+        {
+            static int plusPress = GLFW_RELEASE;
+            if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && plusPress == GLFW_PRESS)
+            {
+                debugLayer++;
+                if (debugLayer > m_dirLight.m_shadowCascadeLevels.size())
+                {
+                    debugLayer = 0;
+                }
+                std::cout << debugLayer << std::endl;
+            }
+            plusPress = glfwGetKey(window, GLFW_KEY_N);
+
+            static int cPress = GLFW_RELEASE;
+            if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE && cPress == GLFW_PRESS)
+            {
+                lightMatricesCache = m_dirLight.getLightSpaceMatrices(m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV, m_camera.m_aspectRatio);
+            }
+            cPress = glfwGetKey(window, GLFW_KEY_C);
+
+
+        }
+
+
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && !(Renderer::GetInstance().cursorEnabled)) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            Renderer::GetInstance().cursorEnabled = true;
+        }
+    }
+    else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && Renderer::GetInstance().cursorEnabled) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        Renderer::GetInstance().cursorEnabled = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        if (Renderer::GetInstance().wireFrameEnabled)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            Renderer::GetInstance().wireFrameEnabled = false;
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            Renderer::GetInstance().wireFrameEnabled = true;
+        }
+    }
+}
+
+void Game::drawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatrices, Shader* shader)
+{
+    visualizerVAOs.resize(8);
+    visualizerEBOs.resize(8);
+    visualizerVBOs.resize(8);
+
+    const GLuint indices[] = {
+        0, 2, 3,
+        0, 3, 1,
+        4, 6, 2,
+        4, 2, 0,
+        5, 7, 6,
+        5, 6, 4,
+        1, 3, 7,
+        1, 7, 5,
+        6, 7, 3,
+        6, 3, 2,
+        1, 5, 4,
+        0, 1, 4
+    };
+
+    const glm::vec4 colors[] = {
+        {1.0, 0.0, 0.0, 0.5f},
+        {0.0, 1.0, 0.0, 0.5f},
+        {0.0, 0.0, 1.0, 0.5f},
+    };
+
+    for (int i = 0; i < lightMatrices.size(); ++i)
+    {
+        const auto corners = m_dirLight.getFrustumCornersWorldSpace(lightMatrices[i]);
+        std::vector<glm::vec3> vec3s;
+        for (const auto& v : corners)
+        {
+            vec3s.push_back(glm::vec3(v));
+        }
+
+        glGenVertexArrays(1, &visualizerVAOs[i]);
+        glGenBuffers(1, &visualizerVBOs[i]);
+        glGenBuffers(1, &visualizerEBOs[i]);
+
+        glBindVertexArray(visualizerVAOs[i]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, visualizerVBOs[i]);
+        glBufferData(GL_ARRAY_BUFFER, vec3s.size() * sizeof(glm::vec3), &vec3s[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, visualizerEBOs[i]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+        glBindVertexArray(visualizerVAOs[i]);
+        shader->setVec4("color", colors[i % 3]);
+        glDrawElements(GL_TRIANGLES, GLsizei(36), GL_UNSIGNED_INT, 0);
+
+        glDeleteBuffers(1, &visualizerVBOs[i]);
+        glDeleteBuffers(1, &visualizerEBOs[i]);
+        glDeleteVertexArrays(1, &visualizerVAOs[i]);
+
+        glBindVertexArray(0);
+    }
+
+    visualizerVAOs.clear();
+    visualizerEBOs.clear();
+    visualizerVBOs.clear();
+}
+

@@ -52,6 +52,7 @@ public:
 private:
 	void GameLoop();
 	void RenderLoop();
+	void RenderShadowMaps(float currentFrame);
 
 	void initEntities();
 	void processInput(GLFWwindow* window);
@@ -62,20 +63,24 @@ private:
 
 	void initDirDepth();
 
+	void drawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatrices, Shader* shader);
+
 public:
 	ISoundEngine* SoundEngine;
 	bool godMode;
 	lightDir m_dirLight;
 	std::vector<lightPoint> m_pointLights;
 	glm::mat4 lightSpaceMatrix;
+	std::vector<glm::mat4> lightMatricesCache;
+
 
 
 
 private:
 	int level = 1;
 
-	unsigned int depthMapFBO;
-	unsigned int depthMap;
+	unsigned int matricesUBO;
+	//unsigned int depthMap;
 
 	bool playerRuning = false;
 	ISound* walkingSound = nullptr;
@@ -85,8 +90,6 @@ private:
 	float m_deltaTime;
 	const unsigned int SCR_WIDTH = 1280;
 	const unsigned int SCR_HEIGHT = 720;
-	const unsigned int SHADOW_WIDTH = 2024, SHADOW_HEIGHT = 2024;
-
 
 	unsigned int m_skyTexture;
 	Terrain* m_terrain;
@@ -96,6 +99,13 @@ private:
 	Shader m_skyShader;
 	Shader simpleDepthShader;
 	Shader debugDepthQuad;
+	Shader debugCascadeShader;
+
+	float debugLayer;
+
+	std::vector<GLuint> visualizerVAOs;
+	std::vector<GLuint> visualizerVBOs;
+	std::vector<GLuint> visualizerEBOs;
 
 };
 

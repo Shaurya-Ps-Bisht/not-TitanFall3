@@ -33,6 +33,8 @@ int Renderer::InitGlfwOGL()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+
 
     // glfw window creation
     GLFWwindow* window = glfwCreateWindow(m_screenWidth, m_screenHeight, "Titanfall 3", NULL, NULL);

@@ -57,7 +57,13 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 	m_shader.setVec3("viewPos", cam.m_cameraPos);
 	m_shader.setVec3("dirLight.direction", dLight.m_direction);
 	m_shader.setVec3("dirLight.color", dLight.m_color);
-	m_shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+	m_shader.setFloat("farPlane", cam.m_farPlane);
+	m_shader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
+	for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
+	{
+		m_shader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
+	}
+
 
 
 

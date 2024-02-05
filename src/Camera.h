@@ -9,6 +9,7 @@
 
 #include "Terrain.h"
 
+
 #include <vector>
 
 enum Camera_Movement {
@@ -35,6 +36,9 @@ public:
 	glm::vec3 m_camRight;
 	glm::vec3 m_WorldUp;
 	glm::mat4 m_projection;
+	float m_aspectRatio;
+	float m_nearPlane;
+	float m_farPlane;
 
 	float m_Yaw;
 	float m_Pitch;
@@ -47,15 +51,16 @@ public:
 	~Camera();
 
 	glm::mat4 GetViewMatrix();
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t);
-	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
-	void ProcessMouseScroll(float yoffset);
+	glm::mat4& GetProjectionMatrix() { return m_projection; }
+
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
 	void setCameraPos(glm::vec3 position);
-	std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& projview);
 
-	glm::mat4& GetProjectionMatrix() { return m_projection; }
+
+	void ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t);
+	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+	void ProcessMouseScroll(float yoffset);
 
 private:
 	
