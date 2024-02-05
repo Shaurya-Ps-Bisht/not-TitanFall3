@@ -57,8 +57,8 @@ void Game::Run()
     initDirDepth();
     initEntities();
     debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
-    /*debugDepthQuad.use();
-    debugDepthQuad.setInt("shadowMap", 3);*/
+    debugDepthQuad.use();
+    debugDepthQuad.setInt("shadowMap", 2);
 
     GameLoop();
 }
@@ -115,16 +115,28 @@ void Game::GameLoop()
             RenderShadowMaps(currentFrame);
             RenderLoop();
         }
+        {
+            if (lightMatricesCache.size() != 0)
+            {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                debugCascadeShader.use();
+                debugCascadeShader.setMat4("projection", m_camera.m_projection);
+                debugCascadeShader.setMat4("view", m_camera.GetViewMatrix());
+                drawCascadeVolumeVisualizers(lightMatricesCache, &debugCascadeShader);
+                glDisable(GL_BLEND);
+            }
+
+        }
 
         debugDepthQuad.use();
         debugDepthQuad.setInt("layer", debugLayer);
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
 
         renderQuad();
 
-        
 
 
         ImGui::Render();

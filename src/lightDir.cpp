@@ -35,7 +35,7 @@ glm::mat4 lightDir::getLightSpaceMatrix(const float& nearPlane, const float& far
     }
 
 
-    constexpr float zMult = 10.0f;
+    constexpr float zMult = 2.0f;
     if (minZ < 0)
     {
         minZ *= zMult;
@@ -116,7 +116,7 @@ void lightDir::configureLightFBO()
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_lightDepthMaps);
 
     glTexImage3D(
-        GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, m_depthMapResolution, m_depthMapResolution, (m_shadowCascadeLevels.size()) + 1,
+        GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, m_depthMapResolution, m_depthMapResolution, 5,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
 

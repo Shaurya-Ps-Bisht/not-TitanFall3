@@ -19,19 +19,23 @@ struct PointLight {
 
 #define NR_POINT_LIGHTS 4
 
-in vec3 FragPos;
-in vec3 Normal;
-in vec2 TexCoords;
-in vec4 FragPosLightSpace;
+in VS_OUT {
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+} fs_in;
+
+
 
 uniform vec3 viewPos;
+uniform float farPlane;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
+
 uniform sampler2D texture_diffuse1;
 uniform sampler2DArray shadowMap;
 
 uniform mat4 view;
-uniform float farPlane;
 
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -47,23 +51,23 @@ layout (std140) uniform LightSpaceMatrices
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;
 
-float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light, float farPlane);
+float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light);
 
 void main()
 {    
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 norm = normalize(fs_in.Normal);
+    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 diffuse = CalcDirLight(dirLight, norm, viewDir);
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * dirLight.color;
 
-    vec4 mainTex = texture(texture_diffuse1, TexCoords);
-    float shadow = ShadowCalculation(FragPos, dirLight, farPlane);
+    vec4 mainTex = texture(texture_diffuse1, fs_in.TexCoords);
+    float shadow = ShadowCalculation(fs_in.FragPos, dirLight);
     
     vec3 final = vec3( (1-shadow) * diffuse  + ambient);
 
     for(int i = 0; i < 3; i++)
-        final += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+        final += CalcPointLight(pointLights[i], norm, fs_in.FragPos, viewDir);
 
     final *= mainTex.xyz;
 
@@ -118,9 +122,10 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     return (ambient + diffuse + specular) * intensity;
 }
 
-float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light, float farPlane)
+float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light)
 {
     // select cascade layer
+    vec3 lightDir = light.direction;
     vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
 
@@ -153,8 +158,8 @@ float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light, float farPlane)
         return 0.0;
     }
     // calculate bias (based on depth map resolution and slope)
-    vec3 normal = normalize(Normal);
-    float bias = max(0.05 * (1.0 - dot(normal, light.direction)), 0.005);
+    vec3 normal = normalize(fs_in.Normal);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount)
     {
@@ -180,6 +185,7 @@ float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light, float farPlane)
         
     return shadow;
 }
+
 
 
 // float ShadowCalculation(vec4 fragPosLightSpace, DirLight light, vec3 normal)
