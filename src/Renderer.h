@@ -38,6 +38,8 @@ public:
 
 	bool cursorEnabled = false, wireFrameEnabled = false;
 
+	const unsigned int SCR_WIDTH = 1280;
+	const unsigned int SCR_HEIGHT = 720;
 
 private:
 	int m_screenWidth, m_screenHeight;

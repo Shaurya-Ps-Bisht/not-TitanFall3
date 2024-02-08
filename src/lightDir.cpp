@@ -35,7 +35,7 @@ glm::mat4 lightDir::getLightSpaceMatrix(const float& nearPlane, const float& far
     }
 
 
-    constexpr float zMult = 2.0f;
+    constexpr float zMult = 5.0f;
     if (minZ < 0)
     {
         minZ *= zMult;

@@ -255,6 +255,7 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\RandomHelpers.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shape.h" />
@@ -268,6 +269,7 @@
     <ClInclude Include="src\vendor\imgui\stb_rect_pack.h" />
     <ClInclude Include="src\vendor\imgui\stb_textedit.h" />
     <ClInclude Include="src\vendor\imgui\stb_truetype.h" />
+    <ClInclude Include="src\ShadowManager.h" />
     <ClInclude Include="src\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -279,12 +281,14 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\lightDir.cpp" />
+    <ClCompile Include="src\lightPoint.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\ShadowManager.cpp" />
     <ClCompile Include="src\Shape.cpp" />
     <ClCompile Include="src\SkyBox.cpp" />
     <ClCompile Include="src\stb_image.cpp" />

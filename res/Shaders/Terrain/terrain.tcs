@@ -12,15 +12,12 @@ in vec3 FragPos[];
 out vec3 FragPosP[];
 
 
-in vec4 FragPosLightSpace[];
-out vec4 FragPosLightSpaceP[];
 
 void main()
 {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
     FragPosP[gl_InvocationID] = FragPos[gl_InvocationID];
-    FragPosLightSpaceP[gl_InvocationID] = FragPosLightSpace[gl_InvocationID];
     
 
     if(gl_InvocationID == 0)

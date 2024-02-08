@@ -12,8 +12,6 @@ out vec2 TexCoords;
 in vec3 FragPosP[];
 out vec3 FragPos;
 
-in vec4 FragPosLightSpaceP[];
-out vec4 FragPosLightSpace;
 
 out float Height;
 

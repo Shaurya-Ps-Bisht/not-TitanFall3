@@ -17,7 +17,7 @@ struct PointLight {
     float quadratic;
 };
 
-#define NR_POINT_LIGHTS 4
+#define NR_POINT_LIGHTS 16
 
 in VS_OUT {
     vec3 FragPos;
@@ -110,7 +110,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // combine results
 
-    vec3 ambient = light.color * 0.2;
+    vec3 ambient = light.color * 0.02;
     vec3 diffuse = light.color * diff;
     vec3 specular = light.color * spec;
 
@@ -118,7 +118,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     diffuse *= attenuation;
     specular *= attenuation;
 
-    float intensity = 1.00;
+    float intensity = 0.5;
     return (ambient + diffuse + specular) * intensity;
 }
 

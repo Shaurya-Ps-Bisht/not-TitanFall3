@@ -15,8 +15,6 @@ public:
 	void Run();
 
 private:
-	void LoadGameResources();
-
 	Game m_game;
 
 };

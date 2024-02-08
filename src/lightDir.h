@@ -19,7 +19,7 @@ public:
 
 	void setDirLight(glm::vec3 direction, glm::vec3 color)
 	{
-		m_direction = direction;
+		m_direction = normalize(direction);
 		m_color = color;
 	};
 

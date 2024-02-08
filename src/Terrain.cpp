@@ -110,13 +110,15 @@ Terrain::~Terrain()
 
 }
 
-void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::vec3 viewPos)
+void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::vec3 viewPos, float farPlane)
 {
     int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
     m_terrainShader.use();
     m_terrainShader.setInt("uHeightMap", 0);
     m_terrainShader.setInt("sandTex", 1);
     m_terrainShader.setInt("shadowMap", 2);
+
+    m_terrainShader.setFloat("farPlane", farPlane);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);

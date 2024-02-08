@@ -79,7 +79,7 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 
 }
 
-void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
+void EntityV::drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
 {
 	shader.use();
 	/*shader.setInt("texture_diffuse1", 0);
@@ -90,9 +90,9 @@ void EntityV::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, ligh
 
 
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
+	model = glm::translate(model, m_position);
 	model = glm::rotate(model, glm::radians(angle), axis);
-	model = glm::scale(model, m_scale);	// it's a bit too big for our scene, so scale it down
+	model = glm::scale(model, m_scale);
 	shader.setMat4("model", model);
 
 	glBindVertexArray(m_vao);

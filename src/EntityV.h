@@ -14,7 +14,7 @@ public:
 
     // Draw method
     void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix);
-    void drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader);
+    void drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader);
     void nice() {
         std::cout << "sad";
     }

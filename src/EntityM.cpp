@@ -123,7 +123,7 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
     }    
 }
 
-void EntityM::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
+void EntityM::drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
 {
     if (hasAnimation)
         m_animator.UpdateAnimation(deltaTime);
@@ -154,7 +154,14 @@ void EntityM::drawDirLight(float deltaTime, Camera& cam, float elapsedTime, ligh
         shader.setMat4("model", model);
         shader.setFloat("_Time", elapsedTime);
 
-        m_model.Draw(shader);
+        if (instanced)
+        {
+            m_model.DrawInstanced(shader);
+        }
+        else
+        {
+            m_model.Draw(shader);
+        }
     }
 
 }

@@ -27,7 +27,7 @@ public:
     //virtual ~GameEntity() {};
     // Virtual method to be implemented by child classes
     virtual void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix) = 0;
-    virtual void drawDirLight(float deltaTime, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader) = 0;
+    virtual void drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader) = 0;
     virtual void nice() = 0;
 
     // Methods to change position and scale

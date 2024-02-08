@@ -20,7 +20,7 @@ public:
 	//Terrain() {};
 	~Terrain();
 
-	void Draw(glm::mat4 projection, glm::mat4 view, lightDir dLight, glm::vec3 viewPos);
+	void Draw(glm::mat4 projection, glm::mat4 view, lightDir dLight, glm::vec3 viewPos, float farPlane);
 	void DrawDepth(Shader& shader);
 	void LoadFromFile(const char* filename);
 	float getHeight(float x, float y);

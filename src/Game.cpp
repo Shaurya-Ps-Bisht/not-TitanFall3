@@ -4,6 +4,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+//namespace
+//{
+//	ShadowManager& GetShadowManagerInstance()
+//	{
+//		return ShadowManager::GetInstance();
+//	}
+//}
+
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 void renderQuad()
@@ -41,7 +49,7 @@ Game::Game()
     //SoundEngine = createIrrKlangDevice();
     //m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
     m_camera = Camera(glm::vec3(127.362f, -98.5f, 1056.149f));
-    m_camera.setPerspectiveCameraProj(70.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 5000.0f);
+    m_camera.setPerspectiveCameraProj(70.0f, (float)Renderer::GetInstance().SCR_WIDTH / (float)Renderer::GetInstance().SCR_HEIGHT, 0.1f, 5000.0f);
     Renderer::GetInstance().setCamera(&m_camera);
 
 }
@@ -53,8 +61,7 @@ Game::~Game()
 
 void Game::Run()
 {
-    m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    initDirDepth();
+    ShadowManager::GetInstance().initShadows();
     initEntities();
     debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
     debugDepthQuad.use();
@@ -89,6 +96,7 @@ void Game::GameLoop()
 
         //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
         if (level == 1) {
+            ShadowManager::GetInstance().m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
             if (
                 //m_camera.m_cameraPos.x <= 116.0f
                 1) {
@@ -112,11 +120,11 @@ void Game::GameLoop()
 
         if (level != 2)
         {
-            RenderShadowMaps(currentFrame);
+            ShadowManager::GetInstance().updateShadows(m_deltaTime, currentFrame, m_entities, m_camera);
             RenderLoop();
         }
         {
-            if (lightMatricesCache.size() != 0)
+            /*if (lightMatricesCache.size() != 0)
             {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -125,7 +133,7 @@ void Game::GameLoop()
                 debugCascadeShader.setMat4("view", m_camera.GetViewMatrix());
                 drawCascadeVolumeVisualizers(lightMatricesCache, &debugCascadeShader);
                 glDisable(GL_BLEND);
-            }
+            }*/
 
         }
 
@@ -133,7 +141,7 @@ void Game::GameLoop()
         debugDepthQuad.setInt("layer", debugLayer);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
 
         renderQuad();
 
@@ -152,14 +160,15 @@ void Game::RenderLoop()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, m_dirLight.m_lightDepthMaps);
+    glBindTexture(GL_TEXTURE_2D, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
 
     float currentFrame = static_cast<float>(glfwGetTime());
-    Player::GetInstance().Draw(m_deltaTime, m_camera, m_dirLight, m_pointLights);
+    Player::GetInstance().Draw(m_deltaTime, m_camera, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights);
+
     if (level == 3 || level == 4 || level == 5)
     {
-        m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), m_dirLight, m_camera.m_cameraPos);
-        m_skyBox.draw(m_camera, m_dirLight.m_color);
+        m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
+        m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     }
 
 
@@ -167,11 +176,11 @@ void Game::RenderLoop()
         /*glActiveTexture(GL_TEXTURE0+2);
         glBindTexture(GL_TEXTURE_2D, depthMap);*/
 
-        obj->draw(m_deltaTime, m_camera, false, currentFrame, m_dirLight, m_pointLights, lightSpaceMatrix);
+        obj->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
     
     for (const auto& obj : m_entitiesInstanced) {
-        obj->draw(m_deltaTime, m_camera, true, currentFrame, m_dirLight, m_pointLights, lightSpaceMatrix);
+        obj->draw(m_deltaTime, m_camera, true, currentFrame, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
     {
@@ -183,17 +192,17 @@ void Game::RenderLoop()
             m_camera.godMode = !m_camera.godMode;
     }
     {
-        static glm::vec3 dirLightDirection = m_dirLight.m_direction;
-        static glm::vec3 dirLightColor = m_dirLight.m_color;
+        static glm::vec3 dirLightDirection = ShadowManager::GetInstance().m_dirLight.m_direction;
+        static glm::vec3 dirLightColor = ShadowManager::GetInstance().m_dirLight.m_color;
 
         ImGui::Text("Directional Light Settings");
 
         if (ImGui::InputFloat3("Direction", glm::value_ptr(dirLightDirection))) {
-            m_dirLight.m_direction = glm::normalize(dirLightDirection);
+            ShadowManager::GetInstance().m_dirLight.m_direction = glm::normalize(dirLightDirection);
         }
 
         if (ImGui::ColorEdit3("Color", glm::value_ptr(dirLightColor))) {
-            m_dirLight.m_color = dirLightColor;
+            ShadowManager::GetInstance().m_dirLight.m_color = dirLightColor;
         }
     }
      if(1)
@@ -236,99 +245,30 @@ void Game::RenderLoop()
     
 }
 
-void Game::RenderShadowMaps(float currentFrame)
+void Game::UpdateShadowCubeMaps(float currentFrame)
 {
-    const auto lightMatrices = m_dirLight.getLightSpaceMatrices(m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV, m_camera.m_aspectRatio);
-    
-    /*for (const auto& matrix : lightMatrices) {
-        std::cout << "Matrix:\n";
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                std::cout << matrix[i][j] << " ";
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
+    /*for (int i = 0; i < m_pointLights.size(); ++i)
+    {        
+        m_pointLights[i].pointMatrixPush(shadowTransforms);
     }*/
-
-
-    
-    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-    for (size_t i = 0; i < lightMatrices.size(); ++i)
-    {
-        glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
-    }
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    
-    simpleDepthShader.use();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, m_dirLight.m_lightFBO);
-    glViewport(0, 0, m_dirLight.m_depthMapResolution, m_dirLight.m_depthMapResolution);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glCullFace(GL_FRONT);  // peter panning
-    {
-        for (const auto& obj : m_entities) {
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
-
-            obj->drawDirLight(m_deltaTime, m_camera, currentFrame, m_dirLight, simpleDepthShader);
-        }
-    }
-
-    glCullFace(GL_BACK);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
-
-void Game::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q)
-{
-    m_pointLights.push_back(lightPoint());
-    m_pointLights.back().setPointLight(pos, color, c, l, q);
-}
-
-
-
-void Game::stateCheck()
-{
-    //if()
-}
-
-void Game::initDirDepth()
-{
-    glGenBuffers(1, &matricesUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-
-    //m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-
-    simpleDepthShader = Shader("res/Shaders/Depth/CSM/dir_csm.vs", "res/Shaders/Depth/CSM/dir_csm.fs", "res/Shaders/Depth/CSM/dir_csm.gs");
-    debugCascadeShader = Shader("res/Shaders/Depth/DebugCascade/debug_cascade.vs", "res/Shaders/Depth/DebugCascade/debug_cascade.fs");
-
-    m_dirLight.configureLightFBO();
-
-}
-
 
 
 void Game::initEntities()
 {
+    m_skyBox = SkyBox("res/CubeMaps/skybox/");
+    m_terrain = new Terrain("res/Terrains/HeightMaps/heightmap1.png");
+
+
     Shader bulbShader("res/Shaders/Bulb/Bulb.vs", "res/Shaders/Bulb/Bulb.fs");
     glm::vec3 lightScale1 = glm::vec3(0.025f, 0.025f, 0.025f);
 
     glm::vec3 lightPos1 = glm::vec3(131.430f, -97.5f, 1054.057f);
-    addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     glm::vec3 lightPos2 = glm::vec3(137.385f, -97.5f, 1060.065f);
-    addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     glm::vec3 lightPos3 = glm::vec3(120.423, -97.5f, 1065.115f);
-    addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
 
     
 
@@ -337,43 +277,6 @@ void Game::initEntities()
     std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>(lightPos2, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
     std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>(lightPos3, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
 
-    m_skyBox = SkyBox("res/CubeMaps/skybox/");
-    m_terrain =  new Terrain("res/Terrains/HeightMaps/heightmap1.png");   
-
-    unsigned int amount = 500000;
-    glm::mat4* modelMatrices;
-    modelMatrices = new glm::mat4[amount];
-    srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-    float radius = 300.0;
-    float offset = 75.0f;
-    float startAngle = -20.0f;
-    float endAngle = 20.0f;
-
-    for (unsigned int i = 0; i < amount; i++)
-    {
-        glm::mat4 model = glm::mat4(1.0f);
-
-        float angle = glm::mix(startAngle, endAngle, static_cast<float>(i) / static_cast<float>(amount - 1));
-        float displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-        float x = -sin(glm::radians(angle)) * radius + displacement;
-
-        displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-        float z = -cos(glm::radians(angle)) * radius + displacement;
-        x += 490.0f;
-        z += 750.0f;
-        float y = m_terrain->getHeight(x, z) + 1.0f;
-
-
-        model = glm::translate(model, glm::vec3(x, y, z));
-
-        float scale = 0.01f;
-
-        model = glm::scale(model, glm::vec3(scale));
-
-        float rotAngle = static_cast<float>((rand() % 360));
-
-        modelMatrices[i] = model;
-    }
 
 
     Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
@@ -421,7 +324,7 @@ void Game::initEntities()
     glm::vec3 InLocation = glm::vec3(120.0f, m_terrain->getHeight(120.0f, 1105.0f) - 1.0f, 1105.0f);
     glm::vec3 InScale = glm::vec3(.25f, .25f, .25f);
     glm::vec3 soljaLocation = glm::vec3(110.0f, m_terrain->getHeight(110.0f, 947.729f) + 5.0f, 947.729f);
-    glm::vec3 soljaScale = glm::vec3(.01f, .01f, .01f);
+    glm::vec3 soljaScale = glm::vec3(0.1f, 0.1f, 0.1f);
 
     glm::vec3 boatLocation = glm::vec3(469.0f, m_terrain->getHeight(469.0f, 587.0f), 587.0f);
     glm::vec3 boatScale = glm::vec3(0.05f, 0.05f, 0.05f);
@@ -429,8 +332,14 @@ void Game::initEntities()
     glm::vec3 seaLocation = glm::vec3(503.0f, -13.0f, 655.5f);
     glm::vec3 seaScale = glm::vec3(100.0f, 10.0f, 200.0f);
 
-    //std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(lightPos1, soljaScale, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
-    std::unique_ptr<EntityM> grass = std::make_unique<EntityM>("res/textures/Grass/grass.png", a, b, grassShader, "res/Models/Grass/grass.fbx", modelMatrices, amount);
+    std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(bMoonLoc, soljaScale, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
+    std::unique_ptr<EntityM> grass = std::make_unique<EntityM>("res/textures/Grass/grass.png", a, b, grassShader, "res/Models/Grass/grass.fbx", RandomHelpers::instanceMatrixTerrain(500000,
+        300.0,
+        75.0f,
+         -20.0f,
+         20.0f,
+        m_terrain), 500000);
+
     //std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c, d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
     std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(ExLocation, b, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
     std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
@@ -441,8 +350,8 @@ void Game::initEntities()
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
 
 
-    //m_entitiesInstanced.push_back(std::move(grass));
-    //m_entities.push_back(std::move(solja));
+    m_entitiesInstanced.push_back(std::move(grass));
+    m_entities.push_back(std::move(solja));
     m_entities.push_back(std::move(Exterior));
     //m_entities.push_back(std::move(Exterior2));
     //m_entities.push_back(std::move(goodCube));
@@ -452,8 +361,8 @@ void Game::initEntities()
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
     m_entities.push_back(std::move(sea));
-    m_entities.push_back(std::move(bMoonObject));
     //m_entities.push_back(std::move(vFogObject));
+    m_entities.push_back(std::move(bMoonObject));
 
 }
 
@@ -495,7 +404,7 @@ void Game::processInput(GLFWwindow* window)
             if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && plusPress == GLFW_PRESS)
             {
                 debugLayer++;
-                if (debugLayer > m_dirLight.m_shadowCascadeLevels.size())
+                if (debugLayer > ShadowManager::GetInstance().m_dirLight.m_shadowCascadeLevels.size())
                 {
                     debugLayer = 0;
                 }
@@ -506,7 +415,7 @@ void Game::processInput(GLFWwindow* window)
             static int cPress = GLFW_RELEASE;
             if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE && cPress == GLFW_PRESS)
             {
-                lightMatricesCache = m_dirLight.getLightSpaceMatrices(m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV, m_camera.m_aspectRatio);
+                ShadowManager::GetInstance().lightMatricesCache = ShadowManager::GetInstance().m_dirLight.getLightSpaceMatrices(m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV, m_camera.m_aspectRatio);
             }
             cPress = glfwGetKey(window, GLFW_KEY_C);
 
@@ -566,7 +475,7 @@ void Game::drawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatri
 
     for (int i = 0; i < lightMatrices.size(); ++i)
     {
-        const auto corners = m_dirLight.getFrustumCornersWorldSpace(lightMatrices[i]);
+        const auto corners = ShadowManager::GetInstance().m_dirLight.getFrustumCornersWorldSpace(lightMatrices[i]);
         std::vector<glm::vec3> vec3s;
         for (const auto& v : corners)
         {
@@ -604,3 +513,8 @@ void Game::drawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatri
     visualizerVBOs.clear();
 }
 
+
+void Game::stateCheck()
+{
+    //if()
+}
