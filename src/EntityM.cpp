@@ -58,6 +58,7 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
         m_shader.setVec3("dirLight.direction", dLight.m_direction);
         m_shader.setVec3("dirLight.color", dLight.m_color);
         m_shader.setFloat("farPlane", cam.m_farPlane);
+        m_shader.setFloat("pointShadowFar", 25.0f);
         m_shader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
         for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
         {

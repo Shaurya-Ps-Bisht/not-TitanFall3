@@ -12,6 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Shader.h"
+//#include "ShadowManager.h"
+
 
 #include <string>
 #include <vector>

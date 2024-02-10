@@ -17,7 +17,7 @@ struct PointLight {
     float quadratic;
 };
 
-#define NR_POINT_LIGHTS 16
+#define NR_POINT_LIGHTS 4
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -43,7 +43,7 @@ void main()
     vec4 mainTex = texture(texture_diffuse1, TexCoords);
     vec3 final =  vec3(diffuse + ambient);
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < NR_POINT_LIGHTS; i++)
         final += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
 
     final *= mainTex.xyz;

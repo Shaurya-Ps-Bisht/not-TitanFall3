@@ -33,7 +33,7 @@ void main()
     float distance = length(pointLights[3].position  - FragPos);
     float attenuation = 1.0 / (pointLights[3].constant + pointLights[3].linear * distance + pointLights[3].quadratic * (distance * distance));
     vec3 pointColor = pointLights[3].color * attenuation;    
-    
+
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * dirLight.color;
 

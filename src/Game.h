@@ -47,7 +47,6 @@ public:
 private:
 	void GameLoop();
 	void RenderLoop();
-	void UpdateShadowCubeMaps(float currentFrame);
 
 	void initEntities();
 	void processInput(GLFWwindow* window);

@@ -24,23 +24,38 @@ public:
 	
 	void initShadows();
 	void updateShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam);
+	void updateDirShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam);
+	void updatePointShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam);
 
 	void addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q);
 
+
+public:
+	unsigned int m_depthCubemap;
 
 	std::vector<glm::mat4> shadowTransforms;
 
 	lightDir m_dirLight;
 	std::vector<lightPoint> m_pointLights;
 
-	glm::mat4 lightSpaceMatrix;
 	std::vector<glm::mat4> lightMatricesCache;
+	glm::mat4 lightSpaceMatrix;
 
 
 private:
-	Shader simpleDepthShader;
+	Shader dirDepthShader;
+	Shader pointDepthShader;
+
 	Shader debugCascadeShader;
 	unsigned int matricesUBO;
+
+	unsigned int pointDepthFBO;
+
+	int m_MaxPointLights = 4;
+	int m_MaxSpotLights = 0;
+	float far_plane = 25.0f;
+
+
 
 	
 

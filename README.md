@@ -13,12 +13,19 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 * Model Loading (gltf, obj) with animations
 * Instanced rendering
 
+## How to run
+
+* Not using make or any alternative for builds at the moment.
+* Should work on Windows 10, both release and debug mode in Visual Studio.
 
 ## To Do
 
+* Material Class
 * Depth pass for instanced objects, animtions and terrain
 * Spotlights
 * Reflection Probes
 * OIT
 * Proper material/texture access in model class
 * learn Direct State Access
+
+# God bless RenderDOc
