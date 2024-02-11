@@ -47,6 +47,8 @@ public:
     auto& GetBoneInfoMap() { return m_BoneInfoMap; }
     int& GetBoneCount() { return m_BoneCounter; }
 
+    void loadTexturesInfo();
+
 private:
     // model data
     vector<Mesh> meshes;

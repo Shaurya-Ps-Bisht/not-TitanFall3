@@ -50,6 +50,16 @@ void Model::DrawInstanced(Shader& shader)
         meshes[i].DrawInstanced(shader);
 }
 
+void Model::loadTexturesInfo()
+{
+    for (const auto& mesh : meshes) {
+        for (const auto& texture : mesh.textures) {
+            cout << "Texture ID: " << texture.id << ", Type: " << texture.type << ", Path: " << texture.path << endl;
+        }
+    }
+
+}
+
 void Model::SetVertexBoneDataToDefault(VertexStruct& vertex)
 {
     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
@@ -247,17 +257,30 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    vector<TextureStruct> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    std::vector<TextureStruct> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    vector<TextureStruct> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    std::vector<TextureStruct> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    std::vector<TextureStruct> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+    std::vector<TextureStruct> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    std::vector<TextureStruct> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    /*std::vector<TextureStruct> heightMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height");
+    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());*/
+    // 5. metallic map
+    std::vector<TextureStruct> metallicMaps = loadMaterialTextures(material, aiTextureType_METALNESS, "texture_metallic");
+    textures.insert(textures.end(), metallicMaps.begin(), metallicMaps.end());
+    // 6. roughness map
+    std::vector<TextureStruct> roughnessMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
+    textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+    // 7. ambient occlusion map
+    std::vector<TextureStruct> aoMaps = loadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "texture_ao");
+    textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
+    // 8. emission map
+    std::vector<TextureStruct> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emission");
+    textures.insert(textures.end(), emissionMaps.begin(), emissionMaps.end());
+
 
     ExtractBoneWeightForVertices(vertices, mesh, scene);
 

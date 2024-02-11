@@ -21,7 +21,9 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 ## To Do
 
 * Material Class
-* Depth pass for instanced objects, animtions and terrain
+* MetallicRoughness combined in gltf improvement
+* Depth pass for instanced objects, animations and terrain
+* Point light shadows performance(Bounding Volume and non-moving objects)
 * Spotlights
 * Reflection Probes
 * OIT

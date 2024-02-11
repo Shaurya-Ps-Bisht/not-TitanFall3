@@ -166,10 +166,10 @@ void Game::RenderLoop()
         m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
         m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     }
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
 
-    glActiveTexture(GL_TEXTURE3);
+    glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, ShadowManager::GetInstance().m_depthCubemap);
 
     for (const auto& obj : m_entities) {
@@ -224,14 +224,14 @@ void Game::RenderLoop()
 
         ImGui::SliderFloat4("_SunDir", glm::value_ptr(_SunDir), -1.0f, 1.0f);
 
-        m_entities[7]->m_shader.use();
-        m_entities[7]->m_shader.setFloat("_Scale", _Scale);
-        m_entities[7]->m_shader.setFloat("_StepScale", _StepScale);
-        m_entities[7]->m_shader.setFloat("_Steps", _Steps);
-        m_entities[7]->m_shader.setFloat("_MinHeight", _MinHeight);
-        m_entities[7]->m_shader.setFloat("_MaxHeight", _MaxHeight);
-        m_entities[7]->m_shader.setFloat("_FadeDistance", _FadeDistance);
-        m_entities[7]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
+        m_entities[8]->m_shader.use();
+        m_entities[8]->m_shader.setFloat("_Scale", _Scale);
+        m_entities[8]->m_shader.setFloat("_StepScale", _StepScale);
+        m_entities[8]->m_shader.setFloat("_Steps", _Steps);
+        m_entities[8]->m_shader.setFloat("_MinHeight", _MinHeight);
+        m_entities[8]->m_shader.setFloat("_MaxHeight", _MaxHeight);
+        m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
+        m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
     }
 
     {
@@ -264,7 +264,7 @@ void Game::initEntities()
     ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
 
 
 
@@ -278,6 +278,7 @@ void Game::initEntities()
 
 
     Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
+    Shader pbrShader("res/Shaders/Standard/PBR/PBR.vs", "res/Shaders/Standard/PBR/PBR.fs");
     Shader grassShader("res/Shaders/Grass/Grass.vs", "res/Shaders/Grass/Grass.fs");
     Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
     Shader seaShader("res/Shaders/Sea/sea.vs", "res/Shaders/Sea/sea.fs");
@@ -286,9 +287,12 @@ void Game::initEntities()
 
 
     unlitShader.use();
-    unlitShader.setInt("texture_diffuse1", 0);
-    unlitShader.setInt("shadowMap", 2);
-    unlitShader.setInt("pointShadowMap", 3);
+    unlitShader.setInt("shadowMap", 11);
+    unlitShader.setInt("pointShadowMap", 12);
+
+    pbrShader.use();
+    pbrShader.setInt("shadowMap", 11);
+    pbrShader.setInt("pointShadowMap", 12);
 
     vFog.use();
     vFog.setFloat("_Scale", 2.41);
@@ -331,7 +335,7 @@ void Game::initEntities()
     glm::vec3 seaLocation = glm::vec3(503.0f, -13.0f, 655.5f);
     glm::vec3 seaScale = glm::vec3(100.0f, 10.0f, 200.0f);
 
-    std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader, "res/Models/Player/Final/player.gltf", "Idle");
+    std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, unlitShader, "res/Models/Player/Final/player.gltf", "Idle");
     std::unique_ptr<EntityM> grass = std::make_unique<EntityM>("res/textures/Grass/grass.png", a, b, grassShader, "res/Models/Grass/grass.fbx", RandomHelpers::instanceMatrixTerrain(500000,
         300.0,
         75.0f,
@@ -342,7 +346,8 @@ void Game::initEntities()
     //std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c, d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
     std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(ExLocation, b, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
     std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
-    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>(InLocation, InScale, unlitShader, "res/Models/House/StarWarsClone/untitled.gltf");
+    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>(InLocation, InScale, pbrShader, "res/Models/House/StarWarsClone/untitled.gltf");
+    Interior->m_model.loadTexturesInfo();
     std::unique_ptr<EntityM> Boat = std::make_unique<EntityM>(boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
     std::unique_ptr<EntityM> sea = std::make_unique<EntityM>(seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
     std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), vFog, "CUBE");
@@ -360,7 +365,7 @@ void Game::initEntities()
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
     m_entities.push_back(std::move(sea));
-    //m_entities.push_back(std::move(vFogObject));
+    m_entities.push_back(std::move(vFogObject));
     m_entities.push_back(std::move(bMoonObject));
 
 }

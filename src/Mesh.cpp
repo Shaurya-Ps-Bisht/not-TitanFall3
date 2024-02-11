@@ -13,30 +13,48 @@ Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<T
 
 void Mesh::Draw(Shader& shader)
 {
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
-    for (unsigned int i = 0; i < textures.size(); i++)
-    {
-        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding //WARNING WARNING texture binding +i here
-        // retrieve texture number (the N in diffuse_textureN)
-        string number;
-        string name = textures[i].type;
-        if (name == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
-            number = std::to_string(specularNr++); // transfer unsigned int to string
-        else if (name == "texture_normal")
-            number = std::to_string(normalNr++); // transfer unsigned int to string
-        else if (name == "texture_height")
-            number = std::to_string(heightNr++); // transfer unsigned int to string
+    std::unordered_map<std::string, unsigned int> textureNrs = {
+        {"texture_diffuse", 1},
+        {"texture_specular", 1},
+        {"texture_normal", 1},
+        {"texture_height", 1},
+        {"texture_emission", 1},
+        {"texture_metallic", 1},
+        {"texture_roughness", 1},
+        {"texture_ao", 1}
+    };
 
-        // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(shader.m_ID, (name + number).c_str()), i);
-        // and finally bind the texture
+    int j = 0;
+    for (unsigned int i = 0; i < textures.size(); i++) {
+        const std::string& name = textures[i].type;
+
+        // Handle special cases:
+        if (name == "texture_metallic" && textureNrs["texture_metallic"] == 2) {
+            continue;  // Skip if already bound as combined texture
+        }
+
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        // Generate texture number string:
+        std::string number = std::to_string(textureNrs[name]++);
+
+        // Set shader uniform and bind texture:
+        shader.setInt((name + number).c_str(), i);
+        j++;
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
+    for (const auto& [name, nr] : textureNrs) {
+        if (nr == 1) { // Texture was not bound
+            std::string number = std::to_string(nr);
+            shader.setInt((name + number).c_str(), j);
+            //glBindTexture(GL_TEXTURE_2D, textures[i].id); // Assuming textures are still accessible
+            j++;
+        }
+    }
+
+
+    // Set special texture bindings:
+    shader.setBool("combinedMetalRough", textureNrs["texture_metallic"] == 2);
 
     // draw mesh
     glBindVertexArray(VAO);

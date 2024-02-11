@@ -105,7 +105,6 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
     {
         m_pointLights[i].pointMatrixPush(shadowTransforms);
     }
-    
 
     glViewport(0, 0, 1024, 1024);
     glBindFramebuffer(GL_FRAMEBUFFER, pointDepthFBO);
@@ -143,6 +142,8 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
 
     glViewport(0, 0, Renderer::GetInstance().SCR_WIDTH, Renderer::GetInstance().SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    shadowTransforms.clear();
 
 }
 

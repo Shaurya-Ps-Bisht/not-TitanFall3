@@ -61,7 +61,7 @@ public:
 
 private:
 
-	int level = 1;
+	int level = 0;
 
 	
 	bool playerRuning = false;

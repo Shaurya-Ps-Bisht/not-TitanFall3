@@ -34,6 +34,7 @@ uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_normal1;
 uniform sampler2DArray shadowMap;
 uniform samplerCubeArray pointShadowMap;
 
@@ -86,7 +87,7 @@ void main()
         final += CalcPointLight(pointLights[i], norm, fs_in.FragPos, viewDir, i);
     }
 
-    final *= mainTex.xyz;
+    final = mainTex.xyz;
 
     FragColor = vec4(final,1);
     // FragColor = vec4(vec3(shadow), 1.0);;

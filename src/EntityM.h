@@ -28,9 +28,9 @@ public:
     void nice() {
         std::cout << "sad";
     }
+    Model m_model;
 
 private:
-    Model m_model;
     Animation m_animation;
     Animator m_animator; 
 
