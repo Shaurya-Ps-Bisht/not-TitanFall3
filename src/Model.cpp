@@ -52,10 +52,18 @@ void Model::DrawInstanced(Shader& shader)
 
 void Model::loadTexturesInfo()
 {
+    int i = 0;
     for (const auto& mesh : meshes) {
+        int j = 0;
         for (const auto& texture : mesh.textures) {
+            
             cout << "Texture ID: " << texture.id << ", Type: " << texture.type << ", Path: " << texture.path << endl;
+            cout << i << " "<< j << endl;
+
+
+            j++;
         }
+        i++;
     }
 
 }
@@ -275,7 +283,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<TextureStruct> roughnessMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
     textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
     // 7. ambient occlusion map
-    std::vector<TextureStruct> aoMaps = loadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "texture_ao");
+    std::vector<TextureStruct> aoMaps = loadMaterialTextures(material, aiTextureType_LIGHTMAP, "texture_ao");
     textures.insert(textures.end(), aoMaps.begin(), aoMaps.end());
     // 8. emission map
     std::vector<TextureStruct> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emission");

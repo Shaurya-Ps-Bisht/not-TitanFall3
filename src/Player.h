@@ -10,6 +10,7 @@
 #include "Animator.h"
 #include "lightDir.h"
 #include "lightPoint.h"
+#include "ShadowManager.h"
 
 #include "Camera.h"
 

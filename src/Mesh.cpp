@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "ShadowManager.h" // IS THIS BAD ? circular dependency?
 
 Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures)
 {
@@ -29,7 +30,7 @@ void Mesh::Draw(Shader& shader)
         const std::string& name = textures[i].type;
 
         // Handle special cases:
-        if (name == "texture_metallic" && textureNrs["texture_metallic"] == 2) {
+        if (name == "texture_metallic" && textureNrs["texture_metallic"] > 1) {
             continue;  // Skip if already bound as combined texture
         }
 
@@ -54,7 +55,16 @@ void Mesh::Draw(Shader& shader)
 
 
     // Set special texture bindings:
-    shader.setBool("combinedMetalRough", textureNrs["texture_metallic"] == 2);
+    shader.setBool("combinedMetalRough", textureNrs["texture_metallic"] > 1);
+
+
+    shader.setInt("shadowMap", 11);
+    glActiveTexture(GL_TEXTURE11);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+
+    shader.setInt("pointShadowMap", 12);
+    glActiveTexture(GL_TEXTURE12);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, ShadowManager::GetInstance().m_depthCubemap);
 
     // draw mesh
     glBindVertexArray(VAO);
@@ -94,6 +104,9 @@ void Mesh::DrawInstanced(Shader& shader)
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
+    shader.setInt("shadowMap", 11);
+    glActiveTexture(GL_TEXTURE11);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
     // draw mesh
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceAmount);

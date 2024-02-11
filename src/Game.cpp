@@ -63,10 +63,9 @@ void Game::Run()
 {
     ShadowManager::GetInstance().initShadows();
     initEntities();
-    /*debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
+    debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
     debugDepthQuad.use();
-    debugDepthQuad.setInt("shadowMap", 2);*/
-
+    debugDepthQuad.setInt("shadowMap", 2);
     GameLoop();
 }
 
@@ -135,13 +134,13 @@ void Game::GameLoop()
 
         }
 
-        //debugDepthQuad.use();
-        //debugDepthQuad.setInt("layer", debugLayer);
+        debugDepthQuad.use();
+        debugDepthQuad.setInt("layer", debugLayer);
 
-        ////glActiveTexture(GL_TEXTURE2);
-        //glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
 
-        //renderQuad();
+        renderQuad();
 
 
 
@@ -166,11 +165,7 @@ void Game::RenderLoop()
         m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
         m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     }
-    glActiveTexture(GL_TEXTURE11);
-    glBindTexture(GL_TEXTURE_2D, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
-
-    glActiveTexture(GL_TEXTURE12);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, ShadowManager::GetInstance().m_depthCubemap);
+    
 
     for (const auto& obj : m_entities) {
         /*glActiveTexture(GL_TEXTURE0+2);
@@ -224,14 +219,14 @@ void Game::RenderLoop()
 
         ImGui::SliderFloat4("_SunDir", glm::value_ptr(_SunDir), -1.0f, 1.0f);
 
-        m_entities[8]->m_shader.use();
-        m_entities[8]->m_shader.setFloat("_Scale", _Scale);
-        m_entities[8]->m_shader.setFloat("_StepScale", _StepScale);
-        m_entities[8]->m_shader.setFloat("_Steps", _Steps);
-        m_entities[8]->m_shader.setFloat("_MinHeight", _MinHeight);
-        m_entities[8]->m_shader.setFloat("_MaxHeight", _MaxHeight);
-        m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
-        m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
+        //m_entities[8]->m_shader.use();
+        //m_entities[8]->m_shader.setFloat("_Scale", _Scale);
+        //m_entities[8]->m_shader.setFloat("_StepScale", _StepScale);
+        //m_entities[8]->m_shader.setFloat("_Steps", _Steps);
+        //m_entities[8]->m_shader.setFloat("_MinHeight", _MinHeight);
+        //m_entities[8]->m_shader.setFloat("_MaxHeight", _MaxHeight);
+        //m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
+        //m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
     }
 
     {
@@ -252,6 +247,8 @@ void Game::initEntities()
 {
     m_skyBox = SkyBox("res/CubeMaps/skybox/");
     m_terrain = new Terrain("res/Terrains/HeightMaps/heightmap1.png");
+    //glm::vec3 bMoonLoc = (glm::vec3(407.3f, m_terrain->getHeight(407.3f, 365.6f) + 20.0f, 365.6f));
+    glm::vec3 bMoonLoc = (glm::vec3(408.721f, 10.807 , 432.944f));
 
 
     Shader bulbShader("res/Shaders/Bulb/Bulb.vs", "res/Shaders/Bulb/Bulb.fs");
@@ -261,11 +258,11 @@ void Game::initEntities()
     glm::vec3 lightPos2 = glm::vec3(126.256f, -100.8f, 1106.325f);
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
+
     ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    //ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-
 
 
     
@@ -273,14 +270,14 @@ void Game::initEntities()
 
     std::unique_ptr<EntityV> lightBulb1 = std::make_unique<EntityV>(lightPos1, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
     std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>(lightPos2, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>(lightPos3, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
+    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>(lightPos4, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
 
 
 
     Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
     Shader pbrShader("res/Shaders/Standard/PBR/PBR.vs", "res/Shaders/Standard/PBR/PBR.fs");
     Shader grassShader("res/Shaders/Grass/Grass.vs", "res/Shaders/Grass/Grass.fs");
-    Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
+    Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletalPBR.fs");
     Shader seaShader("res/Shaders/Sea/sea.vs", "res/Shaders/Sea/sea.fs");
     Shader bMoon("res/Shaders/Bulb/bMoon/bMoon.vs", "res/Shaders/Bulb/bMoon/bMoon.fs");
     Shader vFog("res/Shaders/VolumetricFog/VolumetricFog.vs", "res/Shaders/VolumetricFog/VolumetricFog.fs");
@@ -290,9 +287,13 @@ void Game::initEntities()
     unlitShader.setInt("shadowMap", 11);
     unlitShader.setInt("pointShadowMap", 12);
 
-    pbrShader.use();
+    /*pbrShader.use();
     pbrShader.setInt("shadowMap", 11);
     pbrShader.setInt("pointShadowMap", 12);
+
+    ourShader.use();
+    ourShader.setInt("shadowMap", 11);
+    ourShader.setInt("pointShadowMap", 12);*/
 
     vFog.use();
     vFog.setFloat("_Scale", 2.41);
@@ -304,7 +305,6 @@ void Game::initEntities()
     vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));
 
 
-    glm::vec3 bMoonLoc = (glm::vec3(407.3f, m_terrain->getHeight(407.3f, 365.6f) + 20.0f, 365.6f));
     glm::vec3 bMoonScale = glm::vec3(3.0f, 3.0f, 3.0f);
 
     glm::vec3 vFogLoc = (glm::vec3(407.3f, 407.3f, 365.6f));
@@ -326,8 +326,12 @@ void Game::initEntities()
 
     glm::vec3 InLocation = glm::vec3(120.0f, m_terrain->getHeight(120.0f, 1105.0f) - 1.0f, 1105.0f);
     glm::vec3 InScale = glm::vec3(1.f, 1.f, 1.0f);
+    glm::vec3 soljaLocation1 = glm::vec3(127.387f, -100.8f, 1104.9f);
     glm::vec3 soljaLocation = glm::vec3(127.387f, -102.8f, 1104.9f);
+
+    glm::vec3 soljaScale1 = glm::vec3(0.001f, 0.001f, 0.001f);
     glm::vec3 soljaScale = glm::vec3(0.01f, 0.01f, 0.01f);
+
 
     glm::vec3 boatLocation = glm::vec3(469.0f, m_terrain->getHeight(469.0f, 587.0f), 587.0f);
     glm::vec3 boatScale = glm::vec3(0.05f, 0.05f, 0.05f);
@@ -335,7 +339,10 @@ void Game::initEntities()
     glm::vec3 seaLocation = glm::vec3(503.0f, -13.0f, 655.5f);
     glm::vec3 seaScale = glm::vec3(100.0f, 10.0f, 200.0f);
 
-    std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, unlitShader, "res/Models/Player/Final/player.gltf", "Idle");
+    std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(bMoonLoc, soljaScale, ourShader, "res/Models/Player/Final/Player.gltf", "Idle");
+    solja->m_model.loadTexturesInfo();
+    std::unique_ptr<EntityM> backpack = std::make_unique<EntityM>(soljaLocation1, soljaScale1, unlitShader, "res/Models/Backpack/Survival_BackPack_2.fbx");
+    //backpack->m_model.loadTexturesInfo();
     std::unique_ptr<EntityM> grass = std::make_unique<EntityM>("res/textures/Grass/grass.png", a, b, grassShader, "res/Models/Grass/grass.fbx", RandomHelpers::instanceMatrixTerrain(500000,
         300.0,
         75.0f,
@@ -344,17 +351,17 @@ void Game::initEntities()
         m_terrain), 500000);
 
     //std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c, d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
-    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(ExLocation, b, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
+    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(ExLocation, b, pbrShader, "res/Models/House/Exterior/Exterior.gltf");
     std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
     std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>(InLocation, InScale, pbrShader, "res/Models/House/StarWarsClone/untitled.gltf");
-    Interior->m_model.loadTexturesInfo();
     std::unique_ptr<EntityM> Boat = std::make_unique<EntityM>(boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
     std::unique_ptr<EntityM> sea = std::make_unique<EntityM>(seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
     std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), vFog, "CUBE");
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
 
 
-    //m_entitiesInstanced.push_back(std::move(grass));
+    m_entitiesInstanced.push_back(std::move(grass));
+    //m_entities.push_back(std::move(backpack));
     m_entities.push_back(std::move(solja));
     m_entities.push_back(std::move(Exterior));
     //m_entities.push_back(std::move(Exterior2));
@@ -365,8 +372,8 @@ void Game::initEntities()
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
     m_entities.push_back(std::move(sea));
-    m_entities.push_back(std::move(vFogObject));
-    m_entities.push_back(std::move(bMoonObject));
+    //m_entities.push_back(std::move(vFogObject));
+    //m_entities.push_back(std::move(bMoonObject));
 
 }
 

@@ -17,11 +17,20 @@ void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint
         m_playerShader.use();
         m_playerShader.setMat4("projection", projection);
         m_playerShader.setMat4("view", view);
+        m_playerShader.setFloat("farPlane", cam.m_farPlane);
+        m_playerShader.setFloat("pointShadowFar", 25.0f);
 
         //Lighting setup
         m_playerShader.setVec3("viewPos", cam.m_cameraPos);
         m_playerShader.setVec3("dirLight.direction", dLight.m_direction);
         m_playerShader.setVec3("dirLight.color", dLight.m_color);
+
+        m_playerShader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
+        for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
+        {
+            m_playerShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
+        }
+
 
         for (int i = 0; i < lightPoints.size(); ++i)
         {
@@ -50,6 +59,15 @@ void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint
 
 
         m_playerShader.setMat4("model", model);
+
+        /*m_playerShader.setInt("shadowMap", 11);
+        glActiveTexture(GL_TEXTURE11);
+        glBindTexture(GL_TEXTURE_2D, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+
+        m_playerShader.setInt("pointShadowMap", 12);
+        glActiveTexture(GL_TEXTURE12);
+        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, ShadowManager::GetInstance().m_depthCubemap);*/
+
         m_playerModel.Draw(m_playerShader);
     }
 
@@ -79,15 +97,15 @@ void Player::InitPlayer()
 
 void Player::SetPlayerAnimations()
 {
-    m_animations = Animation(("res/Models/Player/Final/player.gltf"), &m_playerModel, "Idle");
+    m_animations = Animation(("res/Models/Player/Final/Player.gltf"), &m_playerModel, "Idle"); //UPDATE THIS SOON
     m_animator = Animator(&m_animations);
 
 }
 
 void Player::SetPlayerModel()
 {
-    m_playerShader = Shader("res/Shaders/skeletal.vs", "res/Shaders/skeletal.fs");
-    m_playerModel = Model("res/Models/Player/Final/player.gltf");
+    m_playerShader = Shader("res/Shaders/skeletal.vs", "res/Shaders/skeletalPBR.fs");
+    m_playerModel = Model("res/Models/Player/Final/Player.gltf");
 
 }
 
