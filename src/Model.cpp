@@ -1,12 +1,16 @@
+#include <cfloat>
+
 #include "Model.h"
 #include "assimp_glm_helper.h"
-Model::Model(const char* path)
+Model::Model(const char* path, bool skeletal)
 {
+    skeletalAnim = skeletal;
     loadModel(path);
 }
 
-Model::Model(const char* path, glm::mat4* modelMatrices, unsigned int amount)
+Model::Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool skeletal)
 {
+    skeletalAnim = skeletal;
     loadModel(path);
     unsigned int buffer;
     glGenBuffers(1, &buffer);
@@ -120,6 +124,7 @@ void Model::ExtractBoneWeightForVertices(std::vector<VertexStruct>& vertices, ai
         {
             int vertexId = weights[weightIndex].mVertexId;
             float weight = weights[weightIndex].mWeight;
+            if (weight == 0) { weight = FLT_EPSILON; }
             assert(vertexId <= vertices.size());
             SetVertexBoneData(vertices[vertexId], boneID, weight);
         }
@@ -155,6 +160,7 @@ void Model::loadModel(string path)
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTransformation, bool a)
+//THIS IS SO BAD
 {
     glm::mat4 transformation = assimp_glm_helper::AiMatrix4x4ToGlm(&node->mTransformation);
     glm::mat4 globalTransformation =  parentTransformation * transformation;
@@ -164,7 +170,8 @@ void Model::processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTran
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh neroMesh = processMesh(mesh, scene);
-        neroMesh.SetTransformationMatrix(globalTransformation);
+        if(!skeletalAnim)
+            neroMesh.SetTransformationMatrix(globalTransformation);
         meshes.push_back(neroMesh);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -344,6 +351,8 @@ unsigned int Model::TextureFromFile(const char* path, const string& directory)
         GLenum format;
         if (nrComponents == 1)
             format = GL_RED;
+        else if (nrComponents == 2)
+            format = GL_RG;
         else if (nrComponents == 3)
             format = GL_RGB;
         else if (nrComponents == 4)

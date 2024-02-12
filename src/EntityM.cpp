@@ -4,7 +4,7 @@ EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
     : Entity(initialPosition,
         initialScale,
         initialShader),
-    m_model(modelPath),
+    m_model(modelPath, false),
     hasAnimation(false)
      {}
 
@@ -12,7 +12,7 @@ EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
     : Entity(initialPosition,
         initialScale,
         initialShader),
-    m_model(modelPath),
+    m_model(modelPath, true),
     m_animation(modelPath, &m_model, animationName),
     m_animator(&m_animation),
     hasAnimation(true){}
@@ -21,7 +21,7 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
     : Entity(initialPosition,
         initialScale,
         initialShader),
-    m_model(modelPath),
+    m_model(modelPath, false),
     m_animation(),
     m_animator(),
     hasAnimation(false),
@@ -32,7 +32,7 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
     : Entity(initialPosition,
         initialScale,
         initialShader),
-    m_model(modelPath, modelMatrices, amount),
+    m_model(modelPath, modelMatrices, amount, false),
     m_animation(),
     m_animator(),
     hasAnimation(false),

@@ -37,8 +37,8 @@ public:
     bool gammaCorrection;
 
 
-    Model(const char* path);
-    Model(const char* path, glm::mat4* modelMatrices, unsigned int amount);
+    Model(const char* path, bool skeletal);
+    Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool skeletal);
     Model() {};
     void Draw(Shader& shader);
     void DrawInstanced(Shader& shader);
@@ -46,6 +46,8 @@ public:
 public:
     auto& GetBoneInfoMap() { return m_BoneInfoMap; }
     int& GetBoneCount() { return m_BoneCounter; }
+
+    bool skeletalAnim = false;
 
     void loadTexturesInfo();
 
@@ -56,6 +58,7 @@ private:
     glm::vec3 m_position, m_axis, m_scale;
     float  m_angle;
     bool hasBeenBinded = false;
+
 
     std::map<string, BoneInfo> m_BoneInfoMap; 
     int m_BoneCounter = 0;

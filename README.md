@@ -2,6 +2,10 @@
 
 Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in C++. 
 
+[Demo Video](https://drive.google.com/drive/folders/1S937oZShlE9I39EH9XH1TvmUX2pzqE3o)
+ 
+![Alt text](res/Screenshots/1.png)
+
 ## Features
 
 * Physically based shading
@@ -20,6 +24,7 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 
 ## To Do
 
+* resolve model loading missing weights and size difference (animated vs still)
 * Material Class
 * MetallicRoughness combined in gltf improvement
 * Depth pass for instanced objects, animations and terrain

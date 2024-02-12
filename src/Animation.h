@@ -35,10 +35,8 @@ public:
 		auto animation = scene->mAnimations[0];
 
 		for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
-			std::cout << i << std::endl;
 			if (std::strcmp(scene->mAnimations[i]->mName.C_Str(), targetAnimationName.c_str()) == 0)
 			{
-
 				animation = scene->mAnimations[i];
 				std::cout << "Found animation with name: " << animation->mName.C_Str() << std::endl;
 				break;

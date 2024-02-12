@@ -105,7 +105,7 @@ void Player::SetPlayerAnimations()
 void Player::SetPlayerModel()
 {
     m_playerShader = Shader("res/Shaders/skeletal.vs", "res/Shaders/skeletalPBR.fs");
-    m_playerModel = Model("res/Models/Player/Final/Player.gltf");
+    m_playerModel = Model("res/Models/Player/Final/Player.gltf", true);
 
 }
 
