@@ -2,7 +2,7 @@
 
 Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in C++. 
 
-[Demo Video](https://drive.google.com/drive/folders/1S937oZShlE9I39EH9XH1TvmUX2pzqE3o)
+[Demo Video](https://youtu.be/W88HXR9QiLM)
  
 ![Alt text](res/Screenshots/1.png)
 
