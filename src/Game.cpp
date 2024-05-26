@@ -3,6 +3,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    __declspec(dllexport) DWORD NvOptimusEnablement = 1;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+
+#ifdef __cplusplus
+}
+#endif
 
 //namespace
 //{
@@ -94,26 +104,26 @@ void Game::GameLoop()
 
 
         //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
-        if (level == 1) {
-            ShadowManager::GetInstance().m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-            if (
-                //m_camera.m_cameraPos.x <= 116.0f
-                1) {
-                level = 2;
-                m_camera.setCameraSpeed(200.0f);
-                
-                lev1timeChange = currentFrame;
-            }
-        }
-        else if (level == 2)
-        {
-            m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
-            if (currentFrame - lev1timeChange > 0.0f)
-            {
-                //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
-                level = 3;
-            }
-        }
+        //if (level == 1) {
+        //    ShadowManager::GetInstance().m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        //    if (
+        //        //m_camera.m_cameraPos.x <= 116.0f
+        //        1) {
+        //        level = 2;
+        //        m_camera.setCameraSpeed(200.0f);
+        //        
+        //        lev1timeChange = currentFrame;
+        //    }
+        //}
+        //else if (level == 2)
+        //{
+        //    m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
+        //    if (currentFrame - lev1timeChange > 0.0f)
+        //    {
+        //        //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
+        //        level = 3;
+        //    }
+        //}
 
         if (level != 2)
         {
@@ -160,12 +170,12 @@ void Game::RenderLoop()
     float currentFrame = static_cast<float>(glfwGetTime());
     Player::GetInstance().Draw(m_deltaTime, m_camera, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights);
 
-    if (level == 3 || level == 4 || level == 5)
-    {
-        m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
-        m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
-    }
-    
+    //if (level == 3 || level == 4 || level == 5)
+    //{
+    //    m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
+    //    m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+    //}
+    //
 
     for (const auto& obj : m_entities) {
         /*glActiveTexture(GL_TEXTURE0+2);

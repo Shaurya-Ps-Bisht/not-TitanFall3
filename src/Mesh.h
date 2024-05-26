@@ -69,6 +69,16 @@ private:
 private:
     // render data 
     unsigned int VBO, EBO;
+    std::unordered_map<std::string, unsigned int> textureNrs = {
+        {"texture_diffuse", 1},
+        {"texture_specular", 1},
+        {"texture_normal", 1},
+        {"texture_height", 1},
+        {"texture_emission", 1},
+        {"texture_metallic", 1},
+        {"texture_roughness", 1},
+        {"texture_ao", 1}
+    };
 
     // initializes all the buffer objects/arrays
     void setupMesh();

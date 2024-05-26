@@ -2,15 +2,15 @@
 
 #include "Model.h"
 #include "assimp_glm_helper.h"
-Model::Model(const char* path, bool skeletal)
+Model::Model(const char* path, bool isSkeletal)
 {
-    skeletalAnim = skeletal;
+    skeletalAnim = isSkeletal;
     loadModel(path);
 }
 
-Model::Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool skeletal)
+Model::Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool isSkeletal)
 {
-    skeletalAnim = skeletal;
+    skeletalAnim = isSkeletal;
     loadModel(path);
     unsigned int buffer;
     glGenBuffers(1, &buffer);
@@ -63,8 +63,6 @@ void Model::loadTexturesInfo()
             
             cout << "Texture ID: " << texture.id << ", Type: " << texture.type << ", Path: " << texture.path << endl;
             cout << i << " "<< j << endl;
-
-
             j++;
         }
         i++;

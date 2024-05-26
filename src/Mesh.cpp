@@ -14,16 +14,7 @@ Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<T
 
 void Mesh::Draw(Shader& shader)
 {
-    std::unordered_map<std::string, unsigned int> textureNrs = {
-        {"texture_diffuse", 1},
-        {"texture_specular", 1},
-        {"texture_normal", 1},
-        {"texture_height", 1},
-        {"texture_emission", 1},
-        {"texture_metallic", 1},
-        {"texture_roughness", 1},
-        {"texture_ao", 1}
-    };
+    
 
     int j = 0;
     for (unsigned int i = 0; i < textures.size(); i++) {

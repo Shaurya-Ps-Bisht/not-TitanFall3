@@ -27,6 +27,7 @@ void Renderer::SetWindowProp(int width, int height)
 
 int Renderer::InitGlfwOGL()
 {
+
     // glfw: initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

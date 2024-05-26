@@ -54,11 +54,7 @@ private:
 	int m_MaxPointLights = 4;
 	int m_MaxSpotLights = 0;
 	float far_plane = 25.0f;
-
-
-
 	
-
 };
 
 #endif

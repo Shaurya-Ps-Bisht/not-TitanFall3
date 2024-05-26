@@ -37,8 +37,8 @@ public:
     bool gammaCorrection;
 
 
-    Model(const char* path, bool skeletal);
-    Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool skeletal);
+    Model(const char* path, bool isSkeletal);
+    Model(const char* path, glm::mat4* modelMatrices, unsigned int amount, bool isSkeletal);
     Model() {};
     void Draw(Shader& shader);
     void DrawInstanced(Shader& shader);

@@ -41,8 +41,8 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
 
 void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
 {
-    if(hasAnimation)
-        m_animator.UpdateAnimation(deltaTime);
+    //if(hasAnimation)
+    //    m_animator.UpdateAnimation(deltaTime);
 
     glm::mat4 projection = cam.GetProjectionMatrix();
     glm::mat4 view = cam.GetViewMatrix();
@@ -126,8 +126,8 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 
 void EntityM::drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
 {
-    if (hasAnimation)
-        m_animator.UpdateAnimation(deltaTime);
+    /*if (hasAnimation)
+        m_animator.UpdateAnimation(deltaTime);*/
 
     {
         shader.use();
@@ -138,12 +138,12 @@ void EntityM::drawDirLight(float deltaTime, bool instanced, Camera& cam, float e
         
 
 
-        if (hasAnimation)
+        /*if (hasAnimation)
         {
             auto transforms = m_animator.GetFinalBoneMatrices();
             for (int i = 0; i < transforms.size(); ++i)
                 shader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-        }
+        }*/
 
 
 

@@ -56,7 +56,7 @@ void ShadowManager::initShadows()
 void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam)
 {
     updateDirShadows(deltaTime, currentFrame, entities, cam);
-    updatePointShadows(deltaTime, currentFrame, entities, cam);
+    //updatePointShadows(deltaTime, currentFrame, entities, cam);
     
 }
 
