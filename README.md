@@ -35,4 +35,4 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 * Proper material/texture access in model class
 * learn Direct State Access
 
-# God bless RenderDOc
+# God bless RenderDoc

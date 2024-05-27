@@ -8,7 +8,7 @@ Player::~Player()
 void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint>& lightPoints)
 {
     
-    //m_animator.UpdateAnimation(dt);
+    m_animator.UpdateAnimation(dt);
 
     glm::mat4 projection = cam.GetProjectionMatrix();
     glm::mat4 view = cam.GetViewMatrix();
@@ -26,29 +26,29 @@ void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint
         m_playerShader.setVec3("dirLight.color", dLight.m_color);
 
         m_playerShader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
-        //for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
-        //{
-        //    m_playerShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
-        //}
+        for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
+        {
+            m_playerShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
+        }
 
 
-        //for (int i = 0; i < lightPoints.size(); ++i)
-        //{
-        //    std::string indexStr = std::to_string(i);
+        for (int i = 0; i < lightPoints.size(); ++i)
+        {
+            std::string indexStr = std::to_string(i);
 
-        //    m_playerShader.setVec3("pointLights[" + indexStr + "].position", lightPoints[i].m_pos);
-        //    m_playerShader.setVec3("pointLights[" + indexStr + "].color", lightPoints[i].m_color);
-        //    m_playerShader.setFloat("pointLights[" + indexStr + "].constant", lightPoints[i].constant);
-        //    m_playerShader.setFloat("pointLights[" + indexStr + "].linear", lightPoints[i].linear);
-        //    m_playerShader.setFloat("pointLights[" + indexStr + "].quadratic", lightPoints[i].quadratic);
+            m_playerShader.setVec3("pointLights[" + indexStr + "].position", lightPoints[i].m_pos);
+            m_playerShader.setVec3("pointLights[" + indexStr + "].color", lightPoints[i].m_color);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].constant", lightPoints[i].constant);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].linear", lightPoints[i].linear);
+            m_playerShader.setFloat("pointLights[" + indexStr + "].quadratic", lightPoints[i].quadratic);
 
-        //    //std::cout << "SAD" << lightPoints[i].linear << std::endl;
-        //}
+            //std::cout << "SAD" << lightPoints[i].linear << std::endl;
+        }
 
 
-        /*auto transforms = m_animator.GetFinalBoneMatrices();
+        auto transforms = m_animator.GetFinalBoneMatrices();
         for (int i = 0; i < transforms.size(); ++i)
-            m_playerShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);*/
+            m_playerShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 
         glm::mat4 model = glm::mat4(1.0f);
 
