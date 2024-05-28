@@ -27,7 +27,8 @@ glm::mat4 Camera::GetViewMatrix()
 
 }
 
-void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t)
+void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, const unsigned char *data,
+                             const int &m_ResolutionWidth, const int &m_ResolutionHeight)
 {
   
     float velocity = m_movementSpeed * deltaTime;
@@ -63,8 +64,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain
         Player::GetInstance().UpdatePlayerPos(m_camRight * velocity);
 
     }
-    if(!godMode)
-        m_cameraPos.y = t->getHeight(m_cameraPos.x, m_cameraPos.z) + 1.7f;
+    if (!godMode)
+        m_cameraPos.y = RandomHelpers::getHeight(m_cameraPos.x, m_cameraPos.z, data, m_ResolutionWidth,
+                                                 m_ResolutionHeight);
+    +1.7f;
 
 }
 

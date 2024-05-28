@@ -1,6 +1,9 @@
-#include "Terrain.h"
+#include "EntityTerrain.h"
 
-Terrain::Terrain(const char* mapPath)
+EntityTerrain::EntityTerrain(const std::string &name, const unsigned char *data, const int &width, const int &height)
+    : Entity(name, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), m_shader), m_ResolutionWidth(width),
+      m_ResolutionHeight(height)
+    
 {
     GLint maxTessLevel;
     
@@ -9,11 +12,13 @@ Terrain::Terrain(const char* mapPath)
 
     // build and compile our shader program
     // ------------------------------------
-    m_terrainShader = Shader("res/Shaders/Terrain/terrain.vs",
+    m_shader = Shader("res/Shaders/Terrain/terrain.vs",
         "res/Shaders/Terrain/terrain.fs", nullptr,
         "res/Shaders/Terrain/terrain.tcs",
         "res/Shaders/Terrain/terrain.tes");
 
+
+    m_shader.setInt("heightMap", 0);
     // load and create a texture
     // -------------------------
     loadSand();
@@ -27,28 +32,9 @@ Terrain::Terrain(const char* mapPath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    data = stbi_load(mapPath, &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);        
 
-        m_terrainShader.setInt("heightMap", 0);
-        std::cout << "Shader " << m_terrainShader.m_ID << std::endl;
-
-        m_ResolutionWidth = width;
-        m_ResolutionHeight = height;
-        m_nrChannels = nrChannels;
-
-        std::cout << "Loaded heightmap of size " << m_ResolutionWidth << " x " << m_ResolutionHeight <<" CHANNELS: "<< m_nrChannels <<std::endl;
-
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
     // ------------------------------------------------------------------
     std::vector<float> vertices;
 
@@ -104,38 +90,37 @@ Terrain::Terrain(const char* mapPath)
 
 }
 
-Terrain::~Terrain()
+EntityTerrain::~EntityTerrain()
 {
-    stbi_image_free(data);
-
 }
 
-void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::vec3 viewPos, float farPlane)
+void EntityTerrain::draw(const float &deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
+                         std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix)
 {
-    int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
-    m_terrainShader.use();
-    m_terrainShader.setInt("uHeightMap", 0);
-    m_terrainShader.setInt("sandTex", 1);
-    m_terrainShader.setInt("shadowMap", 2);
+    int widthUniformLocation = glGetUniformLocation(m_shader.m_ID, "ourColor");
+    m_shader.use();
+    m_shader.setInt("uHeightMap", 0);
+    m_shader.setInt("sandTex", 1);
+    m_shader.setInt("shadowMap", 2);
 
-    m_terrainShader.setFloat("farPlane", farPlane);
+    m_shader.setFloat("farPlane", cam.m_farPlane);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);
-    m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
+    m_shader.setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
 
     // view/projection transformations
-    m_terrainShader.setMat4("projection", projection);
-    m_terrainShader.setMat4("view", view);
+    m_shader.setMat4("projection", cam.GetProjectionMatrix());
+    m_shader.setMat4("view", cam.GetViewMatrix());
 
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
-    m_terrainShader.setMat4("model", model);
+    m_shader.setMat4("model", model);
 
     //Lighting setup
-    m_terrainShader.setVec3("viewPos", viewPos);
-    m_terrainShader.setVec3("dirLight.direction", dLight.m_direction);
-    m_terrainShader.setVec3("dirLight.color", dLight.m_color);
+    m_shader.setVec3("viewPos", cam.m_cameraPos);
+    m_shader.setVec3("dirLight.direction", dLight.m_direction);
+    m_shader.setVec3("dirLight.color", dLight.m_color);
 
     // render the 
     glActiveTexture(GL_TEXTURE0);
@@ -144,9 +129,10 @@ void Terrain::Draw(glm::mat4 projection , glm::mat4 view, lightDir dLight, glm::
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 }
 
-void Terrain::DrawDepth(Shader& shader)
+void EntityTerrain::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime,
+                                 lightDir dLight, Shader &shader)
 {
-    int widthUniformLocation = glGetUniformLocation(m_terrainShader.m_ID, "ourColor");
+    int widthUniformLocation = glGetUniformLocation(m_shader.m_ID, "ourColor");
     shader.use();
     shader.setInt("uHeightMap", 0);
     shader.setInt("sandTex", 1);
@@ -154,13 +140,13 @@ void Terrain::DrawDepth(Shader& shader)
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);
-    m_terrainShader.setVec2("uTexelSize", 1 / m_ResolutionWidth, 1 / m_ResolutionHeight);
+    m_shader.setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
 
     // view/projection transformations
 
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
-    m_terrainShader.setMat4("model", model);
+    m_shader.setMat4("model", model);
 
     // render the 
     glActiveTexture(GL_TEXTURE0);
@@ -169,60 +155,14 @@ void Terrain::DrawDepth(Shader& shader)
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 }
 
-void Terrain::LoadFromFile(const char* filename)
+void EntityTerrain::LoadFromFile(const char* filename)
 {
     
 }
 
-float Terrain::getHeight(float x, float z)
-{
-    if (data)
-    {
-        x += m_ResolutionWidth / 2;
-        z += m_ResolutionHeight / 2;
 
-        if (x < 0 || z < 0 || x >= m_ResolutionWidth - 1 || z >= m_ResolutionHeight - 1)
-        {
-            return -100.0f; // Adjusted boundary conditions
-        }
 
-        // Get the integer coordinates of the top-left corner of the cell
-        int x0 = (int)x;
-        int z0 = (int)z;
-
-        // Calculate the fractional part of the coordinates
-        float dx = x - (float)x0;
-        float dz = z - (float)z0;
-
-        // Calculate the heights at the four corners of the cell
-        int index00 = ((int)x0 + (int)m_ResolutionWidth * (int)z0) * 4;
-        int index10 = ((int)(x0 + 1) + (int)m_ResolutionWidth * (int)z0) * 4;
-        int index01 = ((int)x0 + (int)m_ResolutionWidth * (int)(z0 + 1)) * 4;
-        int index11 = ((int)(x0 + 1) + (int)m_ResolutionWidth * (int)(z0 + 1)) * 4;
-
-        unsigned char* offset00 = data + index00;
-        unsigned char* offset10 = data + index10;
-        unsigned char* offset01 = data + index01;
-        unsigned char* offset11 = data + index11;
-
-        // Bilinear interpolation
-        float h00 = ((float)offset00[0] / 255.0f) * 100.0f - 16.0f;
-        float h10 = ((float)offset10[0] / 255.0f) * 100.0f - 16.0f;
-        float h01 = ((float)offset01[0] / 255.0f) * 100.0f - 16.0f;
-        float h11 = ((float)offset11[0] / 255.0f) * 100.0f - 16.0f;
-
-        float finalHeight = (1.0f - dz) * ((1.0f - dx) * h00 + dx * h10) +
-            dz * ((1.0f - dx) * h01 + dx * h11);
-
-        return finalHeight;
-    }
-    else
-    {
-        return 0.0f;
-    }
-}
-
-void Terrain::loadSand()
+void EntityTerrain::loadSand()
 {
     int width, height, bpp;
     unsigned char * m_LocalBuffer = stbi_load("res/textures/sand/sand1.jpg", &width, &height, &bpp, 4);

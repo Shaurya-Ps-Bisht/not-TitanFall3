@@ -1,15 +1,17 @@
 #include "EntityM.h"
 
-EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath)
-    : Entity(initialPosition,
+EntityM::EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
+                 const char *modelPath)
+    : Entity(name, initialPosition,
         initialScale,
         initialShader),
     m_model(modelPath, false),
     hasAnimation(false)
      {}
 
-EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, const char* animationName)
-    : Entity(initialPosition,
+EntityM::EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
+                      const char *modelPath, const char *animationName)
+    : Entity(name, initialPosition,
         initialScale,
         initialShader),
     m_model(modelPath, true),
@@ -17,8 +19,9 @@ EntityM::EntityM(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& in
     m_animator(&m_animation),
     hasAnimation(true){}
 
-EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath)
-    : Entity(initialPosition,
+EntityM::EntityM(const std::string &name, const char *texturePath, glm::vec3 &initialPosition, glm::vec3 &initialScale,
+                 Shader &initialShader, const char *modelPath)
+    : Entity(name, initialPosition,
         initialScale,
         initialShader),
     m_model(modelPath, false),
@@ -28,8 +31,9 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
     hasExplitcitTexture(true),
     explicitTexture(texturePath){}
 
-EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader, const char* modelPath, glm::mat4* modelMatrices, unsigned int amount)
-    : Entity(initialPosition,
+EntityM::EntityM(const std::string &name, const char *texturePath, glm::vec3 &initialPosition, glm::vec3 &initialScale,
+                 Shader &initialShader, const char *modelPath, glm::mat4 *modelMatrices, unsigned int amount)
+    : Entity(name, initialPosition,
         initialScale,
         initialShader),
     m_model(modelPath, modelMatrices, amount, false),
@@ -39,7 +43,8 @@ EntityM::EntityM(const char* texturePath, glm::vec3& initialPosition, glm::vec3&
     hasExplitcitTexture(true),
     explicitTexture(texturePath) {}
 
-void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
+void EntityM::draw(const float &deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
+                   std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix)
 {
     if(hasAnimation)
         m_animator.UpdateAnimation(deltaTime);
@@ -124,7 +129,8 @@ void EntityM::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
     }    
 }
 
-void EntityM::drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
+void EntityM::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
+                           Shader &shader)
 {
     if (hasAnimation)
         m_animator.UpdateAnimation(deltaTime);

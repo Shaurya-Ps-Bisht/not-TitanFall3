@@ -1,7 +1,8 @@
 #include "EntityV.h"
 
-EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, float angleP, glm::vec3 axisP, Shader& initialShader, const char* shape)
-	:Entity(initialPosition,initialScale,initialShader),
+EntityV::EntityV(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, float angleP,
+                 glm::vec3 axisP, Shader &initialShader, const char *shape)
+	:Entity(name,initialPosition,initialScale,initialShader),
 	angle(angleP),
 	axis(axisP)
 {
@@ -41,7 +42,7 @@ EntityV::EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, float angl
 	glBindVertexArray(0);
 }
 
-void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
+void EntityV::draw(const float& deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
 {
 	glm::mat4 projection = cam.GetProjectionMatrix();
 	glm::mat4 view = cam.GetViewMatrix();
@@ -80,7 +81,8 @@ void EntityV::draw(float deltaTime, Camera& cam, bool instanced, float elapsedTi
 
 }
 
-void EntityV::drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader)
+void EntityV::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
+                           Shader &shader)
 {
 	shader.use();
 	/*shader.setInt("texture_diffuse1", 0);

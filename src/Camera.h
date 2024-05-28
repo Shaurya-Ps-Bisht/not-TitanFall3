@@ -7,10 +7,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Terrain.h"
+#include "RandomHelpers.h"
 
 
 #include <vector>
+#include <memory>
 
 enum Camera_Movement {
 	FORWARD,
@@ -58,7 +59,8 @@ public:
 	void setCameraPos(glm::vec3 position);
 
 
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime, Terrain* t);
+	void ProcessKeyboard(Camera_Movement direction, float deltaTime, const unsigned char *data,
+                         const int &m_ResolutionWidth, const int &m_ResolutionHeight);
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
 

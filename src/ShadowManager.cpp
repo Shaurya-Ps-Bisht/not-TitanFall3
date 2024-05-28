@@ -9,7 +9,7 @@ void ShadowManager::initShadows()
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 
-    //m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 
     dirDepthShader = Shader("res/Shaders/Depth/CSM/dir_csm.vs", "res/Shaders/Depth/CSM/dir_csm.fs", "res/Shaders/Depth/CSM/dir_csm.gs");
@@ -79,7 +79,7 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);  // peter panning
     {
-        //m_terrain->DrawDepth(simpleDepthShader);
+        //m_terrain->DrawDepth(simpleDepthShader);  //TERRAIN
         for (const auto& obj : entities) {
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
@@ -150,5 +150,5 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
 void ShadowManager::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q)
 {
     m_pointLights.push_back(lightPoint());
-    m_pointLights.back ().setPointLight(pos, color, c, l, q);
+    m_pointLights.back().setPointLight(pos, color, c, l, q);
 }

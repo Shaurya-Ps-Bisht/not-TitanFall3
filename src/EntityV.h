@@ -9,18 +9,19 @@
 class EntityV : public Entity {
 
 public:
-    EntityV(glm::vec3& initialPosition, glm::vec3& initialScale, float angle, glm::vec3 axis, Shader& initialShader, const char* shape);
+    EntityV(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, float angle, glm::vec3 axis,
+            Shader &initialShader, const char *shape);
     ~EntityV() {};
 
     // Draw method
-    void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix);
-    void drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader);
-    void nice() {
-        std::cout << "sad";
-    }
+    void draw(const float & deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
+              std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix);
+    void drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
+                      Shader &shader);
+    
     std::vector<glm::vec3> vertexPos;
 
-private:
+  private:
     void getVertexData(const char* shape);
 
 private:

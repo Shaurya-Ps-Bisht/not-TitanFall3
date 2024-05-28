@@ -4,7 +4,7 @@
 
 #include "Animator.h"
 #include "Camera.h"
-#include "Terrain.h"
+#include "Texture.h"
 #include "lightDir.h"
 #include "lightPoint.h"
 
@@ -21,18 +21,47 @@ public:
     glm::vec3 m_position;
     glm::vec3 m_scale;
     Shader m_shader;
-    Entity(glm::vec3& initialPosition, glm::vec3& initialScale, Shader& initialShader)
-        : m_position(initialPosition), m_scale(initialScale), m_shader(initialShader) {}
+
+    Entity(const std::string& name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale, const Shader &initialShader)
+        : name(name), m_position(initialPosition), m_scale(initialScale), m_shader(initialShader)
+    {
+    }
+
+    const std::string &getName() const
+    {
+        return name;
+    }
+
+    bool getIsRendered() const
+    {
+        return toRender;
+    }
+
+    // Setter for isRendered
+    void setIsRendered(bool value)
+    {
+        toRender = value;
+    }
+
+
+    
 
     //virtual ~GameEntity() {};
     // Virtual method to be implemented by child classes
-    virtual void draw(float deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix) = 0;
-    virtual void drawDirLight(float deltaTime, bool instanced, Camera& cam, float elapsedTime, lightDir dLight, Shader& shader) = 0;
-    virtual void nice() = 0;
+    virtual void draw(const float &deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
+                      std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix) = 0;
+    virtual void drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
+                              Shader &shader) = 0;
 
     // Methods to change position and scale
     void changePosition(const glm::vec3& newPosition) { m_position = newPosition; }
     void changeScale(const glm::vec3& newScale) { m_scale = newScale; }
+
+    private:
+    bool toRender = true;
+    std::string name;
+
+
 
 };
 

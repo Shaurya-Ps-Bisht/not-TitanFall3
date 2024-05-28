@@ -38,10 +38,10 @@ void Player::Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint
 
             m_playerShader.setVec3("pointLights[" + indexStr + "].position", lightPoints[i].m_pos);
             m_playerShader.setVec3("pointLights[" + indexStr + "].color", lightPoints[i].m_color);
-            m_playerShader.setFloat("pointLights[" + indexStr + "].constant", lightPoints[i].constant);
-            m_playerShader.setFloat("pointLights[" + indexStr + "].linear", lightPoints[i].linear);
-            m_playerShader.setFloat("pointLights[" + indexStr + "].quadratic", lightPoints[i].quadratic);
 
+            //m_playerShader.setFloat("pointLights[" + indexStr + "].constant", lightPoints[i].constant);
+            //m_playerShader.setFloat("pointLights[" + indexStr + "].linear", lightPoints[i].linear);
+            //m_playerShader.setFloat("pointLights[" + indexStr + "].quadratic", lightPoints[i].quadratic);
             //std::cout << "SAD" << lightPoints[i].linear << std::endl;
         }
 

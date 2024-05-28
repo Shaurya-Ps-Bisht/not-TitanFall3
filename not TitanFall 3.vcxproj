@@ -260,7 +260,7 @@
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shape.h" />
     <ClInclude Include="src\SkyBox.h" />
-    <ClInclude Include="src\Terrain.h" />
+    <ClInclude Include="src\EntityTerrain.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\vendor\imgui\imconfig.h" />
     <ClInclude Include="src\vendor\imgui\imgui.h" />
@@ -285,6 +285,7 @@
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\RandomHelpers.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\App.cpp" />
@@ -292,7 +293,7 @@
     <ClCompile Include="src\Shape.cpp" />
     <ClCompile Include="src\SkyBox.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
-    <ClCompile Include="src\Terrain.cpp" />
+    <ClCompile Include="src\EntityTerrain.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\vendor\imgui\imgui.cpp" />
     <ClCompile Include="src\vendor\imgui\imgui_demo.cpp" />

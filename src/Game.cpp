@@ -67,11 +67,13 @@ Game::Game()
 Game::~Game()
 {
     //SoundEngine->drop();
+    stbi_image_free(data);
 }
-
+ 
 void Game::Run()
 {
     ShadowManager::GetInstance().initShadows();
+    initData();
     initEntities();
     debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
     debugDepthQuad.use();
@@ -103,7 +105,6 @@ void Game::GameLoop()
         processInput(m_window);
 
 
-        //m_dirLight.setDirLight(glm::vec3(0.5f, 1.0f, 1.0f), glm::vec3(0.8, 0.4, 0.2));
         if (level == 1) {
             ShadowManager::GetInstance().m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f), glm::vec3(1.0f, 1.0f, 1.0f));
             if (
@@ -117,7 +118,12 @@ void Game::GameLoop()
         }
         else if (level == 2)
         {
-            m_camera.setCameraPos(glm::vec3(422.0f, m_terrain->getHeight(422.0f, 437.0f) + 2.0f, 437.0f));
+            m_camera.setCameraPos(
+                glm::vec3(422.0f,
+                          RandomHelpers::getHeight(422.0f, 437.0f, data, m_ResolutionWidth,
+                                               m_ResolutionHeight) +
+                              2.0f,
+                          437.0f));
             if (currentFrame - lev1timeChange > 0.0f)
             {
                 //grassSound = SoundEngine->play2D("res/Audio/Player/grass_ambient.mp3", true);
@@ -170,16 +176,17 @@ void Game::RenderLoop()
     float currentFrame = static_cast<float>(glfwGetTime());
     Player::GetInstance().Draw(m_deltaTime, m_camera, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights);
 
-    if (level == 3 || level == 4 || level == 5)
+    if (1)
     {
-        m_terrain->Draw(m_camera.GetProjectionMatrix(), m_camera.GetViewMatrix(), ShadowManager::GetInstance().m_dirLight, m_camera.m_cameraPos, m_camera.m_farPlane);
+        //m_terrain->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight,
+        //                ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
         m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     }
     
 
     for (const auto& obj : m_entities) {
-        /*glActiveTexture(GL_TEXTURE0+2);
-        glBindTexture(GL_TEXTURE_2D, depthMap);*/
+        if (!obj->getIsRendered())
+            continue;
 
         obj->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
@@ -192,7 +199,9 @@ void Game::RenderLoop()
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y, m_camera.m_cameraPos.z);
-        ImGui::Text("Height: %.3f ", m_terrain->getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z));
+        ImGui::Text("Height: %.3f ",
+                    RandomHelpers::getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z, data,
+                                             m_ResolutionWidth, m_ResolutionHeight));
         if (ImGui::Button("GOD MODE"))                           
             m_camera.godMode = !m_camera.godMode;
     }
@@ -256,24 +265,45 @@ void Game::RenderLoop()
 void Game::initEntities()
 {
     m_skyBox = SkyBox("res/CubeMaps/skybox/");
-    m_terrain = new Terrain("res/Terrains/HeightMaps/heightmap1.png");
+    m_terrain = std::make_unique<EntityTerrain>("Terrain 1", data, m_ResolutionWidth, m_ResolutionHeight);
+
     Player::GetInstance().InitPlayer();
 
     //----------------------------------------------------------------------------------------------------------
 
     //glm::vec3 bMoonLoc = (glm::vec3(407.3f, m_terrain->getHeight(407.3f, 365.6f) + 20.0f, 365.6f));
     glm::vec3 bMoonLoc = (glm::vec3(413.222f, 24.290 , 364.421f));
-    glm::vec3 ExLocation = glm::vec3(422.0f, m_terrain->getHeight(422.0f, 408.0f) + 10.0f, 408.0f);
+    glm::vec3 ExLocation =
+        glm::vec3(422.0f,
+                  RandomHelpers::getHeight(422.0f, 408.0f, data, m_ResolutionWidth,
+                                           m_ResolutionHeight) +
+                      10.0f,
+                  408.0f);
     glm::vec3 ExLocation2 = glm::vec3(-442.0f, 75.0f, -451.0f);
-    glm::vec3 InLocation = glm::vec3(120.0f, m_terrain->getHeight(120.0f, 1105.0f) - 1.0f, 1105.0f);
+    glm::vec3 InLocation = glm::vec3(120.0f,
+                  RandomHelpers::getHeight(120.0f, 1105.0f, data,
+                                                          m_ResolutionWidth, m_ResolutionHeight) -
+                                         1.0f,
+                                     1105.0f);
     glm::vec3 soljaLocation1 = glm::vec3(127.387f, -100.8f, 1104.9f);
     glm::vec3 soljaLocation = glm::vec3(127.387f, -102.4f, 1104.9f);
     glm::vec3 vampireLocation = glm::vec3(102.085f, -101.8f, 1105.133f);
-    glm::vec3 boatLocation = glm::vec3(469.0f, m_terrain->getHeight(469.0f, 587.0f), 587.0f);
+    glm::vec3 boatLocation = glm::vec3(469.0f,
+                  RandomHelpers::getHeight(469.0f, 587.0f, data, m_ResolutionWidth,
+                                           m_ResolutionHeight),
+        587.0f);
     glm::vec3 vFogLoc = (glm::vec3(407.3f, 407.3f, 365.6f));
     glm::vec3 seaLocation = glm::vec3(503.0f, -13.0f, 655.5f);
-    glm::vec3 grassPos = glm::vec3(500.0f, m_terrain->getHeight(500.0f, 570.0f) + 10.0f, 570.0f);
-    glm::vec3 c = glm::vec3(430.3f, m_terrain->getHeight(430.3f, 440.767f) + 30.0f, 440.767f);
+    glm::vec3 grassPos = glm::vec3(500.0f,
+                  RandomHelpers::getHeight(500.0f, 570.0f, data, m_ResolutionWidth,
+                                                        m_ResolutionHeight) +
+                                       10.0f,
+                                   570.0f);
+    glm::vec3 c = glm::vec3(430.3f,
+                            RandomHelpers::getHeight(430.3f, 440.767f, data, m_ResolutionWidth,
+                                                 m_ResolutionHeight) +
+                                30.0f,
+                            440.767f);
 
     glm::vec3 lightPos1 = glm::vec3(128.5f, -100.8f, 1104.0f);
     glm::vec3 lightPos2 = glm::vec3(129.356f, -100.8f, 1105.99f);
@@ -319,12 +349,12 @@ void Game::initEntities()
     unlitShader.setInt("pointShadowMap", 12);
 
     /*pbrShader.use();
-    pbrShader.setInt("shadowMap", 11);
-    pbrShader.setInt("pointShadowMap", 12);
+    pbrShader.setInt("shadowmap", 11);
+    pbrShader.setInt("pointshadowmap", 12);
 
     ourShader.use();
-    ourShader.setInt("shadowMap", 11);
-    ourShader.setInt("pointShadowMap", 12);*/
+    ourShader.setInt("shadowmap", 11);
+    ourShader.setInt("pointshadowmap", 12);*/ //DELETE THIS
 
     /*vFog.use();
     vFog.setFloat("_Scale", 2.41);
@@ -336,39 +366,51 @@ void Game::initEntities()
     vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));*/
 
 
-    /*std::unique_ptr<EntityM> grass = std::make_unique<EntityM>("res/textures/Grass/grass.png", grassPos, grassScale,grassShader, "res/Models/Grass/grass.fbx", RandomHelpers::instanceMatrixTerrain(500000,
+    std::unique_ptr<EntityM> grass = std::make_unique<EntityM>(
+        "Grass", "res/textures/Grass/grass.png", grassPos, grassScale, grassShader, "res/Models/Grass/grass.fbx",
+        RandomHelpers::instanceMatrixTerrain(500000,
         300.0,
         75.0f,
          -20.0f,
          20.0f,
-        m_terrain), 500000);*/
+        data, m_ResolutionWidth, m_ResolutionHeight), 500000);
 
 
 
-    std::unique_ptr<EntityV> lightBulb1 = std::make_unique<EntityV>(lightPos1, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>(lightPos2, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>(lightPos4, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    //std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader, "res/Models/Player/Final/Player.gltf", "Idle");
-    //std::unique_ptr<EntityM> vampire = std::make_unique<EntityM>(vampireLocation, vampireScale, ourShader, "res/Models/Player/Vampire/dancing_vampire.dae", "Hips");
+    std::unique_ptr<EntityV> lightBulb1 =
+        std::make_unique<EntityV>("bulb 1", lightPos1, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
+    std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>("bulb 2", lightPos2, lightScale1, 0.0f,
+                                                                    glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
+    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>("bulb 3", lightPos4, lightScale1, 0.0f,
+                                                                    glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
+    //std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader, "res/Models/Player/Final/Player.gltf", "Idle"); std::unique_ptr<EntityM> vampire =
+    // std::make_unique<EntityM>(vampireLocation, vampireScale, ourShader,
+    // "res/Models/Player/Vampire/dancing_vampire.dae", "Hips");
     //vampire->m_model.
-    std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>(soljaLocation, soljaScale1, ourShader, "res/Models/Player/Cybergirl/scene.gltf", "pose1");
+    //std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>(soljaLocation, soljaScale1, ourShader, "res/Models/Player/Cybergirl/scene.gltf", "pose1");
     //std::unique_ptr<EntityM> backpack = std::make_unique<EntityM>(soljaLocation1, soljaScale1, unlitShader, "res/Models/Backpack/Survival_BackPack_2.fbx");
     //std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c, d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
-    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(ExLocation, grassScale, pbrShader, "res/Models/House/Exterior/Exterior.gltf");
-    std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
-    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>(InLocation, InScale, pbrShader, "res/Models/House/StarWarsClone/untitled.gltf");
-    std::unique_ptr<EntityM> Boat = std::make_unique<EntityM>(boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
+    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>("House Exterior", ExLocation, grassScale, pbrShader,
+                                                                  "res/Models/House/Exterior/Exterior.gltf");
+    //std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader, "res/Models/House/Exterior/Exterior.gltf");
+    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>("Interior", InLocation, InScale, pbrShader,
+                                                                  "res/Models/House/StarWarsClone/untitled.gltf");
+    std::unique_ptr<EntityM> Boat =
+        std::make_unique<EntityM>("BOAT", boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
     //std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), vFog, "CUBE");
-    std::unique_ptr<EntityM> sea = std::make_unique<EntityM>(seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
-    std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
+    std::unique_ptr<EntityM> sea =
+        std::make_unique<EntityM>("SEA", seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
+    std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(
+        "Moon", bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
 
     //cyberGirl->m_model.loadTexturesInfo();
 
-    //m_entitiesInstanced.push_back(std::move(grass));
+    m_entities.push_back(std::move(m_terrain));
+    m_entitiesInstanced.push_back(std::move(grass));
     //m_entities.push_back(std::move(backpack));
     //m_entities.push_back(std::move(vampire));
     //m_entities.push_back(std::move(solja));
-    m_entities.push_back(std::move(cyberGirl));
+    //m_entities.push_back(std::move(cyberGirl));
     m_entities.push_back(std::move(Exterior));
     //m_entities.push_back(std::move(Exterior2));
     //m_entities.push_back(std::move(goodCube));
@@ -377,10 +419,30 @@ void Game::initEntities()
     m_entities.push_back(std::move(lightBulb3));
     m_entities.push_back(std::move(Interior));
     m_entities.push_back(std::move(Boat));
-    m_entities.push_back(std::move(sea));
     //m_entities.push_back(std::move(vFogObject));
     m_entities.push_back(std::move(bMoonObject));
+    m_entities.push_back(std::move(sea));
 
+}
+
+void Game::initData()
+{
+    int width, height, nrChannels;
+    data = stbi_load("res/Terrains/HeightMaps/heightmap1.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+
+        m_ResolutionWidth = width;
+        m_ResolutionHeight = height;
+        m_nrChannels = nrChannels;
+
+        std::cout << "Loaded heightmap of size " << m_ResolutionWidth << " x " << m_ResolutionHeight
+                  << " CHANNELS: " << m_nrChannels << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
 }
 
 void Game::processInput(GLFWwindow* window)
@@ -401,19 +463,23 @@ void Game::processInput(GLFWwindow* window)
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, m_terrain);
+            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, data, m_ResolutionWidth,
+                                     m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, m_terrain);
+            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, data, m_ResolutionWidth,
+                                     m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(LEFT, m_deltaTime, m_terrain);
+            m_camera.ProcessKeyboard(LEFT, m_deltaTime, data, m_ResolutionWidth,
+                                     m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, m_terrain);
+            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, data, m_ResolutionWidth,
+                                     m_ResolutionHeight);
         }
 
         {

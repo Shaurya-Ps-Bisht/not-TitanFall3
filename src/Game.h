@@ -17,7 +17,7 @@
 #include "Texture.h"
 #include "Animation.h"
 #include "Animator.h"
-#include "Terrain.h"
+#include "EntityTerrain.h"
 #include "Player.h"
 #include "EntityV.h"
 #include "EntityM.h"
@@ -49,6 +49,7 @@ private:
 	void RenderLoop();
 
 	void initEntities();
+    void initData();
 	void processInput(GLFWwindow* window);
 	void stateCheck();
 
@@ -69,7 +70,6 @@ private:
 	
 
 	unsigned int m_skyTexture;
-	Terrain* m_terrain;
 	std::vector<std::unique_ptr<Entity>> m_entities;
 	std::vector<std::unique_ptr<Entity>> m_entitiesInstanced;
 	SkyBox m_skyBox;
@@ -77,7 +77,13 @@ private:
 	Shader debugDepthQuad;
 	
 
-	float debugLayer;
+	std::unique_ptr<EntityTerrain> m_terrain;
+
+	unsigned char *data;
+    int m_ResolutionWidth, m_ResolutionHeight, m_nrChannels;
+
+
+	int debugLayer;
 
 	std::vector<GLuint> visualizerVAOs;
 	std::vector<GLuint> visualizerVBOs;
