@@ -24,7 +24,10 @@ Camera::~Camera()
 glm::mat4 Camera::GetViewMatrix()
 {
     return glm::lookAt(m_cameraPos, m_cameraPos + m_lookVec, m_upVec);
-
+}
+const glm::mat4 &Camera::GetProjectionMatrix()
+{
+    return m_projection;
 }
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, const unsigned char *data,

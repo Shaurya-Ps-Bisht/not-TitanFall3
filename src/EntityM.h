@@ -41,9 +41,7 @@ private:
     bool hasAnimation = false;
     bool hasExplitcitTexture = false;
     Texture explicitTexture;
-    Camera m_camera;
-    glm::mat4 projection = m_camera.GetProjectionMatrix();
-    glm::mat4 view = m_camera.GetViewMatrix();
+    
 };
 
 #endif

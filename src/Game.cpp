@@ -205,6 +205,16 @@ void Game::RenderLoop()
         if (ImGui::Button("GOD MODE"))                           
             m_camera.godMode = !m_camera.godMode;
     }
+
+        {
+        static float inputNumber = 5.0f; // Default value
+
+        if (ImGui::InputFloat("Movement Speed", &inputNumber, 1.0f, 10.0f))
+        {
+            m_camera.setCameraSpeed(inputNumber);
+        }
+    }
+
     {
         static glm::vec3 dirLightDirection = ShadowManager::GetInstance().m_dirLight.m_direction;
         static glm::vec3 dirLightColor = ShadowManager::GetInstance().m_dirLight.m_color;
@@ -219,6 +229,8 @@ void Game::RenderLoop()
             ShadowManager::GetInstance().m_dirLight.m_color = dirLightColor;
         }
     }
+
+    
      if(1)
     {
         static float _Scale = 1.42f;
@@ -246,15 +258,22 @@ void Game::RenderLoop()
     //    m_entities[8]->m_shader.setFloat("_MaxHeight", _MaxHeight);
     //    m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
     //    m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
-    }
 
-    {
-        static float inputNumber = 5.0f; // Default value
+        ImGui::Begin("Entities");
 
-        if (ImGui::InputFloat("Movement Speed", &inputNumber, 1.0f, 10.0f)) {
-            m_camera.setCameraSpeed(inputNumber);
+        for (auto &entity : m_entities)
+        {
+            bool isRendered = entity->getIsRendered(); 
+            if (ImGui::Checkbox(entity->getName().c_str(), &isRendered))
+            {                                    
+                entity->setIsRendered(isRendered); 
+            }
         }
+
+        ImGui::End();
+
     }
+
 
     
 }

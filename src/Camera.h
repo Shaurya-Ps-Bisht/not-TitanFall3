@@ -52,7 +52,8 @@ public:
 	~Camera();
 
 	glm::mat4 GetViewMatrix();
-	glm::mat4& GetProjectionMatrix() { return m_projection; }
+   
+	const glm::mat4 &GetProjectionMatrix();
 
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
