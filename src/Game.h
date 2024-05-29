@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <variant>
+
 
 
 #include <GLAD/glad.h>
@@ -27,12 +29,14 @@
 #include "ShadowManager.h"
 
 #include <irrklang/irrKlang.h>
+
 using namespace irrklang;
+using EntityPtr = std::variant< std::shared_ptr<EntityM>, std::unique_ptr<EntityM>, std::unique_ptr<EntityV>, std::unique_ptr<EntityTerrain>>;
 
 
 class Game
 {
-public:
+  public:
 	Game();
 	~Game();
 
@@ -70,8 +74,11 @@ private:
 	
 
 	unsigned int m_skyTexture;
-	std::vector<std::unique_ptr<Entity>> m_entities;
+    std::vector<std::shared_ptr<Entity>> m_entitiesShared;
+	std::vector<std::unique_ptr<Entity>> m_entitiesUnique;
 	std::vector<std::unique_ptr<Entity>> m_entitiesInstanced;
+    std::vector<EntityPtr> m_entities;
+
 	SkyBox m_skyBox;
 	Shader m_skyShader;
 	Shader debugDepthQuad;

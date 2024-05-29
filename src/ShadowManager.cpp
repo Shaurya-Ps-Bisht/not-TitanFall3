@@ -53,14 +53,16 @@ void ShadowManager::initShadows()
     m_dirLight.configureLightFBO();
 }
 
-void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam)
+void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
+                                  Camera &cam)
 {
     updateDirShadows(deltaTime, currentFrame, entities, cam);
     updatePointShadows(deltaTime, currentFrame, entities, cam);
     
 }
 
-void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam)
+void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
+                                     Camera &cam)
 {
     const auto lightMatrices = m_dirLight.getLightSpaceMatrices(cam.m_nearPlane, cam.m_farPlane, cam.GetViewMatrix(), cam.m_FOV, cam.m_aspectRatio);
 
@@ -79,11 +81,18 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);  // peter panning
     {
-        //m_terrain->DrawDepth(simpleDepthShader);  //TERRAIN
-        for (const auto& obj : entities) {
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
-            obj->drawDirLight(deltaTime, false, cam, currentFrame, m_dirLight, dirDepthShader);
+
+        for (auto &entity : entities)
+        {
+            std::visit(
+                [&](const auto &ptr) {
+                    if (!ptr->getIsRendered())
+                        return;
+                    glActiveTexture(GL_TEXTURE2);
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
+                    ptr->drawDirLight(deltaTime, false, cam, currentFrame, m_dirLight, dirDepthShader);
+                },
+                entity);
         }
 
         /*for (const auto& obj : m_entitiesInstanced) {
@@ -99,7 +108,8 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, const std::vector<std::unique_ptr<Entity>>& entities, Camera& cam)
+void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
+                                       Camera &cam)
 {
     for (int i = 0; i < m_pointLights.size(); ++i)
     {
@@ -118,17 +128,31 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
 
         std::string indexStr = std::to_string(i);
         pointDepthShader.setVec3("lightPos[" + indexStr + "]", m_pointLights[i].m_pos);
-    }   
+    }
+
 
     pointDepthShader.setFloat("far_plane", far_plane);
 
     glCullFace(GL_FRONT);  // peter panning
     {
         //m_terrain->DrawDepth(simpleDepthShader);
-        for (const auto& obj : entities) {
+        /*for (const auto& obj : entities) {
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D_ARRAY, m_depthCubemap);
             obj->drawDirLight(deltaTime, false, cam, currentFrame, m_dirLight, pointDepthShader);
+        }*/
+
+        for (auto &entity : entities)
+        {
+            std::visit(
+                [&](const auto &ptr) {
+                    if (!ptr->getIsRendered())
+                        return;
+                    glActiveTexture(GL_TEXTURE3);
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, m_depthCubemap);
+                    ptr->drawDirLight(deltaTime, false, cam, currentFrame, m_dirLight, pointDepthShader);
+                },
+                entity);
         }
 
         /*for (const auto& obj : m_entitiesInstanced) {

@@ -20,6 +20,7 @@ protected:
 public:
     glm::vec3 m_position;
     glm::vec3 m_scale;
+    glm::vec3 m_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     Shader m_shader;
 
     Entity(const std::string& name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale, const Shader &initialShader)
@@ -54,7 +55,11 @@ public:
                               Shader &shader) = 0;
 
     // Methods to change position and scale
-    void changePosition(const glm::vec3& newPosition) { m_position = newPosition; }
+    void updatePosition(const glm::vec3& newPosition) { m_position = newPosition; }
+    void updateRotation(const glm::vec3 &newRotation)
+    {
+        m_rotation = newRotation;
+    }
     void changeScale(const glm::vec3& newScale) { m_scale = newScale; }
 
     private:

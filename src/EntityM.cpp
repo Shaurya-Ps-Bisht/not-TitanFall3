@@ -9,7 +9,7 @@ EntityM::EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 
     hasAnimation(false)
      {}
 
-EntityM::EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
+EntityM::EntityM(const std::string &name,  glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
                       const char *modelPath, const char *animationName)
     : Entity(name, initialPosition,
         initialScale,
@@ -96,7 +96,14 @@ void EntityM::draw(const float &deltaTime, Camera &cam, bool instanced, float el
 
 
         glm::mat4 model = glm::mat4(1.0f);
+        if (getName() == "Player")
+        {
+            m_position = glm::vec3(cam.m_cameraPos.x - 0.2f * sin(glm::radians(m_rotation.x)), cam.m_cameraPos.y - 1.7f,
+                                   cam.m_cameraPos.z - 0.2f * cos(glm::radians(m_rotation.x)));
+            std::cout << m_rotation.x << std::endl;
+        }
         model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
+        model = glm::rotate(model, glm::radians( m_rotation.x), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, m_scale);	// it's a bit too big for our scene, so scale it down
 
 

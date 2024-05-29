@@ -150,6 +150,8 @@ void Game::GameLoop()
 
         }
 
+        
+
         debugDepthQuad.use();
         debugDepthQuad.setInt("layer", debugLayer);
 
@@ -174,21 +176,20 @@ void Game::RenderLoop()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float currentFrame = static_cast<float>(glfwGetTime());
-    Player::GetInstance().Draw(m_deltaTime, m_camera, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights);
 
-    if (1)
+    m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+    for (auto &entity : m_entities)
     {
-        //m_terrain->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight,
-        //                ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
-        m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
-    }
-    
+        std::visit(
+            [&](const auto &ptr) {
+                if (!ptr->getIsRendered())
+                    return;
+                ptr->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight,
+                          ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
 
-    for (const auto& obj : m_entities) {
-        if (!obj->getIsRendered())
-            continue;
-
-        obj->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight, ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
+                
+            },
+            entity);
     }
     
     for (const auto& obj : m_entitiesInstanced) {
@@ -263,11 +264,16 @@ void Game::RenderLoop()
 
         for (auto &entity : m_entities)
         {
-            bool isRendered = entity->getIsRendered(); 
-            if (ImGui::Checkbox(entity->getName().c_str(), &isRendered))
-            {                                    
-                entity->setIsRendered(isRendered); 
-            }
+            std::visit(
+                [](const auto &ptr) {
+                    //ptr->draw(); // Call draw() or other member functions
+                    bool isRendered = ptr->getIsRendered();
+                    if (ImGui::Checkbox(ptr->getName().c_str(), &isRendered))
+                    {
+                        ptr->setIsRendered(isRendered);
+                    }
+                },
+                entity);            
         }
 
         ImGui::End();
@@ -283,10 +289,11 @@ void Game::RenderLoop()
 
 void Game::initEntities()
 {
+    Player::GetInstance().InitPlayer(m_camera);
+
     m_skyBox = SkyBox("res/CubeMaps/skybox/");
     m_terrain = std::make_unique<EntityTerrain>("Terrain 1", data, m_ResolutionWidth, m_ResolutionHeight);
 
-    Player::GetInstance().InitPlayer();
 
     //----------------------------------------------------------------------------------------------------------
 
@@ -421,26 +428,32 @@ void Game::initEntities()
         std::make_unique<EntityM>("SEA", seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(
         "Moon", bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
+        //std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader, "res/Models/Player/Final/Player.gltf", "Idle"); std::unique_ptr<EntityM> vampire =
+
 
     //cyberGirl->m_model.loadTexturesInfo();
 
-    m_entities.push_back(std::move(m_terrain));
     m_entitiesInstanced.push_back(std::move(grass));
+
+
     //m_entities.push_back(std::move(backpack));
     //m_entities.push_back(std::move(vampire));
     //m_entities.push_back(std::move(solja));
     //m_entities.push_back(std::move(cyberGirl));
-    m_entities.push_back(std::move(Exterior));
     //m_entities.push_back(std::move(Exterior2));
     //m_entities.push_back(std::move(goodCube));
-    m_entities.push_back(std::move(lightBulb1));
-    m_entities.push_back(std::move(lightBulb2));
-    m_entities.push_back(std::move(lightBulb3));
-    m_entities.push_back(std::move(Interior));
-    m_entities.push_back(std::move(Boat));
-    //m_entities.push_back(std::move(vFogObject));
-    m_entities.push_back(std::move(bMoonObject));
-    m_entities.push_back(std::move(sea));
+    m_entities.emplace_back(std::move(m_terrain));
+    m_entities.emplace_back(std::move(Exterior));
+    m_entities.emplace_back(std::move(lightBulb1));
+    m_entities.emplace_back(std::move(lightBulb2));
+    m_entities.emplace_back(std::move(lightBulb3));
+    m_entities.emplace_back(std::move(Interior));
+    m_entities.emplace_back(std::move(Boat));
+    //m_entities.emplace_back(std::move(vFogObject));
+    m_entities.emplace_back(std::move(bMoonObject));
+    m_entities.emplace_back(std::move(sea));
+
+    m_entities.emplace_back(Player::GetInstance().m_playerModel);
 
 }
 

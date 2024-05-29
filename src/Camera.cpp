@@ -58,19 +58,20 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, const u
     if (direction == LEFT)
     {
         m_cameraPos -= m_camRight * velocity;
-        Player::GetInstance().UpdatePlayerPos(-m_camRight * velocity);
 
     }
     if (direction == RIGHT)
     {
         m_cameraPos += m_camRight * velocity;
-        Player::GetInstance().UpdatePlayerPos(m_camRight * velocity);
 
     }
     if (!godMode)
         m_cameraPos.y = RandomHelpers::getHeight(m_cameraPos.x, m_cameraPos.z, data, m_ResolutionWidth,
                                                  m_ResolutionHeight);
-    +1.7f;
+    +1.9f;
+
+        Player::GetInstance().UpdatePlayerPos(m_cameraPos); // SHIFT TO GAME LOGIC UPATE
+
 
 }
 
@@ -94,6 +95,9 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
     // update Front, Right and Up Vectors using the updated Euler angles
     updateCameraVectors();
     Player::GetInstance().UpdatePlayerRotation(m_Yaw, m_Pitch);
+    //Player::GetInstance().m_playerModel->updateRotation(glm::vec3(90.0f - m_Yaw, 0.0f, 0.0f));
+    //;
+
 
 }
 

@@ -13,6 +13,9 @@
 #include "ShadowManager.h"
 
 #include "Camera.h"
+#include "EntityM.h"
+
+#include <memory>
 
 class Player
 {
@@ -25,9 +28,10 @@ public:
 	}
 
 	void Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint>& lightPoints);
-	void UpdatePlayerPos(glm::vec3 posOffset);
+	void UpdatePlayerPos(glm::vec3& newPos);
 	void UpdatePlayerRotation(float x, float y);
-	void InitPlayer();
+	void InitPlayer(Camera& cam);
+    std::shared_ptr<EntityM> m_playerModel;
 
 
 private:
@@ -38,10 +42,11 @@ private:
 	bool m_moving, m_flashlightEnabled;
 
 	Shader m_playerShader;
-	glm::vec3 m_pos;
+	glm::vec3 m_playerPos;
 	Animation m_animations;
 	Animator m_animator;
-	Model m_playerModel;
+	//Model m_playerModel;
+
 
 	float m_horizontalRotation = -90;
 };

@@ -12,7 +12,8 @@ public:
   EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
           const char *modelPath);
     // Constructor for objects with animation
-  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
+  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale,
+          Shader &initialShader,
           const char *modelPath, const char *animationName);
     //Constructors for objects with explicit textures
   EntityM(const std::string &name, const char *texturePath, glm::vec3 &initialPosition, glm::vec3 &initialScale,
