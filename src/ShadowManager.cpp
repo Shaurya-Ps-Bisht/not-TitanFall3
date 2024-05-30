@@ -27,8 +27,8 @@ void ShadowManager::initShadows()
         glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        glTexImage3D(
-            GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, 1024, 1024, 6 * m_MaxPointLights, 0,
+        glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H,
+                     6 * m_MaxPointLights, 0,
             GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
@@ -51,6 +51,13 @@ void ShadowManager::initShadows()
     }
 
     m_dirLight.configureLightFBO();
+
+    {
+        for (int i = 0; i < m_pointLights.size(); ++i)
+        {
+            m_pointLights[i].pointMatrixPush(shadowTransforms);
+        }
+    }
 }
 
 void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
@@ -111,18 +118,24 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
 void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
                                        Camera &cam)
 {
-    for (int i = 0; i < m_pointLights.size(); ++i)
+    /*for (int i = 0; i < m_pointLights.size(); ++i)
     {
         m_pointLights[i].pointMatrixPush(shadowTransforms);
-    }
+    }*/
 
-    glViewport(0, 0, 1024, 1024);
+    glViewport(0, 0, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H);
     glBindFramebuffer(GL_FRAMEBUFFER, pointDepthFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
     pointDepthShader.use();
 
     for (int i = 0; i < m_pointLights.size(); ++i)
     {
+        if (POINT_SHADOW_MAP_W != m_pointLights[i].POINT_SHADOW_MAP_W)
+        {
+            POINT_SHADOW_MAP_W = m_pointLights[i].POINT_SHADOW_MAP_W;
+            glViewport(0, 0, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H);
+
+        }
         for (unsigned int j = 0; j < 6; ++j)
             pointDepthShader.setMat4("shadowMatrices[" + std::to_string(j + 6*i) + "]", shadowTransforms[j + 6 * i]);
 
@@ -167,7 +180,7 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
     glViewport(0, 0, Renderer::GetInstance().SCR_WIDTH, Renderer::GetInstance().SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shadowTransforms.clear();
+    //shadowTransforms.clear();
 
 }
 

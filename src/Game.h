@@ -53,7 +53,7 @@ private:
 	void RenderLoop();
 
 	void initEntities();
-    void initData();
+  void initData();
 	void processInput(GLFWwindow* window);
 	void stateCheck();
 
@@ -74,10 +74,10 @@ private:
 	
 
 	unsigned int m_skyTexture;
-    std::vector<std::shared_ptr<Entity>> m_entitiesShared;
+  std::vector<std::shared_ptr<Entity>> m_entitiesShared;
 	std::vector<std::unique_ptr<Entity>> m_entitiesUnique;
 	std::vector<std::unique_ptr<Entity>> m_entitiesInstanced;
-    std::vector<EntityPtr> m_entities;
+  std::vector<EntityPtr> m_entities;
 
 	SkyBox m_skyBox;
 	Shader m_skyShader;
@@ -87,7 +87,7 @@ private:
 	std::unique_ptr<EntityTerrain> m_terrain;
 
 	unsigned char *data;
-    int m_ResolutionWidth, m_ResolutionHeight, m_nrChannels;
+  int m_ResolutionWidth, m_ResolutionHeight, m_nrChannels;
 
 
 	int debugLayer;

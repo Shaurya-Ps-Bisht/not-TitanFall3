@@ -151,7 +151,7 @@ void main()
 
     }  
     if(ao == 0){
-        ao = 0.01;
+        ao = 0.1;
     }
     vec3 ambient = vec3(0.03) * albedo * ao;
     

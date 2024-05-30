@@ -26,7 +26,7 @@ public:
 	float linear;
 	float quadratic;
 
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	const unsigned int POINT_SHADOW_MAP_W = 512, POINT_SHADOW_MAP_H = 512;
 
 
 };

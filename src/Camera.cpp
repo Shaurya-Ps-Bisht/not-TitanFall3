@@ -66,9 +66,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, const u
 
     }
     if (!godMode)
-        m_cameraPos.y = RandomHelpers::getHeight(m_cameraPos.x, m_cameraPos.z, data, m_ResolutionWidth,
-                                                 m_ResolutionHeight);
-    +1.9f;
+    {
+        m_cameraPos.y =
+            RandomHelpers::getHeight(m_cameraPos.x, m_cameraPos.z, data, m_ResolutionWidth, m_ResolutionHeight) + 1.9f;
+    }
 
         Player::GetInstance().UpdatePlayerPos(m_cameraPos); // SHIFT TO GAME LOGIC UPATE
 

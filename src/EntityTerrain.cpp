@@ -49,17 +49,17 @@ EntityTerrain::EntityTerrain(const std::string &name, const unsigned char *data,
             vertices.push_back(i / (float)rez); // u
             vertices.push_back(j / (float)rez); // v
 
+            vertices.push_back(-width / 2.0f + width * i / (float)rez);         // v.x
+            vertices.push_back(0.0f);                                           // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            vertices.push_back(i / (float)rez);                                 // u
+            vertices.push_back((j + 1) / (float)rez);                           // v
+
             vertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
             vertices.push_back(0.0f); // v.y
             vertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
             vertices.push_back((i + 1) / (float)rez); // u
-            vertices.push_back(j / (float)rez); // v
-
-            vertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
-            vertices.push_back(0.0f); // v.y
-            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
-            vertices.push_back(i / (float)rez); // u
-            vertices.push_back((j + 1) / (float)rez); // v
+            vertices.push_back(j / (float)rez); // v         
 
             vertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
             vertices.push_back(0.0f); // v.y
@@ -96,7 +96,10 @@ EntityTerrain::~EntityTerrain()
 
 void EntityTerrain::draw(const float &deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
                          std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix)
+
 {
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     int widthUniformLocation = glGetUniformLocation(m_shader.m_ID, "ourColor");
     m_shader.use();
     m_shader.setInt("uHeightMap", 0);
@@ -127,6 +130,8 @@ void EntityTerrain::draw(const float &deltaTime, Camera &cam, bool instanced, fl
     glBindTexture(GL_TEXTURE_2D, m_textureID);
     glBindVertexArray(m_terrainVAO);
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+
+    glDisable(GL_CULL_FACE);
 }
 
 void EntityTerrain::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime,

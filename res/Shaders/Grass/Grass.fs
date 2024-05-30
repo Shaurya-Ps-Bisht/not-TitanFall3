@@ -52,11 +52,16 @@ void main()
     vec3 ambient = ambientStrength * dirLight.color;
     float shadow = ShadowCalculation(FragPos, dirLight);
 
-    FragColor = texture(texture_diffuse1, TexCoords) * (vec4(ambient,1) + vec4(dirLight.color,1) * (1 - shadow));
+    vec4 color = texture(texture_diffuse1, TexCoords) * (vec4(ambient,1) + vec4(dirLight.color,1) * (1 - shadow));
 
-    if(FragColor.a < 0.2) {
+    if(color.a < 0.2) {
         discard;
     }
+
+    
+    color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+    FragColor = color;
+
 }
 
 float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light)

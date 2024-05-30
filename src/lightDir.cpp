@@ -60,7 +60,7 @@ glm::mat4 lightDir::getLightSpaceMatrix(const float& nearPlane, const float& far
 
 std::vector<glm::mat4> lightDir::getLightSpaceMatrices(float nearPlane, float farPlane, const glm::mat4& view, float FOV, float aspectRatio)
 {
-    m_shadowCascadeLevels = { farPlane / 100.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f };
+    m_shadowCascadeLevels = { farPlane / 150.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f };
 
     std::vector<glm::mat4> ret;
     for (size_t i = 0; i < m_shadowCascadeLevels.size() + 1; ++i)

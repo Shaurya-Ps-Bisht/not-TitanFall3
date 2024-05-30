@@ -26,8 +26,6 @@ public:
 		static Player instance;
 		return instance;
 	}
-
-	void Draw(float dt, Camera& cam, lightDir dLight, std::vector<lightPoint>& lightPoints);
 	void UpdatePlayerPos(glm::vec3& newPos);
 	void UpdatePlayerRotation(float x, float y);
 	void InitPlayer(Camera& cam);

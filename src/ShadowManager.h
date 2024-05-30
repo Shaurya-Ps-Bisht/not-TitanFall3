@@ -60,6 +60,9 @@ private:
 	int m_MaxPointLights = 4;
 	int m_MaxSpotLights = 0;
 	float far_plane = 25.0f;
+
+	unsigned int POINT_SHADOW_MAP_W = 512;
+    unsigned int POINT_SHADOW_MAP_H = 512;
 	
 };
 

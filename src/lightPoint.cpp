@@ -15,7 +15,7 @@ void lightPoint::setPointLight(glm::vec3 position, glm::vec3 color, float c, flo
 
 void lightPoint::pointMatrixPush(std::vector<glm::mat4>& shadowTransforms)
 {
-	float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
+	float aspect = (float)POINT_SHADOW_MAP_W / (float)POINT_SHADOW_MAP_H;
 	float nearPlane = 1.0f;
 	float farPlane = 25.0f;
 

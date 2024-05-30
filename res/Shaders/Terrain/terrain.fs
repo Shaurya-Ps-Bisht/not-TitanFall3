@@ -65,7 +65,7 @@ void main()
     float shadow = ShadowCalculation(FragPos, dirLight, normal);
 
     vec3 color = mix(sand.xyz, rockGreyColor, clamp(h * 2.25, 0.0, 1.0)) * ((1 - shadow)*diffuse + ambient);
-
+color = pow(color, vec3(1.0/2.2)); 
     FragColor = vec4(color, 1.0) ;
 
     

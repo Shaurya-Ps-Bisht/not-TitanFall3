@@ -48,6 +48,8 @@ void main()
 
     final *= mainTex.xyz;
 
+    final = pow(final, vec3(1.0/2.2)); 
+
     FragColor = vec4(final,1);
 
 

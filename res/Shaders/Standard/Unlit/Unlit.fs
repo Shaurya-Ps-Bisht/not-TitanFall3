@@ -88,6 +88,7 @@ void main()
     }
 
     final = mainTex.xyz;
+    final = pow(final, vec3(1.0/2.2)); 
 
     FragColor = vec4(final,1);
     // FragColor = vec4(vec3(shadow), 1.0);;

@@ -151,7 +151,7 @@ void main()
 
     }  
     if(ao == 0){
-        ao = 0.001;
+        ao = 0.1;
     }
     
     vec3 ambient = vec3(0.03) * albedo * ao;
@@ -201,7 +201,7 @@ float ShadowCalculation(vec3 fragPosWorldSpace, DirLight light)
     }
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = normalize(fs_in.Normal);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount)
     {
