@@ -164,11 +164,15 @@ void Game::GameLoop()
 
 void Game::RenderLoop()
 {
+    
+
     float currentFrame = static_cast<float>(glfwGetTime());
 
     glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     for (auto &entity : m_entities)
     {
@@ -188,16 +192,6 @@ void Game::RenderLoop()
                   ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    hdrShader.use();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    hdrShader.setInt("hdr", hdr);
-    hdrShader.setFloat("exposure", exposure);
-    renderQuad();
 
     {
 
@@ -295,6 +289,18 @@ void Game::RenderLoop()
     }
 
     ImGui::End();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    hdrShader.use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    hdrShader.setInt("hdr", hdr);
+    hdrShader.setFloat("exposure", exposure);
+    renderQuad();
 }
 
 void Game::initEntities()
@@ -492,10 +498,10 @@ void Game::initData()
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
 
-    ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    /*ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);*/
 }
 
 void Game::processInput(GLFWwindow *window)

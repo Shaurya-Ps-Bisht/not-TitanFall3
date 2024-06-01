@@ -9,6 +9,7 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 ## Features
 
 * Physically based shading
+* IBL using reflection probes
 * Terrain Generation using tesselation shaders and heightmaps
 * Directional and point lights
 * Shadows
@@ -16,6 +17,7 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 * Fogs/Clouds rendering using Ray Marching
 * Model Loading (gltf, obj) with animations
 * Instanced rendering
+* HDR
 
 ## How to run
 
