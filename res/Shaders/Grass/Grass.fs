@@ -59,7 +59,7 @@ void main()
     }
 
     
-    color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
+    // color.xyz = pow(color.xyz, vec3(1.0/2.2)); 
     FragColor = color;
 
 }

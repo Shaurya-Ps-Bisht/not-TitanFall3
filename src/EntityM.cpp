@@ -100,7 +100,6 @@ void EntityM::draw(const float &deltaTime, Camera &cam, bool instanced, float el
         {
             m_position = glm::vec3(cam.m_cameraPos.x - 0.2f * sin(glm::radians(m_rotation.x)), cam.m_cameraPos.y - 1.7f,
                                    cam.m_cameraPos.z - 0.2f * cos(glm::radians(m_rotation.x)));
-            std::cout << m_rotation.x << std::endl;
         }
         model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
         model = glm::rotate(model, glm::radians( m_rotation.x), glm::vec3(0.0f, 1.0f, 0.0f));

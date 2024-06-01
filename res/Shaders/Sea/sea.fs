@@ -35,7 +35,7 @@ void main()
 
     vec4 final = vec4(waterColor * (diffuse + ambient) * (1.0 - fresnel) + fresnel * waterColor, transparency);
 
-    final.xyz = pow(final.xyz, vec3(1.0/2.2)); 
+    // final.xyz = pow(final.xyz, vec3(1.0/2.2)); 
     FragColor = final;
 }
 

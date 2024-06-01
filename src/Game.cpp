@@ -31,10 +31,12 @@ void renderQuad()
     {
         float quadVertices[] = {
             // positions        // texture Coords
-            0.25f, 1.0f, 0.0f, 0.0f, 1.0f,
+            /*0.25f, 1.0f, 0.0f, 0.0f, 1.0f,
             0.25f, 0.5f, 0.0f, 0.0f, 0.0f,
             1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+            1.0f, 0.5f, 0.0f, 1.0f, 0.0f,*/
+            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
         };
 
         // setup plane VAO
@@ -150,7 +152,7 @@ void Game::GameLoop()
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
 
-         renderQuad();
+        // renderQuad();
 
         ImGui::Render();
         ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
@@ -162,10 +164,10 @@ void Game::GameLoop()
 
 void Game::RenderLoop()
 {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     float currentFrame = static_cast<float>(glfwGetTime());
+
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
     for (auto &entity : m_entities)
@@ -186,6 +188,17 @@ void Game::RenderLoop()
                   ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    hdrShader.use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    hdrShader.setInt("hdr", hdr);
+    hdrShader.setFloat("exposure", exposure);
+    renderQuad();
+
     {
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
@@ -196,6 +209,8 @@ void Game::RenderLoop()
                                                               m_ResolutionWidth, m_ResolutionHeight));
         if (ImGui::Button("GOD MODE"))
             m_camera.godMode = !m_camera.godMode;
+
+        
     }
 
     {
@@ -207,11 +222,20 @@ void Game::RenderLoop()
         }
     }
 
+    if (ImGui::CollapsingHeader("HDR"))
     {
+        if (ImGui::Button("HDR Toggle"))
+            hdr = !hdr;
+
+        ImGui::SliderFloat("Exposure", &exposure, 0.0f, 10.0f);
+
+    }
+
+    if (ImGui::CollapsingHeader("Directional Light Settings"))
+    {
+
         static glm::vec3 dirLightDirection = ShadowManager::GetInstance().m_dirLight.m_direction;
         static glm::vec3 dirLightColor = ShadowManager::GetInstance().m_dirLight.m_color;
-
-        ImGui::Text("Directional Light Settings");
 
         if (ImGui::InputFloat3("Direction", glm::value_ptr(dirLightDirection)))
         {
@@ -224,7 +248,7 @@ void Game::RenderLoop()
         }
     }
 
-    if (1)
+    if (ImGui::CollapsingHeader("Volumetric Fog"))
     {
         static float _Scale = 1.42f;
         static float _StepScale = 4.0f;
@@ -252,24 +276,25 @@ void Game::RenderLoop()
         //    m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
         //    m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
 
-        ImGui::Begin("Entities");
-
-        for (auto &entity : m_entities)
-        {
-            std::visit(
-                [](const auto &ptr) {
-                    // ptr->draw(); // Call draw() or other member functions
-                    bool isRendered = ptr->getIsRendered();
-                    if (ImGui::Checkbox(ptr->getName().c_str(), &isRendered))
-                    {
-                        ptr->setIsRendered(isRendered);
-                    }
-                },
-                entity);
-        }
-
-        ImGui::End();
     }
+
+    ImGui::Begin("Entities");
+
+    for (auto &entity : m_entities)
+    {
+        std::visit(
+            [](const auto &ptr) {
+                // ptr->draw(); // Call draw() or other member functions
+                bool isRendered = ptr->getIsRendered();
+                if (ImGui::Checkbox(ptr->getName().c_str(), &isRendered))
+                {
+                    ptr->setIsRendered(isRendered);
+                }
+            },
+            entity);
+    }
+
+    ImGui::End();
 }
 
 void Game::initEntities()
@@ -322,7 +347,6 @@ void Game::initEntities()
     glm::vec3 vampireScale = glm::vec3(1.1f, 1.1f, 1.1f);
 
     //----------------------------------------------------------------------------------------------------------
-
 
     Shader bulbShader("res/Shaders/Bulb/Bulb.vs", "res/Shaders/Bulb/Bulb.fs");
     Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
@@ -395,7 +419,7 @@ void Game::initEntities()
 
     // cyberGirl->m_model.loadTexturesInfo();
 
-    //m_entitiesInstanced.push_back(std::move(grass));
+    m_entitiesInstanced.push_back(std::move(grass));
 
     // m_entities.push_back(std::move(backpack));
     // m_entities.push_back(std::move(vampire));
@@ -412,13 +436,40 @@ void Game::initEntities()
     m_entities.emplace_back(std::move(Boat));
     // m_entities.emplace_back(std::move(vFogObject));
     m_entities.emplace_back(std::move(bMoonObject));
-    //m_entities.emplace_back(std::move(sea));
+    m_entities.emplace_back(std::move(sea));
 
     m_entities.emplace_back(Player::GetInstance().m_playerModel);
 }
 
 void Game::initData()
 {
+    {
+        unsigned int SCR_WIDTH = Renderer::GetInstance().SCR_WIDTH;
+        unsigned int SCR_HEIGHT = Renderer::GetInstance().SCR_HEIGHT;
+        glGenFramebuffers(1, &hdrFBO);
+
+        glGenTextures(1, &colorBuffer);
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // create depth buffer (renderbuffer)
+        glGenRenderbuffers(1, &rboDepth);
+        glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+        // attach buffers
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "Framebuffer not complete!" << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        hdrShader = Shader("res/Shaders/HDR/hdr.vs", "res/Shaders/HDR/hdr.fs");
+        hdrShader.use();
+        hdrShader.setInt("hdrBuffer", 0);
+    }
+
     int width, height, nrChannels;
     data = stbi_load("res/Terrains/HeightMaps/heightmap1.png", &width, &height, &nrChannels, 0);
     if (data)
@@ -441,10 +492,10 @@ void Game::initData()
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
 
-/*        ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
-        ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f)*/;
+    ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
 }
 
 void Game::processInput(GLFWwindow *window)
