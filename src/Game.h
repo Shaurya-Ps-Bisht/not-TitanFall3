@@ -74,6 +74,7 @@ class Game
     Shader m_skyShader;
     Shader debugDepthQuad;
     Shader hdrShader;
+    Shader shaderBlur;
 
 
     std::unique_ptr<EntityTerrain> m_terrain;
@@ -88,12 +89,15 @@ class Game
     std::vector<GLuint> visualizerEBOs;
 
     unsigned int hdrFBO;
-    unsigned int colorBuffer;
+    unsigned int colorBuffers[2];
     unsigned int rboDepth;
 
     bool hdr = true;
     bool hdrKeyPressed = false;
     float exposure = 1.0f;
+
+    unsigned int pingpongFBO[2];
+    unsigned int pingpongBuffer[2];
 
 
 };

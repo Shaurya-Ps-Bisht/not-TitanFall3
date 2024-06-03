@@ -164,13 +164,11 @@ void Game::GameLoop()
 
 void Game::RenderLoop()
 {
-    
 
     float currentFrame = static_cast<float>(glfwGetTime());
 
     glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
@@ -192,6 +190,22 @@ void Game::RenderLoop()
                   ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
+    {
+        bool horizontal = true, first_iteration = true;
+        int amount = 10;
+        shaderBlur.use();
+        for (unsigned int i = 0; i < amount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+            shaderBlur.setInt("horizontal", horizontal);
+            glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
+            renderQuad();
+            horizontal = !horizontal;
+            if (first_iteration)
+                first_iteration = false;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
     {
 
@@ -203,8 +217,6 @@ void Game::RenderLoop()
                                                               m_ResolutionWidth, m_ResolutionHeight));
         if (ImGui::Button("GOD MODE"))
             m_camera.godMode = !m_camera.godMode;
-
-        
     }
 
     {
@@ -222,7 +234,6 @@ void Game::RenderLoop()
             hdr = !hdr;
 
         ImGui::SliderFloat("Exposure", &exposure, 0.0f, 10.0f);
-
     }
 
     if (ImGui::CollapsingHeader("Directional Light Settings"))
@@ -269,7 +280,6 @@ void Game::RenderLoop()
         //    m_entities[8]->m_shader.setFloat("_MaxHeight", _MaxHeight);
         //    m_entities[8]->m_shader.setFloat("_FadeDistance", _FadeDistance);
         //    m_entities[8]->m_shader.setVec4("_SunDir", glm::vec4(_SunDir)); // Add the missing W component
-
     }
 
     ImGui::Begin("Entities");
@@ -291,13 +301,14 @@ void Game::RenderLoop()
     ImGui::End();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     hdrShader.use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, pingpongBuffer[0]);
+
     hdrShader.setInt("hdr", hdr);
     hdrShader.setFloat("exposure", exposure);
     renderQuad();
@@ -449,31 +460,57 @@ void Game::initEntities()
 
 void Game::initData()
 {
-    {
-        unsigned int SCR_WIDTH = Renderer::GetInstance().SCR_WIDTH;
-        unsigned int SCR_HEIGHT = Renderer::GetInstance().SCR_HEIGHT;
-        glGenFramebuffers(1, &hdrFBO);
+    unsigned int SCR_WIDTH = Renderer::GetInstance().SCR_WIDTH;
+    unsigned int SCR_HEIGHT = Renderer::GetInstance().SCR_HEIGHT;
 
-        glGenTextures(1, &colorBuffer);
-        glBindTexture(GL_TEXTURE_2D, colorBuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // create depth buffer (renderbuffer)
+    {
+        glGenFramebuffers(1, &hdrFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+
+        glGenTextures(2, colorBuffers);
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
+        }
+
         glGenRenderbuffers(1, &rboDepth);
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-        // attach buffers
-        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+        unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+        glDrawBuffers(2, attachments);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "Framebuffer not complete!" << std::endl;
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        hdrShader = Shader("res/Shaders/HDR/hdr.vs", "res/Shaders/HDR/hdr.fs");
+        hdrShader = Shader("res/Shaders/Post Processing/HDR/hdr.vs", "res/Shaders/Post Processing/HDR/hdr.fs");
         hdrShader.use();
         hdrShader.setInt("hdrBuffer", 0);
+        hdrShader.setInt("bloomBlur", 1);
+    }
+    {
+        glGenFramebuffers(2, pingpongFBO);
+        glGenTextures(2, pingpongBuffer);
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+            glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
+        }
+
+        shaderBlur = Shader("res/Shaders/Post Processing/Bloom/blur.vs", "res/Shaders/Post Processing/Bloom/blur.fs");
     }
 
     int width, height, nrChannels;
@@ -498,10 +535,10 @@ void Game::initData()
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
 
-    /*ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);*/
+    // ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    // ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
 }
 
 void Game::processInput(GLFWwindow *window)

@@ -1,7 +1,9 @@
 #version 410 core
 
 #define NR_POINT_LIGHTS 4
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
+
 
 in VS_OUT {
     vec3 FragPos;
@@ -151,7 +153,7 @@ void main()
 
     }  
     if(ao == 0){
-        ao = 0.1;
+        ao = 0.01;
     }
     vec3 ambient = vec3(0.03) * albedo * ao;
     

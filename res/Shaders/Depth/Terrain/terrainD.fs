@@ -7,7 +7,8 @@ struct DirLight {
 in float Height;
 in vec2 TexCoords;
 in vec3 FragPos;
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+
 
 uniform sampler2D uHeightMap;
 uniform sampler2D sandTex;
