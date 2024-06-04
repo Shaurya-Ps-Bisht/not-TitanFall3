@@ -2,120 +2,111 @@
 
 EntityV::EntityV(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, float angleP,
                  glm::vec3 axisP, Shader &initialShader, const char *shape)
-	:Entity(name,initialPosition,initialScale,initialShader),
-	angle(angleP),
-	axis(axisP)
+    : Entity(name, initialPosition, initialScale, initialShader), angle(angleP), axis(axisP)
 {
-	getVertexData(shape);
+    getVertexData(shape);
 
-	glGenVertexArrays(1, &m_vao);
-	glBindVertexArray(m_vao);
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
 
-	glGenBuffers(1, &m_vbo);
+    glGenBuffers(1, &m_vbo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexPos[0]), &vertexPos[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexPos[0]), &vertexPos[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
-	glGenBuffers(1, &m_nbo);
+    glGenBuffers(1, &m_nbo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexNorms[0]), &vertexNorms[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_nbo);
+    glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexNorms[0]), &vertexNorms[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
-	glGenBuffers(1, &m_tbo);
+    glGenBuffers(1, &m_tbo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_tbo);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexUv[0]), &vertexUv[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_tbo);
+    glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertexUv[0]), &vertexUv[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
+    glGenBuffers(1, &m_ibo);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(m_indices[0]), &m_indices[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &m_ibo);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(m_indices[0]), &m_indices[0], GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
+    glBindVertexArray(0);
 }
 
-void EntityV::draw(const float& deltaTime, Camera& cam, bool instanced, float elapsedTime, lightDir dLight, std::vector<lightPoint>& lightPoints, glm::mat4 lightSpaceMatrix)
+void EntityV::draw(const float &deltaTime, Camera &cam, bool instanced, float elapsedTime, lightDir dLight,
+                   std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix)
 {
-	glm::mat4 projection = cam.GetProjectionMatrix();
-	glm::mat4 view = cam.GetViewMatrix();
+    glm::mat4 projection = cam.GetProjectionMatrix();
+    glm::mat4 view = cam.GetViewMatrix();
 
-	m_shader.use();
-	//m_shader.setInt("texture_diffuse1", 0);
-	//m_shader.setInt("shadowMap", 2);
+    m_shader.use();
+    // m_shader.setInt("texture_diffuse1", 0);
+    // m_shader.setInt("shadowMap", 2);
 
-	m_shader.setMat4("projection", projection);
-	m_shader.setMat4("view", view);
+    m_shader.setMat4("projection", projection);
+    m_shader.setMat4("view", view);
 
-	//Lighting setup
-	m_shader.setVec3("viewPos", cam.m_cameraPos);
-	m_shader.setVec3("dirLight.direction", dLight.m_direction);
-	m_shader.setVec3("dirLight.color", dLight.m_color);
-	m_shader.setFloat("farPlane", cam.m_farPlane);
-	m_shader.setFloat("pointShadowFar", 25.0f);
-	m_shader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
-	for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
-	{
-		m_shader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
-	}
+    // Lighting setup
+    m_shader.setVec3("viewPos", cam.m_cameraPos);
+    m_shader.setVec3("dirLight.direction", dLight.m_direction);
+    m_shader.setVec3("dirLight.color", dLight.m_color);
+    m_shader.setFloat("farPlane", cam.m_farPlane);
+    m_shader.setFloat("pointShadowFar", 25.0f);
+    m_shader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
+    for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
+    {
+        m_shader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
+    }
 
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
+    model = glm::rotate(model, glm::radians(angle), axis);
+    model = glm::scale(model, m_scale); // it's a bit too big for our scene, so scale it down
+    m_shader.setMat4("model", model);
 
-
-
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
-	model = glm::rotate(model, glm::radians(angle), axis);
-	model = glm::scale(model, m_scale);	// it's a bit too big for our scene, so scale it down
-	m_shader.setMat4("model", model);
-
-	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
-
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
 }
 
 void EntityV::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
                            Shader &shader)
 {
-	shader.use();
-	/*shader.setInt("texture_diffuse1", 0);
-	shader.setInt("shadowMap", 2);*/
+    shader.use();
+    /*shader.setInt("texture_diffuse1", 0);
+    shader.setInt("shadowMap", 2);*/
 
+    // Lighting setup
 
-	//Lighting setup
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, m_position);
+    model = glm::rotate(model, glm::radians(angle), axis);
+    model = glm::scale(model, m_scale);
+    shader.setMat4("model", model);
 
-
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, m_position);
-	model = glm::rotate(model, glm::radians(angle), axis);
-	model = glm::scale(model, m_scale);
-	shader.setMat4("model", model);
-
-	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
-	glBindVertexArray(0);
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
 }
 
-void EntityV::getVertexData(const char* shape)
+void EntityV::getVertexData(const char *shape)
 {
-	m_shape = m_shape->FetchShape(shape);
-	m_shape->initVertexData();
+    m_shape = m_shape->FetchShape(shape);
+    m_shape->initVertexData();
 
-	m_indices = m_shape->getIndexData();
-	numIndices = m_shape->getIndexData().size();
+    m_indices = m_shape->getIndexData();
+    numIndices = m_shape->getIndexData().size();
 
-	numVertices = m_shape->getVertex().size();
-	for (size_t i = 0; i < numVertices; ++i)
-	{
-		vertexPos.push_back(m_shape->getVertex()[i].pos);
-		vertexUv.push_back(m_shape->getVertex()[i].tex);
-		vertexNorms.push_back(m_shape->getVertex()[i].normals);
-	}
+    numVertices = m_shape->getVertex().size();
+    for (size_t i = 0; i < numVertices; ++i)
+    {
+        vertexPos.push_back(m_shape->getVertex()[i].pos);
+        vertexUv.push_back(m_shape->getVertex()[i].tex);
+        vertexNorms.push_back(m_shape->getVertex()[i].normals);
+    }
 }

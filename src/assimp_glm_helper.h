@@ -2,13 +2,13 @@
 #ifndef __ASSIMP_GLM_HELPER__
 #define __ASSIMP_GLM_HELPER__
 
-#include <glad/glad.h> 
+#include <glad.h> 
 
 #include<assimp/quaternion.h>
 #include<assimp/vector3.h>
 #include<assimp/matrix4x4.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 
 

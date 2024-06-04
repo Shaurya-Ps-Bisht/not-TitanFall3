@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include <GLAD/glad.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
 #include <stb_image.h>

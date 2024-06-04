@@ -8,9 +8,9 @@
 #include "lightDir.h"
 #include "lightPoint.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 
 
@@ -22,6 +22,7 @@ public:
     glm::vec3 m_scale;
     glm::vec3 m_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     Shader m_shader;
+    bool inFrustum  = false;
 
     Entity(const std::string& name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale, const Shader &initialShader)
         : name(name), m_position(initialPosition), m_scale(initialScale), m_shader(initialShader)

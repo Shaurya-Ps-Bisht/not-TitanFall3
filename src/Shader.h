@@ -3,7 +3,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <GLAD/glad.h>
+#include <glad.h>
 
 #include <string>
 #include <fstream>
@@ -14,8 +14,8 @@
 #include <sstream>
 #include <iostream>
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
+#include <glad.h>
+#include <glm.hpp>
 
 
 class Shader

@@ -1,8 +1,8 @@
 
 #include "Game.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 #ifdef __cplusplus
 extern "C"
 {
@@ -76,7 +76,7 @@ void Game::Run()
     initData();
     initEntities();
     ShadowManager::GetInstance().initShadows();
-    debugDepthQuad = Shader("res/Shaders/Depth/Debug/depthDebug.vs", "res/Shaders/Depth/Debug/depthDebug.fs");
+    debugDepthQuad = Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
     debugDepthQuad.use();
     debugDepthQuad.setInt("shadowMap", 2);
     GameLoop();
@@ -91,7 +91,11 @@ void Game::GameLoop()
     while (!glfwWindowShouldClose(m_window))
     {
 
-        ImGui_ImplGlfwGL3_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+
 
         float currentFrame = static_cast<float>(glfwGetTime());
         m_deltaTime = currentFrame - lastFrame;
@@ -155,7 +159,8 @@ void Game::GameLoop()
         // renderQuad();
 
         ImGui::Render();
-        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
         glfwSwapBuffers(m_window);
         glfwPollEvents();
@@ -318,7 +323,7 @@ void Game::initEntities()
 {
     Player::GetInstance().InitPlayer(m_camera);
 
-    m_skyBox = SkyBox("res/CubeMaps/skybox/");
+    m_skyBox = SkyBox("../../res/CubeMaps/skybox/");
     m_terrain = std::make_unique<EntityTerrain>("Terrain 1", data, m_ResolutionWidth, m_ResolutionHeight);
 
     //----------------------------------------------------------------------------------------------------------
@@ -365,13 +370,13 @@ void Game::initEntities()
 
     //----------------------------------------------------------------------------------------------------------
 
-    Shader bulbShader("res/Shaders/Bulb/Bulb.vs", "res/Shaders/Bulb/Bulb.fs");
-    Shader unlitShader("res/Shaders/Standard/Unlit/Unlit.vs", "res/Shaders/Standard/Unlit/Unlit.fs");
-    Shader pbrShader("res/Shaders/Standard/PBR/PBR.vs", "res/Shaders/Standard/PBR/PBR.fs");
-    Shader grassShader("res/Shaders/Grass/Grass.vs", "res/Shaders/Grass/Grass.fs");
-    Shader ourShader("res/Shaders/skeletal.vs", "res/Shaders/skeletalPBR.fs");
-    Shader seaShader("res/Shaders/Sea/sea.vs", "res/Shaders/Sea/sea.fs");
-    Shader bMoon("res/Shaders/Bulb/bMoon/bMoon.vs", "res/Shaders/Bulb/bMoon/bMoon.fs");
+    Shader bulbShader("../../res/Shaders/Bulb/Bulb.vs", "../../res/Shaders/Bulb/Bulb.fs");
+    Shader unlitShader("../../res/Shaders/Standard/Unlit/Unlit.vs", "../../res/Shaders/Standard/Unlit/Unlit.fs");
+    Shader pbrShader("../../res/Shaders/Standard/PBR/PBR.vs", "../../res/Shaders/Standard/PBR/PBR.fs");
+    Shader grassShader("../../res/Shaders/Grass/Grass.vs", "../../res/Shaders/Grass/Grass.fs");
+    Shader ourShader("../../res/Shaders/skeletal.vs", "../../res/Shaders/skeletalPBR.fs");
+    Shader seaShader("../../res/Shaders/Sea/sea.vs", "../../res/Shaders/Sea/sea.fs");
+    Shader bMoon("../../res/Shaders/Bulb/bMoon/bMoon.vs", "../../res/Shaders/Bulb/bMoon/bMoon.fs");
     // Shader vFog("res/Shaders/VolumetricFog/VolumetricFog.vs", "res/Shaders/VolumetricFog/VolumetricFog.fs");
 
     unlitShader.use();
@@ -396,7 +401,7 @@ void Game::initEntities()
     vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));*/
 
     std::unique_ptr<EntityM> grass = std::make_unique<EntityM>(
-        "Grass", "res/textures/Grass/grass.png", grassPos, grassScale, grassShader, "res/Models/Grass/grass.fbx",
+        "Grass", "../../res/textures/Grass/grass.png", grassPos, grassScale, grassShader, "../../res/Models/Grass/grass.fbx",
         RandomHelpers::instanceMatrixTerrain(500000, 300.0, 75.0f, -20.0f, 20.0f, data, m_ResolutionWidth,
                                              m_ResolutionHeight),
         500000);
@@ -418,17 +423,17 @@ void Game::initEntities()
     // "res/Models/Backpack/Survival_BackPack_2.fbx"); std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c,
     // d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
     std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>("House Exterior", ExLocation, grassScale, pbrShader,
-                                                                  "res/Models/House/Exterior/Exterior.gltf");
+                                                                  "../../res/Models/House/Exterior/Exterior.gltf");
     // std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader,
     // "res/Models/House/Exterior/Exterior.gltf");
     std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>("Interior", InLocation, InScale, pbrShader,
-                                                                  "res/Models/House/StarWarsClone/untitled.gltf");
+                                                                  "../../res/Models/House/StarWarsClone/untitled.gltf");
     std::unique_ptr<EntityM> Boat =
-        std::make_unique<EntityM>("BOAT", boatLocation, boatScale, unlitShader, "res/Models/Boat/boat.obj");
+        std::make_unique<EntityM>("BOAT", boatLocation, boatScale, unlitShader, "../../res/Models/Boat/boat.obj");
     // std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f,
     // 0.0f), vFog, "CUBE");
     std::unique_ptr<EntityM> sea =
-        std::make_unique<EntityM>("SEA", seaLocation, seaScale, seaShader, "res/Models/Shapes/Plane.gltf");
+        std::make_unique<EntityM>("SEA", seaLocation, seaScale, seaShader, "../../res/Models/Shapes/Plane.gltf");
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(
         "Moon", bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
     // std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader,
@@ -490,7 +495,7 @@ void Game::initData()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        hdrShader = Shader("res/Shaders/Post Processing/HDR/hdr.vs", "res/Shaders/Post Processing/HDR/hdr.fs");
+        hdrShader = Shader("../../res/Shaders/Post Processing/HDR/hdr.vs", "../../res/Shaders/Post Processing/HDR/hdr.fs");
         hdrShader.use();
         hdrShader.setInt("hdrBuffer", 0);
         hdrShader.setInt("bloomBlur", 1);
@@ -510,11 +515,11 @@ void Game::initData()
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
         }
 
-        shaderBlur = Shader("res/Shaders/Post Processing/Bloom/blur.vs", "res/Shaders/Post Processing/Bloom/blur.fs");
+        shaderBlur = Shader("../../res/Shaders/Post Processing/Bloom/blur.vs", "../../res/Shaders/Post Processing/Bloom/blur.fs");
     }
 
     int width, height, nrChannels;
-    data = stbi_load("res/Terrains/HeightMaps/heightmap1.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("../../res/Terrains/HeightMaps/heightmap1.png", &width, &height, &nrChannels, 0);
     if (data)
     {
 

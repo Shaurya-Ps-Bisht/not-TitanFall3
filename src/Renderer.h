@@ -2,12 +2,13 @@
 #ifndef __RENDERER_H__
 #define __RENDERER_H__
 
-#include <glad/glad.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
-#include "vendor/imgui/imgui.h"
-#include "vendor/imgui/imgui_impl_glfw_gl3.h"
-
+#include <imgui.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <imgui.h>
 #include "Camera.h"
 #include "Game.h"
 

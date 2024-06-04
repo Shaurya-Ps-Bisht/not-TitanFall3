@@ -4,7 +4,9 @@
 
 Renderer::~Renderer()
 {
-    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+
     ImGui::DestroyContext();
     glfwTerminate();
 }
@@ -77,8 +79,15 @@ int Renderer::InitGlfwOGL()
 
     m_window = window;
 
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // IF using Docking Branch
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
     ImGui::StyleColorsDark();
 
     return 0;

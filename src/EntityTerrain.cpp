@@ -12,10 +12,10 @@ EntityTerrain::EntityTerrain(const std::string &name, const unsigned char *data,
 
     // build and compile our shader program
     // ------------------------------------
-    m_shader = Shader("res/Shaders/Terrain/terrain.vs",
-        "res/Shaders/Terrain/terrain.fs", nullptr,
-        "res/Shaders/Terrain/terrain.tcs",
-        "res/Shaders/Terrain/terrain.tes");
+    m_shader = Shader("../../res/Shaders/Terrain/terrain.vs",
+        "../../res/Shaders/Terrain/terrain.fs", nullptr,
+        "../../res/Shaders/Terrain/terrain.tcs",
+        "../../res/Shaders/Terrain/terrain.tes");
 
 
     m_shader.setInt("heightMap", 0);
@@ -170,7 +170,7 @@ void EntityTerrain::LoadFromFile(const char* filename)
 void EntityTerrain::loadSand()
 {
     int width, height, bpp;
-    unsigned char * m_LocalBuffer = stbi_load("res/textures/sand/sand1.jpg", &width, &height, &bpp, 4);
+    unsigned char * m_LocalBuffer = stbi_load("../../res/textures/sand/sand1.jpg", &width, &height, &bpp, 4);
 
     glGenTextures(1, &m_sand);
     glBindTexture(GL_TEXTURE_2D, m_sand);

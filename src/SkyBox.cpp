@@ -2,7 +2,7 @@
 
 SkyBox::SkyBox(const char* path)
 {
-    skyboxShader = Shader("res/Shaders/Skybox/skybox.vs", "res/Shaders/Skybox/skybox.fs");
+    skyboxShader = Shader("../../res/Shaders/Skybox/skybox.vs", "../../res/Shaders/Skybox/skybox.fs");
 
     float skyboxVertices[] = {
         // positions          

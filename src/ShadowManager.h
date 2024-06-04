@@ -5,8 +5,8 @@
 #include <vector>
 #include <memory>
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include "Shader.h"
 #include "EntityTerrain.h"

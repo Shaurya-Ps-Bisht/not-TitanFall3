@@ -25,7 +25,7 @@ void Player::UpdatePlayerRotation(float x, float y)
 
 void Player::InitPlayer(Camera &cam)
 {
-    m_playerShader = Shader("res/Shaders/skeletal.vs", "res/Shaders/skeletalPBR.fs");
+    m_playerShader = Shader("../../res/Shaders/skeletal.vs", "../../res/Shaders/skeletalPBR.fs");
     m_playerPos = glm::vec3(cam.m_cameraPos.x - 0.2f * cos(glm::radians(m_horizontalRotation)), cam.m_cameraPos.y - 1.7f,
                   cam.m_cameraPos.z - 0.2f * sin(glm::radians(m_horizontalRotation)));
 
@@ -50,7 +50,7 @@ void Player::SetPlayerModel()
 {
     glm::vec3 scadlee = glm::vec3(0.01f, 0.01f, 0.01f);
     m_playerModel = std::make_shared<EntityM>("Player", m_playerPos, scadlee, m_playerShader,
-                                              "res/Models/Player/Final/Player.gltf",
+                                              "../../res/Models/Player/Final/Player.gltf",
                               "Idle");
     m_playerModel->updateRotation(glm::vec3(180.0f, 0.0f, 0.0f));
     ;

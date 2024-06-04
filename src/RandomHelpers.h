@@ -2,11 +2,11 @@
 
 #ifndef __RANDOMHELPERS_H__
 #define __RANDOMHELPERS_H__
-#include <GLAD/glad.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 
 
 namespace RandomHelpers

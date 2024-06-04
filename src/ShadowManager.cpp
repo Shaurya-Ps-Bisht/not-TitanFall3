@@ -4,7 +4,7 @@ void ShadowManager::initShadows()
 {
     glGenBuffers(1, &matricesUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -12,9 +12,9 @@ void ShadowManager::initShadows()
     m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 
-    dirDepthShader = Shader("res/Shaders/Depth/CSM/dir_csm.vs", "res/Shaders/Depth/CSM/dir_csm.fs", "res/Shaders/Depth/CSM/dir_csm.gs");
-    pointDepthShader = Shader("res/Shaders/Depth/PointDepth/pointDepth.vs", "res/Shaders/Depth/PointDepth/pointDepth.fs", "res/Shaders/Depth/PointDepth/pointDepth.gs");
-    debugCascadeShader = Shader("res/Shaders/Depth/DebugCascade/debug_cascade.vs", "res/Shaders/Depth/DebugCascade/debug_cascade.fs");
+    dirDepthShader = Shader("../../res/Shaders/Depth/CSM/dir_csm.vs", "../../res/Shaders/Depth/CSM/dir_csm.fs", "../../res/Shaders/Depth/CSM/dir_csm.gs");
+    pointDepthShader = Shader("../../res/Shaders/Depth/PointDepth/pointDepth.vs", "../../res/Shaders/Depth/PointDepth/pointDepth.fs", "../../res/Shaders/Depth/PointDepth/pointDepth.gs");
+    debugCascadeShader = Shader("../../res/Shaders/Depth/DebugCascade/debug_cascade.vs", "../../res/Shaders/Depth/DebugCascade/debug_cascade.fs");
 
     {
         glGenTextures(1, &m_depthCubemap);

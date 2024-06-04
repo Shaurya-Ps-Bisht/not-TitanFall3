@@ -6,7 +6,7 @@
 #include <variant>
 #include <vector>
 
-#include <GLAD/glad.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
 #include "Animation.h"
@@ -26,9 +26,9 @@
 #include "lightDir.h"
 #include "lightPoint.h"
 
-#include <irrklang/irrKlang.h>
+//#include <irrklang/irrKlang.h>
 
-using namespace irrklang;
+//using namespace irrklang;
 using EntityPtr = std::variant<std::shared_ptr<EntityM>, std::unique_ptr<EntityM>, std::unique_ptr<EntityV>,
                                std::unique_ptr<EntityTerrain>>;
 

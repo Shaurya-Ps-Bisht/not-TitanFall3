@@ -6,9 +6,9 @@
 #include <vector>
 #include <assimp/scene.h>
 #include <list>
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
+#include <gtx/quaternion.hpp>
 
 struct KeyPosition
 {
