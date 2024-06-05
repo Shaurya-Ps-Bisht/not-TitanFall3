@@ -3,15 +3,11 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
-#ifdef __cplusplus
+#ifdef _WIN32
 extern "C"
 {
-#endif
-
     __declspec(dllexport) DWORD NvOptimusEnablement = 1;
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-
-#ifdef __cplusplus
 }
 #endif
 
@@ -76,7 +72,8 @@ void Game::Run()
     initData();
     initEntities();
     ShadowManager::GetInstance().initShadows();
-    debugDepthQuad = Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
+    debugDepthQuad =
+        Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
     debugDepthQuad.use();
     debugDepthQuad.setInt("shadowMap", 2);
     GameLoop();
@@ -94,8 +91,6 @@ void Game::GameLoop()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-
 
         float currentFrame = static_cast<float>(glfwGetTime());
         m_deltaTime = currentFrame - lastFrame;
@@ -160,7 +155,6 @@ void Game::GameLoop()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         glfwSwapBuffers(m_window);
         glfwPollEvents();
@@ -400,11 +394,12 @@ void Game::initEntities()
     vFog.setFloat("_FadeDistance", 10);
     vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));*/
 
-    std::unique_ptr<EntityM> grass = std::make_unique<EntityM>(
-        "Grass", "../../res/textures/Grass/grass.png", grassPos, grassScale, grassShader, "../../res/Models/Grass/grass.fbx",
-        RandomHelpers::instanceMatrixTerrain(500000, 300.0, 75.0f, -20.0f, 20.0f, data, m_ResolutionWidth,
-                                             m_ResolutionHeight),
-        500000);
+    std::unique_ptr<EntityM> grass =
+        std::make_unique<EntityM>("Grass", "../../res/textures/Grass/grass.png", grassPos, grassScale, grassShader,
+                                  "../../res/Models/Grass/grass.fbx",
+                                  RandomHelpers::instanceMatrixTerrain(500000, 300.0, 75.0f, -20.0f, 20.0f, data,
+                                                                       m_ResolutionWidth, m_ResolutionHeight),
+                                  500000);
 
     std::unique_ptr<EntityV> lightBulb1 = std::make_unique<EntityV>("bulb 1", lightPos1, lightScale1, 0.0f,
                                                                     glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
@@ -495,7 +490,8 @@ void Game::initData()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        hdrShader = Shader("../../res/Shaders/Post Processing/HDR/hdr.vs", "../../res/Shaders/Post Processing/HDR/hdr.fs");
+        hdrShader =
+            Shader("../../res/Shaders/Post Processing/HDR/hdr.vs", "../../res/Shaders/Post Processing/HDR/hdr.fs");
         hdrShader.use();
         hdrShader.setInt("hdrBuffer", 0);
         hdrShader.setInt("bloomBlur", 1);
@@ -515,7 +511,8 @@ void Game::initData()
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
         }
 
-        shaderBlur = Shader("../../res/Shaders/Post Processing/Bloom/blur.vs", "../../res/Shaders/Post Processing/Bloom/blur.fs");
+        shaderBlur = Shader("../../res/Shaders/Post Processing/Bloom/blur.vs",
+                            "../../res/Shaders/Post Processing/Bloom/blur.fs");
     }
 
     int width, height, nrChannels;
