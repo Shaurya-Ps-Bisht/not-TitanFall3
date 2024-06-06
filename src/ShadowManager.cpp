@@ -8,13 +8,15 @@ void ShadowManager::initShadows()
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-
     m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-
-    dirDepthShader = Shader("../../res/Shaders/Depth/CSM/dir_csm.vs", "../../res/Shaders/Depth/CSM/dir_csm.fs", "../../res/Shaders/Depth/CSM/dir_csm.gs");
-    pointDepthShader = Shader("../../res/Shaders/Depth/PointDepth/pointDepth.vs", "../../res/Shaders/Depth/PointDepth/pointDepth.fs", "../../res/Shaders/Depth/PointDepth/pointDepth.gs");
-    debugCascadeShader = Shader("../../res/Shaders/Depth/DebugCascade/debug_cascade.vs", "../../res/Shaders/Depth/DebugCascade/debug_cascade.fs");
+    dirDepthShader = Shader("../../res/Shaders/Depth/CSM/dir_csm.vs", "../../res/Shaders/Depth/CSM/dir_csm.fs",
+                            "../../res/Shaders/Depth/CSM/dir_csm.gs");
+    pointDepthShader =
+        Shader("../../res/Shaders/Depth/PointDepth/pointDepth.vs", "../../res/Shaders/Depth/PointDepth/pointDepth.fs",
+               "../../res/Shaders/Depth/PointDepth/pointDepth.gs");
+    debugCascadeShader = Shader("../../res/Shaders/Depth/DebugCascade/debug_cascade.vs",
+                                "../../res/Shaders/Depth/DebugCascade/debug_cascade.fs");
 
     {
         glGenTextures(1, &m_depthCubemap);
@@ -28,8 +30,7 @@ void ShadowManager::initShadows()
         glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H,
-                     6 * m_MaxPointLights, 0,
-            GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+                     6 * m_MaxPointLights, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
         glGenFramebuffers(1, &pointDepthFBO);
@@ -46,8 +47,6 @@ void ShadowManager::initShadows()
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
     }
 
     m_dirLight.configureLightFBO();
@@ -65,13 +64,13 @@ void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std
 {
     updateDirShadows(deltaTime, currentFrame, entities, cam);
     updatePointShadows(deltaTime, currentFrame, entities, cam);
-    
 }
 
 void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
                                      Camera &cam)
 {
-    const auto lightMatrices = m_dirLight.getLightSpaceMatrices(cam.m_nearPlane, cam.m_farPlane, cam.GetViewMatrix(), cam.m_FOV, cam.m_aspectRatio);
+    const auto lightMatrices = m_dirLight.getLightSpaceMatrices(cam.m_nearPlane, cam.m_farPlane, cam.GetViewMatrix(),
+                                                                cam.m_FOV, cam.m_aspectRatio);
 
     glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
     for (size_t i = 0; i < lightMatrices.size(); ++i)
@@ -80,13 +79,12 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
     }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-
     dirDepthShader.use();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_dirLight.m_lightFBO);
     glViewport(0, 0, m_dirLight.m_depthMapResolution, m_dirLight.m_depthMapResolution);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glCullFace(GL_FRONT);  // peter panning
+    glCullFace(GL_FRONT); // peter panning
     {
 
         for (auto &entity : entities)
@@ -105,7 +103,6 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
         /*for (const auto& obj : m_entitiesInstanced) {
             obj->drawDirLight(m_deltaTime, false, m_camera, currentFrame, m_dirLight, simpleDepthShader);
         }*/
-
     }
 
     glCullFace(GL_BACK);
@@ -134,21 +131,19 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
         {
             POINT_SHADOW_MAP_W = m_pointLights[i].POINT_SHADOW_MAP_W;
             glViewport(0, 0, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H);
-
         }
         for (unsigned int j = 0; j < 6; ++j)
-            pointDepthShader.setMat4("shadowMatrices[" + std::to_string(j + 6*i) + "]", shadowTransforms[j + 6 * i]);
+            pointDepthShader.setMat4("shadowMatrices[" + std::to_string(j + 6 * i) + "]", shadowTransforms[j + 6 * i]);
 
         std::string indexStr = std::to_string(i);
         pointDepthShader.setVec3("lightPos[" + indexStr + "]", m_pointLights[i].m_pos);
     }
 
-
     pointDepthShader.setFloat("far_plane", far_plane);
 
-    glCullFace(GL_FRONT);  // peter panning
+    glCullFace(GL_FRONT); // peter panning
     {
-        //m_terrain->DrawDepth(simpleDepthShader);
+        // m_terrain->DrawDepth(simpleDepthShader);
         /*for (const auto& obj : entities) {
             glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D_ARRAY, m_depthCubemap);
@@ -171,7 +166,6 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
         /*for (const auto& obj : m_entitiesInstanced) {
             obj->drawDirLight(m_deltaTime, false, m_camera, currentFrame, m_dirLight, simpleDepthShader);
         }*/
-
     }
 
     glCullFace(GL_BACK);
@@ -180,8 +174,7 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
     glViewport(0, 0, Renderer::GetInstance().SCR_WIDTH, Renderer::GetInstance().SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //shadowTransforms.clear();
-
+    // shadowTransforms.clear();
 }
 
 void ShadowManager::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q)

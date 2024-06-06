@@ -438,6 +438,7 @@ void Game::initEntities()
 
     m_entitiesInstanced.push_back(std::move(grass));
 
+    m_entities.emplace_back(Player::GetInstance().m_playerModel);
     // m_entities.push_back(std::move(backpack));
     // m_entities.push_back(std::move(vampire));
     // m_entities.push_back(std::move(solja));
@@ -454,8 +455,6 @@ void Game::initEntities()
     // m_entities.emplace_back(std::move(vFogObject));
     m_entities.emplace_back(std::move(bMoonObject));
     m_entities.emplace_back(std::move(sea));
-
-    m_entities.emplace_back(Player::GetInstance().m_playerModel);
 }
 
 void Game::initData()
