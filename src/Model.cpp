@@ -354,7 +354,6 @@ unsigned int Model::TextureFromFile(const char *path, const string &directory)
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        std::cout << "Path: " << path << std::endl;
         GLenum format;
         if (nrComponents == 1)
             format = GL_RED;

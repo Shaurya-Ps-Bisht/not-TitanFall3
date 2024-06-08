@@ -8,8 +8,6 @@
 #include <gtc/matrix_transform.hpp>
 
 #include "RandomHelpers.h"
-
-
 #include <vector>
 #include <memory>
 

@@ -55,7 +55,7 @@ Game::Game()
 {
     // SoundEngine = createIrrKlangDevice();
     // m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
-    m_camera = Camera(glm::vec3(128.5f, -100.8f, 1104.0f));
+    m_camera = Camera(glm::vec3(128.5f, -100.8f, 1105.0f));
     m_camera.setPerspectiveCameraProj(
         70.0f, (float)Renderer::GetInstance().SCR_WIDTH / (float)Renderer::GetInstance().SCR_HEIGHT, 0.1f, 5000.0f);
     Renderer::GetInstance().setCamera(&m_camera);
@@ -118,7 +118,7 @@ void Game::GameLoop()
         else if (level == 2)
         {
             m_camera.setCameraPos(glm::vec3(
-                422.0f, RandomHelpers::getHeight(422.0f, 437.0f, data, m_ResolutionWidth, m_ResolutionHeight) + 2.0f,
+                422.0f, RandomHelpers::getHeight(421.0f, 437.0f, data, m_ResolutionWidth, m_ResolutionHeight) + 2.0f,
                 437.0f));
             if (currentFrame - lev1timeChange > 0.0f)
             {

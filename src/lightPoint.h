@@ -18,6 +18,10 @@ public:
 
 	void setPointLight(glm::vec3 position, glm::vec3 color, float c, float l, float q);
 	void pointMatrixPush(std::vector<glm::mat4>& shadowTransforms);
+    void updatePointLightPos(const glm::vec3 &position)
+    {
+        m_pos = position;
+    }
 
 
 	glm::vec3 m_pos;
