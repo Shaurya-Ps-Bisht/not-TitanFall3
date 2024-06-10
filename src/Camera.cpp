@@ -8,6 +8,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch)
 {
     updateCameraVectors();
+    updateCameraFrustum();
+    
 }
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
@@ -144,4 +146,21 @@ void Camera::setCameraPos(glm::vec3 position)
     m_cameraPos = position;
 }
 
+void Camera::updateCameraFrustum()
+{
+  const float halfHSide = m_farPlane * tanf(FOV * .5f);
+    const float halfVSide = halfHSide * m_aspectRatio;
+    const glm::vec3 frontMultFar = m_farPlane * m_lookVec;
 
+    m_frustum.nearFace = { m_cameraPos + m_nearPlane * m_lookVec, m_lookVec };
+    m_frustum.farFace = { m_cameraPos + frontMultFar, -m_lookVec };
+    m_frustum.rightFace = { m_cameraPos,
+                            glm::cross(frontMultFar - m_camRight * halfHSide, m_upVec) };
+    m_frustum.leftFace = { m_cameraPos,
+                            glm::cross(m_upVec,frontMultFar + m_camRight * halfHSide) };
+    m_frustum.topFace = { m_cameraPos,
+                            glm::cross(m_camRight, frontMultFar - m_upVec * halfVSide) };
+    m_frustum.bottomFace = { m_cameraPos,
+                            glm::cross(frontMultFar + m_upVec * halfVSide, m_camRight) };
+
+}

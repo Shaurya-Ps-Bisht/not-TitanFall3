@@ -43,15 +43,20 @@ public:
 	float m_Pitch;
 	float m_movementSpeed;
 	float m_mouseSens;
-	bool godMode = true;
+	
+  bool godMode = true;
+
 public:
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 	~Camera();
 
-	glm::mat4 GetViewMatrix();
-   
+	glm::mat4 GetViewMatrix();   
 	const glm::mat4 &GetProjectionMatrix();
+
+  const Frustum &getCamFrustum () const {
+    return m_frustum;
+  }
 
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
@@ -63,12 +68,14 @@ public:
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
 
+    void updateCameraFrustum();
+
 private:
 	
 	int countA = 0;
 	int countB = 0;
 	void updateCameraVectors();
-
+  Frustum m_frustum;
 };
 
 

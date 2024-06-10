@@ -110,3 +110,28 @@ void EntityV::getVertexData(const char *shape)
         vertexNorms.push_back(m_shape->getVertex()[i].normals);
     }
 }
+void EntityV::CalculateModelExtents()
+{
+  glm::vec3 minExtent(std::numeric_limits<float>::max());
+        glm::vec3 maxExtent(std::numeric_limits<float>::lowest());
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, m_position);
+        transform = glm::rotate(transform, glm::radians(m_rotation.x), glm::vec3(1, 0, 0));
+        transform = glm::rotate(transform, glm::radians(m_rotation.y), glm::vec3(0, 1, 0));
+        transform = glm::rotate(transform, glm::radians(m_rotation.z), glm::vec3(0, 0, 1));
+        transform = glm::scale(transform, m_scale);
+
+
+       for (const auto& vertex : vertexPos) {
+            glm::vec4 transformedPos = transform * glm::vec4(vertex, 1.0f);
+
+             minExtent = glm::min(minExtent, glm::vec3(transformedPos));
+             maxExtent = glm::max(maxExtent, glm::vec3(transformedPos));
+       }
+
+    boundingAABB.updateAABB(minExtent, maxExtent);
+        
+
+}
+

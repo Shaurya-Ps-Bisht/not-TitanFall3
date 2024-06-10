@@ -18,7 +18,9 @@ public:
               std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix);
     void drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
                       Shader &shader);
-    
+
+    void CalculateModelExtents();
+
     std::vector<glm::vec3> vertexPos;
 
   private:

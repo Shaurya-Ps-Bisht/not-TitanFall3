@@ -21,6 +21,14 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 
 ## How to BUILD and RUN
 
+Clone the project using
+
+```git
+git clone --recurse-submodules https://github.com/Shaurya-Ps-Bisht/not-TitanFall3.git
+```
+
+Since one of the library is added as a submodule (I just wanted to try it out :/)
+
 ### Windows
 
 - Use CMake to generate the visual studio solution, I used the cmake GUI for this one.
@@ -43,7 +51,9 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 - The second command generates a binary in Debug mode, you can change it to Release.
 - The binary/executable will be located in /bin/Debug or /bin/Release.
 
-**_NOTE_**: Seems like making the app use the dedicated GPU on Linux isn't as simple as putting a macro like Windows. So the app will run on your iGPU by default, you can implement your own workaround here based on your system.
+**_NOTE_**: 
+- Seems like making the app use the dedicated GPU on Linux isn't as simple as putting a macro like Windows. So the app will run on your iGPU by default, you can implement your own workaround here based on your system.
+- The glfw Window might not open on Wayland sessions but should on X11. 
 
 ## Controls
 

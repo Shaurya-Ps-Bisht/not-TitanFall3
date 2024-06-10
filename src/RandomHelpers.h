@@ -62,6 +62,12 @@ struct AABB : public BoundingVolume
     {
     }
 
+    void updateAABB(const glm::vec3 &min, const glm::vec3 &max)
+    {
+        center = (max + min) * 0.5f;
+        extents = glm::vec3(max.x - center.x, max.y - center.y, max.z - center.z);
+    }
+
     std::array<glm::vec3, 8> getAABBVertices() const
     {
         std::array<glm::vec3, 8> vertices;

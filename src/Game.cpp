@@ -88,6 +88,7 @@ void Game::GameLoop()
     while (!glfwWindowShouldClose(m_window))
     {
 
+        m_camera.updateCameraFrustum();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -163,6 +164,7 @@ void Game::GameLoop()
 
 void Game::RenderLoop()
 {
+    int objectsSent = 0, objectsCulled = 0;
 
     float currentFrame = static_cast<float>(glfwGetTime());
 
@@ -171,11 +173,44 @@ void Game::RenderLoop()
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+
+    // frustum intersection checking
+    for (auto &entity : m_entities)
+    {
+
+        std::visit(
+            [&](const auto &ptr) {
+                if (!ptr->getIsRendered())
+                    return;
+                // isDirty(?) trigger AABBupdate
+
+                objectsSent++;
+                if (ptr->boundingAABB.isOnFrustum(m_camera.getCamFrustum()))
+                {
+                    ptr->inFrustum = true;
+                    if (ptr->getName() == "SEA")
+                    {
+                        std::cout << "YAAAA" << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "NAA" << std::endl;
+                    }
+                }
+                else
+                {
+                    objectsCulled++;
+                    ptr->inFrustum = false;
+                }
+            },
+            entity);
+    }
+
     for (auto &entity : m_entities)
     {
         std::visit(
             [&](const auto &ptr) {
-                if (!ptr->getIsRendered())
+                if (!ptr->inFrustum || !ptr->getIsRendered())
                     return;
                 ptr->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight,
                           ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
@@ -210,6 +245,8 @@ void Game::RenderLoop()
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                     ImGui::GetIO().Framerate);
+        ImGui::Text("Sent: %d Culled: %d", objectsSent, objectsCulled);
+
         ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y,
                     m_camera.m_cameraPos.z);
         ImGui::Text("Height: %.3f ", RandomHelpers::getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z, data,
@@ -436,7 +473,7 @@ void Game::initEntities()
 
     // cyberGirl->m_model.loadTexturesInfo();
 
-    m_entitiesInstanced.push_back(std::move(grass));
+    // m_entitiesInstanced.push_back(std::move(grass));
 
     m_entities.emplace_back(Player::GetInstance().m_playerModel);
     // m_entities.push_back(std::move(backpack));
@@ -455,6 +492,11 @@ void Game::initEntities()
     // m_entities.emplace_back(std::move(vFogObject));
     m_entities.emplace_back(std::move(bMoonObject));
     m_entities.emplace_back(std::move(sea));
+
+    for (auto &entity : m_entities)
+    {
+        std::visit([&](const auto &ptr) { ptr->CalculateModelExtents(); }, entity);
+    }
 }
 
 void Game::initData()

@@ -91,7 +91,7 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
         {
             std::visit(
                 [&](const auto &ptr) {
-                    if (!ptr->getIsRendered())
+                    if (!ptr->inFrustum || !ptr->getIsRendered())
                         return;
                     glActiveTexture(GL_TEXTURE2);
                     glBindTexture(GL_TEXTURE_2D_ARRAY, m_dirLight.m_lightDepthMaps);
@@ -154,7 +154,7 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
         {
             std::visit(
                 [&](const auto &ptr) {
-                    if (!ptr->getIsRendered())
+                    if (!ptr->inFrustum || !ptr->getIsRendered())
                         return;
                     glActiveTexture(GL_TEXTURE3);
                     glBindTexture(GL_TEXTURE_2D_ARRAY, m_depthCubemap);

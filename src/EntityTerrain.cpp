@@ -188,3 +188,8 @@ void EntityTerrain::loadSand()
     }
 }
 
+void EntityTerrain::CalculateModelExtents()
+{
+
+}
+

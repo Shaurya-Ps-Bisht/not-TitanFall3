@@ -24,7 +24,8 @@ public:
               std::vector<lightPoint> &lightPoints, glm::mat4 lightSpaceMatrix);
     void drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime, lightDir dLight,
                       Shader &shader);
-	void LoadFromFile(const char* filename);
+    void CalculateModelExtents();
+    void LoadFromFile(const char* filename);
 
 public:
 	unsigned int m_textureID;
