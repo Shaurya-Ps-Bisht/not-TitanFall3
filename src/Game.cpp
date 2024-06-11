@@ -180,27 +180,28 @@ void Game::RenderLoop()
 
         std::visit(
             [&](const auto &ptr) {
-                if (!ptr->getIsRendered())
+                if (!ptr->getIsRendered() || ptr->getName() == "Player" || ptr->getName() == "Terrain 1")
                     return;
-                // isDirty(?) trigger AABBupdate
+                // isDirty(?) trigger AABBupdate rotate and stuff for later
 
                 objectsSent++;
                 if (ptr->boundingAABB.isOnFrustum(m_camera.getCamFrustum()))
                 {
                     ptr->inFrustum = true;
-                    if (ptr->getName() == "SEA")
+                    /*if (ptr->getName() == "SEA")
                     {
                         std::cout << "YAAAA" << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "NAA" << std::endl;
-                    }
+                    }*/
+                    
                 }
                 else
                 {
                     objectsCulled++;
                     ptr->inFrustum = false;
+                    /*if (ptr->getName() == "SEA")
+                    {
+                        std::cout << "NAA" << std::endl;
+                    }*/
                 }
             },
             entity);
@@ -385,7 +386,7 @@ void Game::initEntities()
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
 
     //----------------------------------------------------------------------------------------------------------
-    glm::vec3 bMoonScale = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 bMoonScale = glm::vec3(10.0f, 10.0f, 10.0f);
     glm::vec3 vFogScale = glm::vec3(2000.0f, 100.0f, 2000.0f);
     // EntityV bMoonObject = EntityV(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bMoon, "SPHERE");
     glm::vec3 grassScale = glm::vec3(1.01f, 1.01f, 1.01f);

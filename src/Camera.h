@@ -23,7 +23,7 @@ const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 5.0f;
 const float SENS = 0.1f;
-const float FOV = 70.0f;
+const float FOV = 71.0f;
 
 class Camera
 {

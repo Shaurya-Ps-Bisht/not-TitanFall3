@@ -2,61 +2,14 @@
 
 void ShadowManager::initShadows()
 {
-    glGenBuffers(1, &matricesUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
-    dirDepthShader = Shader("../../res/Shaders/Depth/CSM/dir_csm.vs", "../../res/Shaders/Depth/CSM/dir_csm.fs",
-                            "../../res/Shaders/Depth/CSM/dir_csm.gs");
-    pointDepthShader =
-        Shader("../../res/Shaders/Depth/PointDepth/pointDepth.vs", "../../res/Shaders/Depth/PointDepth/pointDepth.fs",
-               "../../res/Shaders/Depth/PointDepth/pointDepth.gs");
+    // Directional Shadows init
     debugCascadeShader = Shader("../../res/Shaders/Depth/DebugCascade/debug_cascade.vs",
                                 "../../res/Shaders/Depth/DebugCascade/debug_cascade.fs");
 
-    {
-        glGenTextures(1, &m_depthCubemap);
+    initPointShadow();
+    initDirectionalShadow();
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_depthCubemap);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H,
-                     6 * m_MaxPointLights, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-        glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
-
-        glGenFramebuffers(1, &pointDepthFBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, pointDepthFBO);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthCubemap, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
-
-        const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE)
-        {
-            std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
-            throw 0;
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    m_dirLight.configureLightFBO();
-
-    {
-        for (int i = 0; i < m_pointLights.size(); ++i)
-        {
-            m_pointLights[i].pointMatrixPush(shadowTransforms);
-        }
-    }
+    // Point shadow init
 }
 
 void ShadowManager::updateShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
@@ -181,4 +134,59 @@ void ShadowManager::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float
 {
     m_pointLights.push_back(lightPoint());
     m_pointLights.back().setPointLight(pos, color, c, l, q);
+}
+void ShadowManager::initPointShadow()
+{
+    pointDepthShader =
+        Shader("../../res/Shaders/Depth/PointDepth/pointDepth.vs", "../../res/Shaders/Depth/PointDepth/pointDepth.fs",
+               "../../res/Shaders/Depth/PointDepth/pointDepth.gs");
+
+    glGenTextures(1, &m_depthCubemap);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_depthCubemap);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H,
+                 6 * m_MaxPointLights, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
+
+    glGenFramebuffers(1, &pointDepthFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, pointDepthFBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        throw 0;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    for (int i = 0; i < m_pointLights.size(); ++i)
+    {
+        m_pointLights[i].pointMatrixPush(shadowTransforms);
+    }
+}
+
+void ShadowManager::initDirectionalShadow()
+{
+    glGenBuffers(1, &matricesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    m_dirLight.setDirLight(glm::vec3(0.5f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+    dirDepthShader = Shader("../../res/Shaders/Depth/CSM/dir_csm.vs", "../../res/Shaders/Depth/CSM/dir_csm.fs",
+                            "../../res/Shaders/Depth/CSM/dir_csm.gs");
+    m_dirLight.configureLightFBO();
 }

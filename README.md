@@ -51,9 +51,10 @@ Since one of the library is added as a submodule (I just wanted to try it out :/
 - The second command generates a binary in Debug mode, you can change it to Release.
 - The binary/executable will be located in /bin/Debug or /bin/Release.
 
-**_NOTE_**: 
+**_NOTE_**:
+
 - Seems like making the app use the dedicated GPU on Linux isn't as simple as putting a macro like Windows. So the app will run on your iGPU by default, you can implement your own workaround here based on your system.
-- The glfw Window might not open on Wayland sessions but should on X11. 
+- The glfw Window might not open on Wayland sessions but should on X11.
 
 ## Controls
 
@@ -84,5 +85,6 @@ Since one of the library is added as a submodule (I just wanted to try it out :/
 - [ ] Direct State Access
 - [x] Frustum Culling: Grass and Terrain
 - [ ] AABB: Precalculate the Convex-Hull of objects to calculate AABBs (it's faster)
+- [ ] FOV and frustum culling bugs
 
 ###### God bless RenderDoc

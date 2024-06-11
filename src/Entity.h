@@ -22,7 +22,7 @@ class Entity
     glm::vec3 m_scale;
     glm::vec3 m_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     Shader m_shader;
-    bool inFrustum = false;
+    bool inFrustum = true;
     bool dirtyTransform = false;
 
     Entity(const std::string &name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale,

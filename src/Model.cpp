@@ -18,7 +18,6 @@ Model::Model(const char *path, glm::mat4 *modelMatrices, unsigned int amount, bo
     glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
     for (unsigned int i = 0; i < meshes.size(); i++) // LAZY IMPLEMENTATION, shouldnt keep mesh vao public
     {
-        std::cout << "NICE " << meshes.size() << std::endl;
         unsigned int VAO = meshes[i].VAO;
         meshes[i].instanceAmount = amount;
 
