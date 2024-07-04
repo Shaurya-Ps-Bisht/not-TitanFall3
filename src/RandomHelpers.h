@@ -2,12 +2,17 @@
 
 #ifndef __RANDOMHELPERS_H__
 #define __RANDOMHELPERS_H__
+#include "glad.h"
 #include <GLFW/glfw3.h>
+extern unsigned int quadVAO;
+extern unsigned int quadVBO;
+
 
 #include <array>
+#include <vector>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
-
+#include <gtc/type_ptr.hpp>
 struct Plane
 {
     glm::vec3 normal = {0.f, 1.f, 0.f};
@@ -94,12 +99,18 @@ struct AABB : public BoundingVolume
 namespace RandomHelpers
 {
 
+
 float getHeight(float x, float z, const unsigned char *data, const int &m_ResolutionWidth,
                 const int &m_ResolutionHeight);
 
 glm::mat4 *instanceMatrixTerrain(unsigned int amount, float radius, float offset, float startAngle, float endAngle,
                                  const unsigned char *data, const int &m_ResolutionWidth,
                                  const int &m_ResolutionHeight);
+
+void renderquad();
+
+void genCubeMapTransforms(const float &nearPlane, const float &farPlane, const float &aspect, glm::vec3 pos,
+                         std::vector<glm::mat4> &shadowTransforms, int i);
 } // namespace RandomHelpers
 
 #endif

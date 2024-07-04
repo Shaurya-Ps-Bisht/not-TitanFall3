@@ -1,4 +1,6 @@
 #include "RandomHelpers.h"
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
 
 float RandomHelpers::getHeight(float x, float z, const unsigned char *data, const int &m_ResolutionWidth,
                                const int &m_ResolutionHeight)
@@ -80,4 +82,55 @@ glm::mat4 *RandomHelpers::instanceMatrixTerrain(unsigned int amount, float radiu
     }
 
     return modelMatrices;
+}
+
+void RandomHelpers::renderquad()
+{
+
+    if (quadVAO == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            /*0.25f, 1.0f, 0.0f, 0.0f, 1.0f,
+            0.25f, 0.5f, 0.0f, 0.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.5f, 0.0f, 1.0f, 0.0f,*/
+            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+
+        // setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+void RandomHelpers::genCubeMapTransforms(const float &nearPlane, const float &farPlane, const float &aspect,
+                                         glm::vec3 pos, std::vector<glm::mat4> &shadowTransforms, int i)
+{
+
+    glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
+
+    shadowTransforms[0 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms[1 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms[2 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+    shadowTransforms[3 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+    shadowTransforms[4 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms[5 + i * 6] =
+        (shadowProj * glm::lookAt(pos, pos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 }

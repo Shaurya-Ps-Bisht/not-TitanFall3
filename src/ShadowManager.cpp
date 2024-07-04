@@ -1,4 +1,5 @@
 #include "ShadowManager.h"
+#include "RandomHelpers.h"
 
 void ShadowManager::initShadows()
 {
@@ -68,9 +69,10 @@ void ShadowManager::updateDirShadows(float deltaTime, float currentFrame, const 
 void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, const std::vector<EntityPtr> &entities,
                                        Camera &cam)
 {
+    //When lights are moving, currently commented since they're stationary
     /*for (int i = 0; i < m_pointLights.size(); ++i)
     {
-        m_pointLights[i].pointMatrixPush(shadowTransforms);
+                  RandomHelpers::genCubeMapTransforms(1.5f, 25.0f, 1.0f, m_pointLights[i].m_pos, shadowTransforms, i);
     }*/
 
     glViewport(0, 0, POINT_SHADOW_MAP_W, POINT_SHADOW_MAP_H);
@@ -116,9 +118,6 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
                 entity);
         }
 
-        /*for (const auto& obj : m_entitiesInstanced) {
-            obj->drawDirLight(m_deltaTime, false, m_camera, currentFrame, m_dirLight, simpleDepthShader);
-        }*/
     }
 
     glCullFace(GL_BACK);
@@ -127,7 +126,6 @@ void ShadowManager::updatePointShadows(float deltaTime, float currentFrame, cons
     glViewport(0, 0, Renderer::GetInstance().SCR_WIDTH, Renderer::GetInstance().SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // shadowTransforms.clear();
 }
 
 void ShadowManager::addLightPoint(glm::vec3 pos, glm::vec3 color, float c, float l, float q)
@@ -169,10 +167,11 @@ void ShadowManager::initPointShadow()
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+    
+    shadowTransforms.resize(6 * m_pointLights.size());
     for (int i = 0; i < m_pointLights.size(); ++i)
     {
-        m_pointLights[i].pointMatrixPush(shadowTransforms);
+      RandomHelpers::genCubeMapTransforms(1.5f, 25.0f, 1.0f, m_pointLights[i].m_pos, shadowTransforms, i);
     }
 }
 

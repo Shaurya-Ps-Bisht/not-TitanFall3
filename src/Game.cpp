@@ -19,37 +19,7 @@ extern "C"
 //	}
 // }
 
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad()
-{
-    if (quadVAO == 0)
-    {
-        float quadVertices[] = {
-            // positions        // texture Coords
-            /*0.25f, 1.0f, 0.0f, 0.0f, 1.0f,
-            0.25f, 0.5f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 0.5f, 0.0f, 1.0f, 0.0f,*/
-            -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-        };
 
-        // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    }
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-}
 
 Game::Game()
 {
@@ -207,6 +177,7 @@ void Game::RenderLoop()
             entity);
     }
 
+    // Drawing all
     for (auto &entity : m_entities)
     {
         std::visit(
@@ -219,6 +190,7 @@ void Game::RenderLoop()
             entity);
     }
 
+    //Drawing All instances
     for (const auto &obj : m_entitiesInstanced)
     {
         obj->draw(m_deltaTime, m_camera, true, currentFrame, ShadowManager::GetInstance().m_dirLight,
@@ -228,13 +200,13 @@ void Game::RenderLoop()
     {
         bool horizontal = true, first_iteration = true;
         int amount = 10;
-        shaderBlur.use();
+         shaderBlur.use();
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
             shaderBlur.setInt("horizontal", horizontal);
             glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
-            renderQuad();
+            RandomHelpers::renderquad();
             horizontal = !horizontal;
             if (first_iteration)
                 first_iteration = false;
@@ -321,11 +293,12 @@ void Game::RenderLoop()
 
     ImGui::Begin("Entities");
 
+    // Toggle for render on/off of entities
     for (auto &entity : m_entities)
     {
         std::visit(
             [](const auto &ptr) {
-                // ptr->draw(); // Call draw() or other member functions
+                // ptr->draw(); 
                 bool isRendered = ptr->getIsRendered();
                 if (ImGui::Checkbox(ptr->getName().c_str(), &isRendered))
                 {
@@ -348,7 +321,7 @@ void Game::RenderLoop()
 
     hdrShader.setInt("hdr", hdr);
     hdrShader.setFloat("exposure", exposure);
-    renderQuad();
+    RandomHelpers::renderquad();
 }
 
 void Game::initEntities()
