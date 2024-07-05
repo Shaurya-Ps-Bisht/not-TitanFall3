@@ -1,4 +1,5 @@
 #pragma once
+#include "Shader.h"
 #include <vector>
 #ifndef __REFLECTION_PROBE__
 #define __REFLECTION_PROBE__
@@ -18,6 +19,7 @@ class ReflectionProbe
     void addProbe(const glm::vec3 &position);
     void bake(unsigned int index);
     void checkAndBindCubemapArray(const glm::vec3 &objectPosition);
+    unsigned int generateIrradianceMap(const unsigned int &cubemapId, glm::vec3 pos);
 
   private:
     ReflectionProbe();
@@ -27,10 +29,12 @@ class ReflectionProbe
     std::vector<glm::vec3> probePositions;
     std::vector<unsigned int> probeCubemaps;
     unsigned int cubemapArray;
-    unsigned int framebuffer;
+    unsigned int frameBuffer;
     unsigned int depthBuffer;
     const unsigned int CUBEMAP_RESOLUTION = 512;
     int currentLayer = 0;
+
+    Shader irradianceShader;
 };
 
 #endif // !__REFLECTION_PROBE__

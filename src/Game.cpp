@@ -142,7 +142,7 @@ void Game::RenderLoop()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+    
 
     // frustum intersection checking
     for (auto &entity : m_entities)
@@ -197,22 +197,9 @@ void Game::RenderLoop()
                   ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
-    {
-        bool horizontal = true, first_iteration = true;
-        int amount = 10;
-         shaderBlur.use();
-        for (unsigned int i = 0; i < amount; i++)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-            shaderBlur.setInt("horizontal", horizontal);
-            glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
-            RandomHelpers::renderquad();
-            horizontal = !horizontal;
-            if (first_iteration)
-                first_iteration = false;
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
+    m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+
+  
 
     {
 
@@ -313,6 +300,23 @@ void Game::RenderLoop()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+      {
+        bool horizontal = true, first_iteration = true;
+        int amount = 10;
+        shaderBlur.use();
+        for (unsigned int i = 0; i < amount; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+            shaderBlur.setInt("horizontal", horizontal);
+            glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
+            RandomHelpers::renderquad();
+            horizontal = !horizontal;
+            if (first_iteration)
+                first_iteration = false;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     hdrShader.use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
@@ -359,7 +363,7 @@ void Game::initEntities()
     glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
 
     //----------------------------------------------------------------------------------------------------------
-    glm::vec3 bMoonScale = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 bMoonScale = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 vFogScale = glm::vec3(2000.0f, 100.0f, 2000.0f);
     // EntityV bMoonObject = EntityV(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bMoon, "SPHERE");
     glm::vec3 grassScale = glm::vec3(1.01f, 1.01f, 1.01f);
@@ -447,7 +451,7 @@ void Game::initEntities()
 
     // cyberGirl->m_model.loadTexturesInfo();
 
-    // m_entitiesInstanced.push_back(std::move(grass));
+     //m_entitiesInstanced.push_back(std::move(grass));
 
     m_entities.emplace_back(Player::GetInstance().m_playerModel);
     // m_entities.push_back(std::move(backpack));
