@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 FragColor;
-in vec3 WorldPos;
+in vec4 WorldPos;
 
 uniform samplerCube environmentMap;
 
@@ -8,7 +8,7 @@ const float PI = 3.14159265359;
 
 void main()
 {
-    vec3 N = normalize(WorldPos);
+    vec3 N = normalize(WorldPos.xyz);
 
     vec3 irradiance = vec3(0.0);   
     

@@ -1,5 +1,6 @@
 
 #include "Game.h"
+#include "ReflectionProbe.h"
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -475,6 +476,9 @@ void Game::initEntities()
     {
         std::visit([&](const auto &ptr) { ptr->CalculateModelExtents(); }, entity);
     }
+
+        ReflectionProbe::GetInstance().generateIrradianceMap(m_skyBox.cubeMapTex, glm::vec3(0,0,0));
+        // ReflectionProbe::GetInstance().addProbe(glm::vec3(0,0,0));
 }
 
 void Game::initData()

@@ -22,6 +22,7 @@
 #include "Shader.h"
 #include "ShadowManager.h"
 #include "SkyBox.h"
+#include "ReflectionProbe.h"
 #include "Texture.h"
 #include "lightDir.h"
 #include "lightPoint.h"

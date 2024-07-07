@@ -7,14 +7,24 @@ SkyBox::SkyBox(const char *path)
     hdrSkyboxShader = Shader("../../res/Shaders/Skybox/hdrSkybox.vs", "../../res/Shaders/Skybox/hdrSkybox.fs");
 
     {
-        // generic use frameRenderBuffer generation
+        // generic use frameBuffer generation and layered depth buffer
         glGenFramebuffers(1, &frameBuffer);
-        // glGenRenderbuffers(1, &depthBuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        // glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-        // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
-        // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // glGenTextures(1, &depthBuffer);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, depthBuffer);
+        // for (unsigned int i = 0; i < 6; ++i)
+        // {
+        //     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT24, 512, 512, 0,
+        //     GL_DEPTH_COMPONENT,
+        //                  GL_FLOAT, nullptr);
+        // }
+        // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
 
     std::vector<std::string> faces{"right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "front.jpg", "back.jpg"};
@@ -139,7 +149,7 @@ void SkyBox::equirecToCubemap()
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, envCubemap, 0);
-    // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthFbo, 0);
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBuffer, 0);
 
     std::vector<glm::mat4> cubemapCaptureTransforms(6, glm::mat4(1.0f));
     RandomHelpers::genCubeMapTransforms(0.1f, 100.0f, 1.0f, glm::vec3(0.0f, 0.0f, 0.0f), cubemapCaptureTransforms, 0);

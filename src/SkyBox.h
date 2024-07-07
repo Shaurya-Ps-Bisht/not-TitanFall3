@@ -18,6 +18,8 @@ class SkyBox
     ~SkyBox(){};
 
     void draw(Camera &cam, glm::vec3(color));
+    
+    unsigned int cubeMapTex;
 
   private:
     unsigned int loadCubemap(std::vector<std::string> faces);
@@ -27,8 +29,7 @@ class SkyBox
 
   private:
     Shader skyboxShader, hdrSkyboxShader;
-    unsigned int skyboxVAO, skyboxVBO, cubeMapTex, hdrCubeMapTex;
-        unsigned int frameBuffer;
+    unsigned int skyboxVAO, skyboxVBO, hdrCubeMapTex;
+    unsigned int frameBuffer;
     unsigned int depthBuffer;
-
 };

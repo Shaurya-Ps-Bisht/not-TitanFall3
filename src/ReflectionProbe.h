@@ -10,7 +10,8 @@
 
 class ReflectionProbe
 {
-    static ReflectionProbe &getInstance()
+  public:
+    static ReflectionProbe &GetInstance()
     {
         static ReflectionProbe instance;
         return instance;
