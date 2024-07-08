@@ -86,7 +86,7 @@ glm::mat4 *RandomHelpers::instanceMatrixTerrain(unsigned int amount, float radiu
     return modelMatrices;
 }
 
-void RandomHelpers::renderquad()
+void RandomHelpers::renderQuad()
 {
 
     if (quadVAO == 0)

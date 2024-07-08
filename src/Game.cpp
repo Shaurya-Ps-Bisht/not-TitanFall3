@@ -20,8 +20,6 @@ extern "C"
 //	}
 // }
 
-
-
 Game::Game()
 {
     // SoundEngine = createIrrKlangDevice();
@@ -143,7 +141,6 @@ void Game::RenderLoop()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
 
     // frustum intersection checking
     for (auto &entity : m_entities)
@@ -163,7 +160,6 @@ void Game::RenderLoop()
                     {
                         std::cout << "YAAAA" << std::endl;
                     }*/
-                    
                 }
                 else
                 {
@@ -191,7 +187,7 @@ void Game::RenderLoop()
             entity);
     }
 
-    //Drawing All instances
+    // Drawing All instances
     for (const auto &obj : m_entitiesInstanced)
     {
         obj->draw(m_deltaTime, m_camera, true, currentFrame, ShadowManager::GetInstance().m_dirLight,
@@ -199,8 +195,6 @@ void Game::RenderLoop()
     }
 
     m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
-
-  
 
     {
 
@@ -286,7 +280,7 @@ void Game::RenderLoop()
     {
         std::visit(
             [](const auto &ptr) {
-                // ptr->draw(); 
+                // ptr->draw();
                 bool isRendered = ptr->getIsRendered();
                 if (ImGui::Checkbox(ptr->getName().c_str(), &isRendered))
                 {
@@ -301,7 +295,7 @@ void Game::RenderLoop()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      {
+    {
         bool horizontal = true, first_iteration = true;
         int amount = 10;
         shaderBlur.use();
@@ -310,7 +304,7 @@ void Game::RenderLoop()
             glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
             shaderBlur.setInt("horizontal", horizontal);
             glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
-            RandomHelpers::renderquad();
+            RandomHelpers::renderQuad();
             horizontal = !horizontal;
             if (first_iteration)
                 first_iteration = false;
@@ -326,7 +320,7 @@ void Game::RenderLoop()
 
     hdrShader.setInt("hdr", hdr);
     hdrShader.setFloat("exposure", exposure);
-    RandomHelpers::renderquad();
+    RandomHelpers::renderQuad();
 }
 
 void Game::initEntities()
@@ -369,7 +363,7 @@ void Game::initEntities()
     // EntityV bMoonObject = EntityV(bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), bMoon, "SPHERE");
     glm::vec3 grassScale = glm::vec3(1.01f, 1.01f, 1.01f);
     glm::vec3 InScale = glm::vec3(1.f, 1.f, 1.0f);
-    glm::vec3 soljaScale1 = glm::vec3(01.1f, 01.1f, 01.1f);
+    glm::vec3 soljaScale1 = glm::vec3(1.1f, 1.1f, 1.1f);
     glm::vec3 soljaScale = glm::vec3(0.01f, 0.01f, 0.01f);
     glm::vec3 boatScale = glm::vec3(0.05f, 0.05f, 0.05f);
     glm::vec3 seaScale = glm::vec3(100.0f, 10.0f, 200.0f);
@@ -428,8 +422,9 @@ void Game::initEntities()
     //  std::make_unique<EntityM>(vampireLocation, vampireScale, ourShader,
     //  "res/Models/Player/Vampire/dancing_vampire.dae", "Hips");
     // vampire->m_model.
-    // std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>(soljaLocation, soljaScale1, ourShader,
-    // "res/Models/Player/Cybergirl/scene.gltf", "pose1"); std::unique_ptr<EntityM> backpack =
+    std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>("Helmet", soljaLocation, soljaScale1, pbrShader,
+    "../../res/Models/DamagedHelmet/DamagedHelmet.gltf");
+    // std::unique_ptr<EntityM> backpack =
     // std::make_unique<EntityM>(soljaLocation1, soljaScale1, unlitShader,
     // "res/Models/Backpack/Survival_BackPack_2.fbx"); std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c,
     // d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
@@ -452,33 +447,30 @@ void Game::initEntities()
 
     // cyberGirl->m_model.loadTexturesInfo();
 
-     //m_entitiesInstanced.push_back(std::move(grass));
+    // m_entitiesInstanced.push_back(std::move(grass));
 
     m_entities.emplace_back(Player::GetInstance().m_playerModel);
     // m_entities.push_back(std::move(backpack));
     // m_entities.push_back(std::move(vampire));
     // m_entities.push_back(std::move(solja));
-    // m_entities.push_back(std::move(cyberGirl));
+    m_entities.push_back(std::move(cyberGirl));
     // m_entities.push_back(std::move(Exterior2));
     // m_entities.push_back(std::move(goodCube));
-    m_entities.emplace_back(std::move(m_terrain));
+    // m_entities.emplace_back(std::move(m_terrain));
     m_entities.emplace_back(std::move(Exterior));
     m_entities.emplace_back(std::move(lightBulb1));
     m_entities.emplace_back(std::move(lightBulb2));
     m_entities.emplace_back(std::move(lightBulb3));
-    m_entities.emplace_back(std::move(Interior));
+    // m_entities.emplace_back(std::move(Interior));
     m_entities.emplace_back(std::move(Boat));
     // m_entities.emplace_back(std::move(vFogObject));
     m_entities.emplace_back(std::move(bMoonObject));
-    m_entities.emplace_back(std::move(sea));
+    // m_entities.emplace_back(std::move(sea));
 
     for (auto &entity : m_entities)
     {
         std::visit([&](const auto &ptr) { ptr->CalculateModelExtents(); }, entity);
     }
-
-        ReflectionProbe::GetInstance().generateIrradianceMap(m_skyBox.cubeMapTex, glm::vec3(0,0,0));
-        // ReflectionProbe::GetInstance().addProbe(glm::vec3(0,0,0));
 }
 
 void Game::initData()

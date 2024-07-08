@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "ReflectionProbe.h"
 #include "ShadowManager.h" // IS THIS BAD ? circular dependency?
 
 Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures)
@@ -65,6 +66,18 @@ void Mesh::Draw(Shader& shader)
     shader.setInt("pointShadowMap", 12);
     glActiveTexture(GL_TEXTURE12);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, ShadowManager::GetInstance().m_depthCubemap);
+
+    shader.setInt("irradianceMap", 13);
+    shader.setInt("prefilterMap", 14);
+    shader.setInt("brdfLUT", 15);
+
+    glActiveTexture(GL_TEXTURE13);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ReflectionProbe::GetInstance().skyIrrMap);
+    glActiveTexture(GL_TEXTURE14);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ReflectionProbe::GetInstance().skyPrefilterMap);
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(GL_TEXTURE_2D, ReflectionProbe::GetInstance().brdfMap);
+
 
     // draw mesh
     glBindVertexArray(VAO);

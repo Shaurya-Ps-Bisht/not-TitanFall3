@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "Shader.h"
+#include "ReflectionProbe.h"
 // #include "ShadowManager.h"
 
 #include <string>

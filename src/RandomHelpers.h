@@ -108,7 +108,7 @@ glm::mat4 *instanceMatrixTerrain(unsigned int amount, float radius, float offset
                                  const unsigned char *data, const int &m_ResolutionWidth,
                                  const int &m_ResolutionHeight);
 
-void renderquad();
+void renderQuad();
 void renderCube();
 
 void genCubeMapTransforms(const float &nearPlane, const float &farPlane, const float &aspect, glm::vec3 pos,

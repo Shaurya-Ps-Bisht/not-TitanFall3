@@ -21,6 +21,14 @@ class ReflectionProbe
     void bake(unsigned int index);
     void checkAndBindCubemapArray(const glm::vec3 &objectPosition);
     unsigned int generateIrradianceMap(const unsigned int &cubemapId, glm::vec3 pos);
+    unsigned int generatePrefilterMap(const unsigned int &cubemapId, glm::vec3 pos);
+    unsigned int generateBrdfMap();
+    void generateSkyBoxIrradianceMap(const unsigned int &cubemapId);
+
+  public:
+    unsigned int skyIrrMap;
+    unsigned int skyPrefilterMap;
+    unsigned int brdfMap;
 
   private:
     ReflectionProbe();
@@ -35,7 +43,7 @@ class ReflectionProbe
     const unsigned int CUBEMAP_RESOLUTION = 512;
     int currentLayer = 0;
 
-    Shader irradianceShader;
+    Shader irradianceShader, prefilterShader, brdfShader;
 };
 
 #endif // !__REFLECTION_PROBE__

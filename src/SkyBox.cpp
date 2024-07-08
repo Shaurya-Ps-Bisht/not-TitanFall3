@@ -38,6 +38,8 @@ SkyBox::SkyBox(const char *path)
     hdrCubeMapTex = loadCubemapHDR("../../res/CubeMaps/skybox/kloppenheim_06_puresky_2k.hdr");
     equirecToCubemap(); // sets cubemaptex to this CHAAAAAAAANGE THIS LATER
 
+    ReflectionProbe::GetInstance().generateSkyBoxIrradianceMap(cubeMapTex);
+
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 }

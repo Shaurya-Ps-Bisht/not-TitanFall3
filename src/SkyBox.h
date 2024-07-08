@@ -6,6 +6,7 @@
 
 #include "Camera.h"
 #include "Shader.h"
+#include "ReflectionProbe.h"
 
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -19,7 +20,6 @@ class SkyBox
 
     void draw(Camera &cam, glm::vec3(color));
     
-    unsigned int cubeMapTex;
 
   private:
     unsigned int loadCubemap(std::vector<std::string> faces);
@@ -32,4 +32,5 @@ class SkyBox
     unsigned int skyboxVAO, skyboxVBO, hdrCubeMapTex;
     unsigned int frameBuffer;
     unsigned int depthBuffer;
+    unsigned int cubeMapTex;
 };
