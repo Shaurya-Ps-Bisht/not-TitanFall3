@@ -175,7 +175,7 @@ void main()
 
     vec3 ambient = (kD * diffuse + specular) * ao;    
     
-    vec3 color = ambient + Lo ;
+    vec3 color = ambient + Lo + emission;
 
 
     FragColor = vec4(color, 1.0);

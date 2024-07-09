@@ -37,7 +37,7 @@ Game::~Game()
 }
 
 void Game::Run()
-{
+{ 
     initData();
     initEntities();
     ShadowManager::GetInstance().initShadows();

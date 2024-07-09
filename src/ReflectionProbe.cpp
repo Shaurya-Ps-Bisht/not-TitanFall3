@@ -89,9 +89,9 @@ int ReflectionProbe::findClosestProbe(const glm::vec3 &objectPosition)
 
 void ReflectionProbe::generateSkyBoxIrradianceMap(const unsigned int &cubemapId)
 {
+    brdfMap = generateBrdfMap();
     skyIrrMap = generateIrradianceMap(cubemapId, glm::vec3(0, 0, 0));
     skyPrefilterMap = generatePrefilterMap(cubemapId, glm::vec3(0, 0, 0));
-    brdfMap = generateBrdfMap();
 }
 
 unsigned int ReflectionProbe::generateIrradianceMap(const unsigned int &cubemapId, glm::vec3 pos)
@@ -181,11 +181,7 @@ unsigned int ReflectionProbe::generatePrefilterMap(const unsigned int &cubemapId
 
 unsigned int ReflectionProbe::generateBrdfMap()
 {
-    brdfShader = Shader("../../res/Shaders/IBL/brdf.vs", "../../res/Shaders/IBL/brdf.fs");
-    unsigned int captureFBO;
-    glGenFramebuffers(1, &captureFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-
+    glDisable(GL_BLEND);
     unsigned int brdfLUTTexture;
     glGenTextures(1, &brdfLUTTexture);
 
@@ -196,17 +192,26 @@ unsigned int ReflectionProbe::generateBrdfMap()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+    brdfShader = Shader("../../res/Shaders/IBL/brdf.vs", "../../res/Shaders/IBL/brdf.fs");
+
+    unsigned int captureFBO;
+    glGenFramebuffers(1, &captureFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+
+    // glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
     glViewport(0, 0, 512, 512);
     brdfShader.use();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     RandomHelpers::renderQuad();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glEnable(GL_BLEND);
 
     return brdfLUTTexture;
 }
