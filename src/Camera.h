@@ -21,7 +21,7 @@ enum Camera_Movement {
 //default cam values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 5.0f;
+const float SPEED = 10.0f;
 const float SENS = 0.1f;
 const float FOV = 71.0f;
 
@@ -29,6 +29,7 @@ class Camera
 {
 public:
 	float m_FOV;
+	glm::vec3 ray00, ray10, ray01, ray11;
 	glm::vec3 m_cameraPos;
 	glm::vec3 m_lookVec;
 	glm::vec3 m_upVec;
@@ -61,6 +62,9 @@ public:
 	void setCameraSpeed(float speed);
 	void setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPlane, float farPlane);
 	void setCameraPos(glm::vec3 position);
+    void getCornerRays();
+    void calculateCornerRay(float x, float y, glm::vec3 &res);
+
 
 
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime, const unsigned char *data,

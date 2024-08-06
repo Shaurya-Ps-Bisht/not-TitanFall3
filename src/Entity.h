@@ -14,10 +14,10 @@
 
 class Entity
 {
- 
+
   protected:
   public:
-        AABB boundingAABB;
+    AABB boundingAABB;
     glm::vec3 m_position;
     glm::vec3 m_scale;
     glm::vec3 m_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -27,7 +27,8 @@ class Entity
 
     Entity(const std::string &name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale,
            const Shader &initialShader)
-        : m_position(initialPosition), m_scale(initialScale), m_shader(initialShader), name(name), boundingAABB(glm::vec3(0,0,0),glm::vec3(0,0,0))
+        : m_position(initialPosition), m_scale(initialScale), m_shader(initialShader), name(name),
+          boundingAABB(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
     {
     }
 
@@ -71,7 +72,7 @@ class Entity
     {
         m_scale = newScale;
         dirtyTransform = true;
-    } 
+    }
 
   private:
     bool toRender = true;

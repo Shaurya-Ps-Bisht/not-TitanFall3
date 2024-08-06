@@ -48,6 +48,7 @@ class Game
   private:
     void GameLoop();
     void RenderLoop();
+    void RtLoop();
 
     void initEntities();
     void initData();
@@ -61,6 +62,7 @@ class Game
 
   private:
     int level = 0;
+    bool RayTracer = true;
 
     bool playerRuning = false;
     float m_deltaTime;

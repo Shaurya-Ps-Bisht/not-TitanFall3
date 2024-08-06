@@ -9,6 +9,7 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 ## Features
 
 - Physically based shading
+- Compute Shader Ray Tracing (Checkout [Controls Section](#controls))
 - IBL using reflection probes
 - Terrain Generation using tesselation shaders and heightmaps
 - Directional and point lights
@@ -66,9 +67,14 @@ Since one of the library is added as a submodule (I just wanted to try it out :/
   - U - Enable Cursor
   - N - Change Cascade level (if viewing the texture)
   - L - Wireframe view (Currently bugged due to Bloom and rendering to custom framebuffer)
+- Raytracing
+  - In Renderer.h line 36, set `RayTracing` to true if you want to run the Compute Shader based Ray Tracer.
+
 
 ## To Do
 
+- [ ] Shader code modularity
+- [ ] Directional Light: Float Textbox -> Slider and CSM solution.
 - [ ] resolve model loading missing weights and size difference (animated vs still)
 - [ ] Wireframe View with custom framebuffer
 - [ ] Debounce for general keys

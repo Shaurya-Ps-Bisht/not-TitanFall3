@@ -73,7 +73,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime, const u
             RandomHelpers::getHeight(m_cameraPos.x, m_cameraPos.z, data, m_ResolutionWidth, m_ResolutionHeight) + 1.9f;
     }
 
-    Player::GetInstance().UpdatePlayerPos(m_cameraPos); // SHIFT TO GAME LOGIC UPATE
+    if (!Renderer::GetInstance().RayTracing)
+    {
+        Player::GetInstance().UpdatePlayerPos(m_cameraPos); // SHIFT TO GAME LOGIC UPATE
+    }
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
@@ -95,7 +98,10 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 
     // update Front, Right and Up Vectors using the updated Euler angles
     updateCameraVectors();
-    Player::GetInstance().UpdatePlayerRotation(m_Yaw, m_Pitch);
+    if (!Renderer::GetInstance().RayTracing)
+    {
+        Player::GetInstance().UpdatePlayerRotation(m_Yaw, m_Pitch);
+    }
     // Player::GetInstance().m_playerModel->updateRotation(glm::vec3(90.0f - m_Yaw, 0.0f, 0.0f));
     //;
 }
@@ -140,6 +146,22 @@ void Camera::setPerspectiveCameraProj(float FOV, float aspectRatio, float nearPl
 void Camera::setCameraPos(glm::vec3 position)
 {
     m_cameraPos = position;
+}
+
+void Camera::getCornerRays()
+{
+    calculateCornerRay(-1, -1, ray00);
+    calculateCornerRay(1, -1, ray10);
+    calculateCornerRay(-1, 1, ray01);
+    calculateCornerRay(1, 1, ray11);
+}
+
+void Camera::calculateCornerRay(float x, float y, glm::vec3 &res)
+{
+    auto invViewProjMat = glm::transpose(glm::inverse(GetProjectionMatrix() * GetViewMatrix()));
+    glm::vec4 ray = glm::vec4(x, y, 0, 1) * invViewProjMat;
+    res = ray * (1 / ray.w);
+    res = res - m_cameraPos;
 }
 
 void Camera::updateCameraFrustum()

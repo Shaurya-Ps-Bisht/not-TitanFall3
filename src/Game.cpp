@@ -37,17 +37,141 @@ Game::~Game()
 }
 
 void Game::Run()
-{ 
-    initData();
-    initEntities();
-    ShadowManager::GetInstance().initShadows();
-    debugDepthQuad =
-        Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
-    debugDepthQuad.use();
-    debugDepthQuad.setInt("shadowMap", 2);
-    GameLoop();
+{
+    if (!Renderer::GetInstance().RayTracing)
+    {
+        initData();
+        initEntities();
+        ShadowManager::GetInstance().initShadows();
+        debugDepthQuad =
+            Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
+        debugDepthQuad.use();
+        debugDepthQuad.setInt("shadowMap", 2);
+        GameLoop();
+    }
+    else
+    {
+        RtLoop();
+    }
 }
 
+void Game::RtLoop()
+{
+    float lastFrame = 0.0;
+    int fCounter = 0;
+    const unsigned int TEXTURE_WIDTH = 1000, TEXTURE_HEIGHT = 1000;
+
+    int max_compute_work_group_count[3];
+    int max_compute_work_group_size[3];
+    int max_compute_work_group_invocations;
+
+    for (int idx = 0; idx < 3; idx++)
+    {
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, idx, &max_compute_work_group_count[idx]);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, idx, &max_compute_work_group_size[idx]);
+    }
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &max_compute_work_group_invocations);
+
+    std::cout << "OpenGL Limitations: " << std::endl;
+    std::cout << "maximum number of work groups in X dimension " << max_compute_work_group_count[0] << std::endl;
+    std::cout << "maximum number of work groups in Y dimension " << max_compute_work_group_count[1] << std::endl;
+    std::cout << "maximum number of work groups in Z dimension " << max_compute_work_group_count[2] << std::endl;
+
+    std::cout << "maximum size of a work group in X dimension " << max_compute_work_group_size[0] << std::endl;
+    std::cout << "maximum size of a work group in Y dimension " << max_compute_work_group_size[1] << std::endl;
+    std::cout << "maximum size of a work group in Z dimension " << max_compute_work_group_size[2] << std::endl;
+
+    std::cout << "Number of invocations in a single local work group that may be dispatched to a compute shader "
+              << max_compute_work_group_invocations << std::endl;
+
+    // build and compile shaders
+    // -------------------------
+    Shader screenQuad("../../res/Shaders/Compute/screenQuad.vs", "../../res/Shaders/Compute/screenQuad.fs");
+    Shader computeShader("../../res/Shaders/Compute/raytracer.cs");
+
+    screenQuad.use();
+    screenQuad.setInt("tex", 0);
+
+    // Create texture for opengl operation
+    // -----------------------------------
+    unsigned int texture;
+
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+
+    m_camera.m_cameraPos = glm::vec3(0, 0, 0);
+
+    while (!glfwWindowShouldClose(m_window))
+    {
+        // Set frame time
+        float currentFrame = glfwGetTime();
+        m_deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        processInput(m_window);
+        m_camera.getCornerRays();
+        if (fCounter > 500)
+        {
+            std::cout << "FPS: " << 1 / m_deltaTime << std::endl;
+            fCounter = 0;
+        }
+        else
+        {
+            fCounter++;
+        }
+
+        computeShader.use();
+        computeShader.setVec3("camera_origin", m_camera.m_cameraPos);
+        computeShader.setVec3("camera_lower_left_corner", glm::vec3(-2.0, -1.0, -1.0));
+        computeShader.setVec3("camera_horizontal", glm::vec3(4.0, 0.0, 0.0));
+        computeShader.setVec3("camera_vertical", glm::vec3(0.0, 2.0, 0.0));
+
+        computeShader.setVec3("ray00", m_camera.ray00);
+        computeShader.setVec3("ray10", m_camera.ray10);
+        computeShader.setVec3("ray01", m_camera.ray01);
+        computeShader.setVec3("ray11", m_camera.ray11);
+
+
+        computeShader.setInt("num_spheres", 2);
+
+        computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 0.0, -2.0));
+        computeShader.setFloat("spheres[0].radius", 0.5);
+        computeShader.setInt("spheres[0].material.type", 0);
+        computeShader.setVec3("spheres[0].material.albedo", glm::vec3(0.8, 0.3, 0.3));
+        computeShader.setFloat("spheres[0].material.fuzz", 0.0);
+        computeShader.setFloat("spheres[0].material.ir", 0.0);
+
+        computeShader.setVec3("spheres[1].center", glm::vec3(0.0, -100.5, -1.0));
+        computeShader.setFloat("spheres[1].radius", 10.0);
+        computeShader.setInt("spheres[1].material.type", 0);
+        computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.8, 0.0));
+        computeShader.setFloat("spheres[1].material.fuzz", 0.0);
+        computeShader.setFloat("spheres[1].material.ir", 0.0);
+
+        glDispatchCompute((unsigned int)TEXTURE_WIDTH / 10, (unsigned int)TEXTURE_HEIGHT / 10, 1);
+
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        screenQuad.use();
+
+        RandomHelpers::renderQuad();
+
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+    }
+}
 void Game::GameLoop()
 {
     float lastFrame = 0.0;
@@ -337,6 +461,7 @@ void Game::initEntities()
     glm::vec3 ExLocation = glm::vec3(
         422.0f, RandomHelpers::getHeight(422.0f, 408.0f, data, m_ResolutionWidth, m_ResolutionHeight) + 10.0f, 408.0f);
     glm::vec3 ExLocation2 = glm::vec3(-442.0f, 75.0f, -451.0f);
+    glm::vec3 cyberGirlLocation = ExLocation + glm::vec3(0.0f, 10.0f, 0.0f);
     glm::vec3 InLocation = glm::vec3(
         120.0f, RandomHelpers::getHeight(120.0f, 1105.0f, data, m_ResolutionWidth, m_ResolutionHeight) - 1.0f, 1105.0f);
     glm::vec3 soljaLocation1 = glm::vec3(127.387f, -100.8f, 1104.9f);
@@ -355,7 +480,7 @@ void Game::initEntities()
     glm::vec3 lightPos1 = glm::vec3(128.5f, -100.8f, 1104.0f);
     glm::vec3 lightPos2 = glm::vec3(129.356f, -100.8f, 1105.99f);
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
-    glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
+    glm::vec3 lightPos4 = glm::vec3(126.423, -100.2f, 1105.375f);
 
     //----------------------------------------------------------------------------------------------------------
     glm::vec3 bMoonScale = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -422,8 +547,11 @@ void Game::initEntities()
     //  std::make_unique<EntityM>(vampireLocation, vampireScale, ourShader,
     //  "res/Models/Player/Vampire/dancing_vampire.dae", "Hips");
     // vampire->m_model.
-    std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>("Helmet", soljaLocation, soljaScale1, pbrShader,
-    "../../res/Models/DamagedHelmet/DamagedHelmet.gltf");
+    std::unique_ptr<EntityM> helmet = std::make_unique<EntityM>("Helmet", soljaLocation, soljaScale1, pbrShader,
+                                                                "../../res/Models/DamagedHelmet/DamagedHelmet.gltf");
+    // std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>(
+    // "CyberGirl", soljaLocation, soljaScale1, ourShader, "../../res/Models/Player/Cybergirl/scene.gltf", "pose1");
+
     // std::unique_ptr<EntityM> backpack =
     // std::make_unique<EntityM>(soljaLocation1, soljaScale1, unlitShader,
     // "res/Models/Backpack/Survival_BackPack_2.fbx"); std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c,
@@ -453,16 +581,17 @@ void Game::initEntities()
     // m_entities.push_back(std::move(backpack));
     // m_entities.push_back(std::move(vampire));
     // m_entities.push_back(std::move(solja));
-    m_entities.push_back(std::move(cyberGirl));
+    // m_entities.push_back(std::move(cyberGirl));
+    m_entities.push_back(std::move(helmet));
     // m_entities.push_back(std::move(Exterior2));
     // m_entities.push_back(std::move(goodCube));
     // m_entities.emplace_back(std::move(m_terrain));
-    m_entities.emplace_back(std::move(Exterior));
+    // m_entities.emplace_back(std::move(Exterior));
     m_entities.emplace_back(std::move(lightBulb1));
     m_entities.emplace_back(std::move(lightBulb2));
     m_entities.emplace_back(std::move(lightBulb3));
     // m_entities.emplace_back(std::move(Interior));
-    m_entities.emplace_back(std::move(Boat));
+    // m_entities.emplace_back(std::move(Boat));
     // m_entities.emplace_back(std::move(vFogObject));
     m_entities.emplace_back(std::move(bMoonObject));
     // m_entities.emplace_back(std::move(sea));
@@ -550,12 +679,12 @@ void Game::initData()
     glm::vec3 lightPos1 = glm::vec3(128.5f, -100.8f, 1104.0f);
     glm::vec3 lightPos2 = glm::vec3(129.356f, -100.8f, 1105.99f);
     glm::vec3 lightPos3 = glm::vec3(100.95f, -100.8f, 1104.095f);
-    glm::vec3 lightPos4 = glm::vec3(120000.423, -973333.5f, 1333065.115f);
+    glm::vec3 lightPos4 = glm::vec3(126.423, -100.2f, 1105.375f);
 
     ShadowManager::GetInstance().addLightPoint(lightPos1, glm::vec3(0.0f, 1.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     ShadowManager::GetInstance().addLightPoint(lightPos2, glm::vec3(1.0f, 0.95f, 0.8f), 1.0f, 0.09f, 0.064f);
     // ShadowManager::GetInstance().addLightPoint(lightPos3, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
-    // ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1000.0f, 0.08f, 0.08f), 1.0f, 0.09f, 0.064f);
+    ShadowManager::GetInstance().addLightPoint(lightPos4, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.09f, 0.064f);
 }
 
 void Game::processInput(GLFWwindow *window)

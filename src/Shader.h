@@ -21,6 +21,7 @@ class Shader
     Shader();
     Shader(const char *vertexPath, const char *fragmentPath, const char *geometryPath = nullptr,
            const char *tessControlPath = nullptr, const char *tessEvalPath = nullptr);
+    Shader(const char *computePath);
     ~Shader();
 
     void use();

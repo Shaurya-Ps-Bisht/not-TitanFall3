@@ -1,6 +1,7 @@
 #pragma once
 #include "Shader.h"
 #include <vector>
+
 #ifndef __REFLECTION_PROBE__
 #define __REFLECTION_PROBE__
 #define NOMINMAX
