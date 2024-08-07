@@ -145,7 +145,7 @@ void Game::RtLoop()
         computeShader.setVec3("ray11", m_camera.ray11);
 
 
-        computeShader.setInt("num_spheres", 2);
+        computeShader.setInt("num_spheres", 4);
 
         computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 0.0, -1.0));
         computeShader.setFloat("spheres[0].radius", 0.5);
@@ -154,12 +154,26 @@ void Game::RtLoop()
         computeShader.setFloat("spheres[0].material.fuzz", 0.0);
         computeShader.setFloat("spheres[0].material.ir", 0.0);
 
-        computeShader.setVec3("spheres[1].center", glm::vec3(0.0, -100.5, -1.0));
-        computeShader.setFloat("spheres[1].radius", 100.0);
-        computeShader.setInt("spheres[1].material.type", 0);
-        computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.8, 0.0));
+        computeShader.setVec3("spheres[1].center", glm::vec3(-1.0, 0.0, -1.0));
+        computeShader.setFloat("spheres[1].radius", 0.5);
+        computeShader.setInt("spheres[1].material.type", 1);
+        computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.3, 0.3));
         computeShader.setFloat("spheres[1].material.fuzz", 0.0);
         computeShader.setFloat("spheres[1].material.ir", 0.0);
+
+        computeShader.setVec3("spheres[2].center", glm::vec3(1.0, 0.0, -1.0));
+        computeShader.setFloat("spheres[2].radius", 0.5);
+        computeShader.setInt("spheres[2].material.type", 2);
+        computeShader.setVec3("spheres[2].material.albedo", glm::vec3(0.8, 0.3, 0.3));
+        computeShader.setFloat("spheres[2].material.fuzz", 0.0);
+        computeShader.setFloat("spheres[2].material.ir", 0.0);
+
+        computeShader.setVec3("spheres[3].center", glm::vec3(0.0, -100.5, -1.0));
+        computeShader.setFloat("spheres[3].radius", 100.0);
+        computeShader.setInt("spheres[3].material.type", 0);
+        computeShader.setVec3("spheres[3].material.albedo", glm::vec3(0.8, 0.8, 0.0));
+        computeShader.setFloat("spheres[3].material.fuzz", 0.0);
+        computeShader.setFloat("spheres[3].material.ir", 0.0);
 
         glDispatchCompute((unsigned int)(TEXTURE_WIDTH + 15) / 16, (unsigned int)(TEXTURE_HEIGHT + 15) / 16, 1);
 

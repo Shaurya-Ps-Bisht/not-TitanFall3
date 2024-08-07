@@ -44,7 +44,7 @@ uniform vec3 ray01;
 uniform vec3 ray10;
 uniform vec3 ray11;
 uniform int num_spheres;
-uniform Sphere spheres[2];
+uniform Sphere spheres[4];
 
 uniform int image_width = 1000;
 uniform int image_height = 1000;

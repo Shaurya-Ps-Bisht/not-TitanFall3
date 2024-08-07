@@ -4,7 +4,15 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 
 [Demo Video || YouTube](https://youtu.be/W88HXR9QiLM)
 
-![Alt text](res/Screenshots/1.png)
+## Content
+- [Features](#features)
+- [Build and Run](#how-to-build-and-run)
+- [Controls](#controls)
+- [To do](#to-do)
+
+![Nice](res/Screenshots/1.png)
+![Nice](res/Screenshots/nottitanfall_raytrace_1.gif)
+
 
 ## Features
 
