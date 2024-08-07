@@ -159,7 +159,7 @@ void Camera::getCornerRays()
 void Camera::calculateCornerRay(float x, float y, glm::vec3 &res)
 {
     auto invViewProjMat = glm::transpose(glm::inverse(GetProjectionMatrix() * GetViewMatrix()));
-    glm::vec4 ray = glm::vec4(x, y, 0, 1) * invViewProjMat;
+    glm::vec4 ray = glm::vec4(x, y, 0, 1) * invViewProjMat; //convert to world space, then get direction of corner
     res = ray * (1 / ray.w);
     res = res - m_cameraPos;
 }

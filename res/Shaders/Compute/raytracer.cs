@@ -1,5 +1,5 @@
 #version 430
-layout(local_size_x = 16, local_size_y = 16, local_size_z = 4) in; // Adjust the sizes as needed
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in; 
 
 
 struct Ray {
@@ -43,7 +43,6 @@ uniform vec3 ray00;
 uniform vec3 ray01;
 uniform vec3 ray10;
 uniform vec3 ray11;
-// Scene setup
 uniform int num_spheres;
 uniform Sphere spheres[2];
 
@@ -59,20 +58,20 @@ float rand() {
 }
 
 vec3 random_unit_vector() {
-    float a = rand() * 2.0 * 3.1415926535897932384626433832795; // Random angle
-    float z = rand() * 2.0 - 1.0; // Random z-coordinate in range [-1, 1]
-    float r = sqrt(1.0 - z * z);  // Compute radius
+    float a = rand() * 2.0 * 3.1415926535897932384626433832795; 
+    float z = rand() * 2.0 - 1.0; 
+    float r = sqrt(1.0 - z * z);  
     return vec3(r * cos(a), r * sin(a), z); 
 }
 
 
 
-void set_face_normal(Ray r, vec3 outward_normal, out HitRecord rec) {
+void set_face_normal(Ray r, vec3 outward_normal, inout HitRecord rec) {
     rec.front_face = dot(r.direction, outward_normal) < 0.0;
     rec.normal = rec.front_face ? outward_normal : -outward_normal;
 }
 
-bool hit_sphere(Sphere sphere, Ray r, float t_min, float t_max, out HitRecord rec) {
+bool hit_sphere(Sphere sphere, Ray r, float t_min, float t_max, inout HitRecord rec) {
     vec3 oc = r.origin - sphere.center;
     float a = dot(r.direction, r.direction);
     float half_b = dot(oc, r.direction);
@@ -104,7 +103,7 @@ bool hit_sphere(Sphere sphere, Ray r, float t_min, float t_max, out HitRecord re
     return false;
 }
 
-bool hit_scene(Ray r, float t_min, float t_max, out HitRecord rec) {
+bool hit_scene(Ray r, float t_min, float t_max, inout HitRecord rec) {
     HitRecord temp_rec;
     bool hit_anything = false;
     float closest_so_far = t_max;
@@ -220,13 +219,12 @@ vec3 ray_color(Ray r) {
             vec3 temp_attenuation;
             if (scatter(rec.material, r, rec.p, rec.normal, scattered, temp_attenuation)) {
                 attenuation *= temp_attenuation;
-                r = scattered;  // Continue with the scattered ray
+                r = scattered;  
             } else {
                 color = vec3(0.0);
                 break;
             }
         } else {
-            // Sky color if no hit
             vec3 unit_direction = normalize(r.direction);
             float t = 0.5 * (unit_direction.y + 1.0);
             color = attenuation * mix(vec3(1.0), vec3(0.5, 0.7, 1.0), t);
@@ -252,7 +250,7 @@ void main() {
     Ray r;
     r.origin = camera_origin;
 
-    vec2 pos = vec2(pixel_coord) / vec2(size.x - 1, size.y - 1);
+    vec2 pos = vec2(pixel_coord) / vec2(size.x - 1, size.y - 1);    
     r.direction = normalize(mix(mix(ray00, ray01, pos.y), mix(ray10, ray11, pos.y), pos.x));
 
     vec3 color = ray_color(r);

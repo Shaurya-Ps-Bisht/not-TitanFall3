@@ -120,7 +120,7 @@ void Game::RtLoop()
         m_deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         processInput(m_window);
-        m_camera.getCornerRays();
+        
         if (fCounter > 500)
         {
             std::cout << "FPS: " << 1 / m_deltaTime << std::endl;
@@ -131,12 +131,14 @@ void Game::RtLoop()
             fCounter++;
         }
 
+
         computeShader.use();
         computeShader.setVec3("camera_origin", m_camera.m_cameraPos);
         computeShader.setVec3("camera_lower_left_corner", glm::vec3(-2.0, -1.0, -1.0));
         computeShader.setVec3("camera_horizontal", glm::vec3(4.0, 0.0, 0.0));
         computeShader.setVec3("camera_vertical", glm::vec3(0.0, 2.0, 0.0));
 
+        m_camera.getCornerRays();
         computeShader.setVec3("ray00", m_camera.ray00);
         computeShader.setVec3("ray10", m_camera.ray10);
         computeShader.setVec3("ray01", m_camera.ray01);
@@ -145,7 +147,7 @@ void Game::RtLoop()
 
         computeShader.setInt("num_spheres", 2);
 
-        computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 0.0, -2.0));
+        computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 0.0, -1.0));
         computeShader.setFloat("spheres[0].radius", 0.5);
         computeShader.setInt("spheres[0].material.type", 0);
         computeShader.setVec3("spheres[0].material.albedo", glm::vec3(0.8, 0.3, 0.3));
@@ -153,13 +155,13 @@ void Game::RtLoop()
         computeShader.setFloat("spheres[0].material.ir", 0.0);
 
         computeShader.setVec3("spheres[1].center", glm::vec3(0.0, -100.5, -1.0));
-        computeShader.setFloat("spheres[1].radius", 10.0);
+        computeShader.setFloat("spheres[1].radius", 100.0);
         computeShader.setInt("spheres[1].material.type", 0);
         computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.8, 0.0));
         computeShader.setFloat("spheres[1].material.fuzz", 0.0);
         computeShader.setFloat("spheres[1].material.ir", 0.0);
 
-        glDispatchCompute((unsigned int)TEXTURE_WIDTH / 10, (unsigned int)TEXTURE_HEIGHT / 10, 1);
+        glDispatchCompute((unsigned int)(TEXTURE_WIDTH + 15) / 16, (unsigned int)(TEXTURE_HEIGHT + 15) / 16, 1);
 
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
