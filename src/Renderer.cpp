@@ -1,6 +1,9 @@
 #include <iostream>
 
 #include "Renderer.h"
+#include "Camera.h"
+#include "Game.h"
+#include <stb_image.h>
 
 Renderer::~Renderer()
 {

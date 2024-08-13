@@ -1,6 +1,8 @@
 #include "Mesh.h"
 #include "ReflectionProbe.h"
 #include "ShadowManager.h" // IS THIS BAD ? circular dependency?
+#include "lightDir.h"
+#include "lightPoint.h"
 
 Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures)
 {
@@ -13,7 +15,7 @@ Mesh::Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<T
 
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(const Shader &shader)
 {
     std::unordered_map<std::string, unsigned int> textureNrs = {
         {"texture_diffuse", 1},
@@ -61,7 +63,7 @@ void Mesh::Draw(Shader& shader)
 
     shader.setInt("shadowMap", 11);
     glActiveTexture(GL_TEXTURE11);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight->m_lightDepthMaps);
 
     shader.setInt("pointShadowMap", 12);
     glActiveTexture(GL_TEXTURE12);
@@ -90,7 +92,7 @@ void Mesh::Draw(Shader& shader)
 
 }
 
-void Mesh::DrawInstanced(Shader& shader)
+void Mesh::DrawInstanced(const Shader &shader)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -119,7 +121,7 @@ void Mesh::DrawInstanced(Shader& shader)
 
     shader.setInt("shadowMap", 11);
     glActiveTexture(GL_TEXTURE11);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight->m_lightDepthMaps);
     // draw mesh
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceAmount);

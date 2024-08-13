@@ -8,30 +8,22 @@
 
 #include <glad.h>
 #include <GLFW/glfw3.h>
+#include <glm.hpp>
 
-#include "Animation.h"
-#include "Animator.h"
-#include "Camera.h"
-#include "EntityM.h"
-#include "EntityTerrain.h"
-#include "EntityV.h"
-#include "Model.h"
-#include "Player.h"
-#include "RandomHelpers.h"
-#include "Renderer.h"
-#include "Shader.h"
-#include "ShadowManager.h"
-#include "SkyBox.h"
-#include "ReflectionProbe.h"
-#include "Texture.h"
-#include "lightDir.h"
-#include "lightPoint.h"
 
-//#include <irrklang/irrKlang.h>
+class lightDir;
+class lightPoint;
+class SkyBox;
+class Camera;
+class EntityM;
+class EntityTerrain;
+class EntityV;
+class Entity;
+class Shader;
 
-//using namespace irrklang;
 using EntityPtr = std::variant<std::shared_ptr<EntityM>, std::unique_ptr<EntityM>, std::unique_ptr<EntityV>,
                                std::unique_ptr<EntityTerrain>>;
+
 
 class Game
 {
@@ -41,7 +33,7 @@ class Game
 
   public:
     GLFWwindow *m_window;
-    Camera m_camera;
+    Camera *m_camera;
 
     void Run();
 
@@ -62,7 +54,6 @@ class Game
 
   private:
     int level = 0;
-    bool RayTracer = true;
 
     bool playerRuning = false;
     float m_deltaTime;
@@ -73,12 +64,14 @@ class Game
     std::vector<std::unique_ptr<Entity>> m_entitiesInstanced;
     std::vector<EntityPtr> m_entities;
 
-    SkyBox m_skyBox;
-    Shader m_skyShader;
-    Shader debugDepthQuad;
-    Shader hdrShader;
-    Shader shaderBlur;
+    std::vector<std::shared_ptr<Shader>> m_Shaders;
 
+    SkyBox* m_skyBox;
+    Shader* m_skyShader;
+    Shader* debugDepthQuad;
+    Shader* hdrShader;
+    Shader* shaderBlur;
+          
 
     std::unique_ptr<EntityTerrain> m_terrain;
 

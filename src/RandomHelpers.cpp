@@ -136,6 +136,15 @@ void RandomHelpers::genCubeMapTransforms(const float &nearPlane, const float &fa
     shadowTransforms[5 + i * 6] =
         (shadowProj * glm::lookAt(pos, pos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 }
+double RandomHelpers::random_double()
+{
+    return rand() / (RAND_MAX + 1.0);
+}
+double RandomHelpers::random_double(double min, double max)
+{
+    return min + (max - min) * random_double();
+    
+}
 void RandomHelpers::renderCube()
 {
   if (cubeVAO == 0)

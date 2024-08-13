@@ -4,13 +4,13 @@
 
 #include <string>
 #include "Entity.h"
-#include "Shape.h"
+class Shape;
 
 class EntityV : public Entity {
 
 public:
     EntityV(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, float angle, glm::vec3 axis,
-            Shader &initialShader, const char *shape);
+          const Shader *initialShader, const char *shape);
     ~EntityV() {};
 
     // Draw method
@@ -27,7 +27,6 @@ public:
     void getVertexData(const char* shape);
 
 private:
-    Camera  m_camera;
     Shape* m_shape;
     unsigned int m_vao, m_vbo, m_tbo, m_nbo, m_ibo;
     std::vector<glm::vec2> vertexUv;

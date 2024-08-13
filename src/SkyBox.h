@@ -1,16 +1,13 @@
 #pragma once
 
 #include <vector>
-
+#include <string>
 #include <stb_image.h>
-
-#include "Camera.h"
-#include "Shader.h"
-#include "ReflectionProbe.h"
-
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
+class Camera;
+class Shader;
 class SkyBox
 {
   public:
@@ -28,7 +25,7 @@ class SkyBox
     void equirecToCubemap();
 
   private:
-    Shader skyboxShader, hdrSkyboxShader;
+    Shader *skyboxShader, *hdrSkyboxShader;
     unsigned int skyboxVAO, skyboxVBO, hdrCubeMapTex;
     unsigned int frameBuffer;
     unsigned int depthBuffer;

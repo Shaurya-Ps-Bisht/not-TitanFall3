@@ -2,9 +2,7 @@
 #ifndef __ENGINE_H__
 #define __ENGINE_H__
 
-#include "Game.h"
-#include "Renderer.h"
-
+class Game;
 
 class Engine 
 {
@@ -15,7 +13,7 @@ public:
 	void Run();
 
 private:
-	Game m_game;
+	Game* m_game;
 
 };
 

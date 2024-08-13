@@ -176,7 +176,7 @@ Shader::~Shader()
 {
 }
 
-void Shader::use()
+void Shader::use() const
 {
     glUseProgram(m_ID);
 }

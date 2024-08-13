@@ -60,8 +60,8 @@ class Mesh
     Mesh(vector<VertexStruct> vertices, vector<unsigned int> indices, vector<TextureStruct> textures);
 
     // render the mesh
-    void Draw(Shader &shader);
-    void DrawInstanced(Shader &shader);
+    void Draw(const Shader &shader);
+    void DrawInstanced(const Shader &shader);
     void SetTransformationMatrix(const glm::mat4 &transformationMatrix);
 
   private:

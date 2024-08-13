@@ -5,11 +5,12 @@
 
 #include <glad.h>
 #include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
+//#include <gtc/matrix_transform.hpp>
 
-#include "RandomHelpers.h"
 #include <vector>
 #include <memory>
+
+#include "RandomHelpers.h"
 
 enum Camera_Movement {
 	FORWARD,
@@ -79,7 +80,7 @@ private:
 	int countA = 0;
 	int countB = 0;
 	void updateCameraVectors();
-  Frustum m_frustum;
+	Frustum m_frustum;
 };
 
 

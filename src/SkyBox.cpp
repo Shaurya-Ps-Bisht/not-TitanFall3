@@ -1,10 +1,15 @@
 #include "SkyBox.h"
 #include "RandomHelpers.h"
+#include "Camera.h"
+#include "Shader.h"
+#include "ReflectionProbe.h"
+
+
 
 SkyBox::SkyBox(const char *path)
 {
-    skyboxShader = Shader("../../res/Shaders/Skybox/skyBox.vs", "../../res/Shaders/Skybox/skybox.fs");
-    hdrSkyboxShader = Shader("../../res/Shaders/Skybox/hdrSkybox.vs", "../../res/Shaders/Skybox/hdrSkybox.fs");
+    skyboxShader = new Shader("../../res/Shaders/Skybox/skyBox.vs", "../../res/Shaders/Skybox/skybox.fs");
+    hdrSkyboxShader = new Shader("../../res/Shaders/Skybox/hdrSkybox.vs", "../../res/Shaders/Skybox/hdrSkybox.fs");
 
     {
         // generic use frameBuffer generation and layered depth buffer
@@ -40,8 +45,8 @@ SkyBox::SkyBox(const char *path)
 
     ReflectionProbe::GetInstance().generateSkyBoxIrradianceMap(cubeMapTex);
 
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+    skyboxShader->use();
+    skyboxShader->setInt("skybox", 0);
 }
 
 void SkyBox::draw(Camera &cam, glm::vec3(color))
@@ -50,10 +55,10 @@ void SkyBox::draw(Camera &cam, glm::vec3(color))
     glm::mat4 view = glm::mat4(glm::mat3(cam.GetViewMatrix())); // remove translation from the view matrix
     glm::mat4 projection = cam.GetProjectionMatrix();
     glDepthFunc(GL_LEQUAL);
-    skyboxShader.use();
-    skyboxShader.setMat4("view", view);
-    skyboxShader.setMat4("projection", projection);
-    skyboxShader.setVec3("lightColor", color);
+    skyboxShader->use();
+    skyboxShader->setMat4("view", view);
+    skyboxShader->setMat4("projection", projection);
+    skyboxShader->setVec3("lightColor", color);
     // skybox cube
     // glBindVertexArray(skyboxVAO);
     glActiveTexture(GL_TEXTURE0);

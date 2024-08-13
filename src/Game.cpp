@@ -12,6 +12,26 @@ extern "C"
 }
 #endif
 
+
+#include "SkyBox.h"
+#include "ShadowManager.h"
+#include "Renderer.h"
+#include "Camera.h"
+#include "Player.h"
+#include "Texture.h"
+//#include "Animation.h"
+//#include "Animator.h"
+//#include "Model.h"
+#include "Shader.h"
+#include "EntityM.h"
+#include "EntityTerrain.h"
+#include "EntityV.h"
+#include "lightDir.h"
+#include "lightPoint.h"
+
+#include "RandomHelpers.h"
+
+
 // namespace
 //{
 //	ShadowManager& GetShadowManagerInstance()
@@ -24,16 +44,20 @@ Game::Game()
 {
     // SoundEngine = createIrrKlangDevice();
     // m_camera = Camera(glm::vec3(482.0f, -8.5f, 564.0f));
-    m_camera = Camera(glm::vec3(128.5f, -100.8f, 1105.0f));
-    m_camera.setPerspectiveCameraProj(
+    m_camera = new Camera(glm::vec3(128.5f, -100.8f, 1105.0f));
+    m_camera->setPerspectiveCameraProj(
         70.0f, (float)Renderer::GetInstance().SCR_WIDTH / (float)Renderer::GetInstance().SCR_HEIGHT, 0.1f, 5000.0f);
-    Renderer::GetInstance().setCamera(&m_camera);
+    Renderer::GetInstance().setCamera(m_camera);
 }
 
 Game::~Game()
 {
-    // SoundEngine->drop();
-    stbi_image_free(data);
+    delete m_skyBox;
+    delete m_camera;
+    delete m_skyShader;
+    delete debugDepthQuad;
+    delete hdrShader;
+    delete shaderBlur;
 }
 
 void Game::Run()
@@ -44,9 +68,9 @@ void Game::Run()
         initEntities();
         ShadowManager::GetInstance().initShadows();
         debugDepthQuad =
-            Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
-        debugDepthQuad.use();
-        debugDepthQuad.setInt("shadowMap", 2);
+            new Shader("../../res/Shaders/Depth/Debug/depthDebug.vs", "../../res/Shaders/Depth/Debug/depthDebug.fs");
+        debugDepthQuad->use();
+        debugDepthQuad->setInt("shadowMap", 2);
         GameLoop();
     }
     else
@@ -111,7 +135,110 @@ void Game::RtLoop()
     glBindTexture(GL_TEXTURE_2D, texture);
 
 
-    m_camera.m_cameraPos = glm::vec3(0, 0, 0);
+    m_camera->m_cameraPos = glm::vec3(0, 1, 3);
+
+    computeShader.use();
+    //computeShader.setFloat("timeee", currentFrame);
+    computeShader.setVec3("camera_origin", m_camera->m_cameraPos);
+    computeShader.setVec3("camera_lower_left_corner", glm::vec3(-2.0, -1.0, -1.0));
+    computeShader.setVec3("camera_horizontal", glm::vec3(4.0, 0.0, 0.0));
+    computeShader.setVec3("camera_vertical", glm::vec3(0.0, 2.0, 0.0));
+
+    m_camera->getCornerRays();
+    computeShader.setVec3("ray00", m_camera->ray00);
+    computeShader.setVec3("ray10", m_camera->ray10);
+    computeShader.setVec3("ray01", m_camera->ray01);
+    computeShader.setVec3("ray11", m_camera->ray11);
+
+    computeShader.setInt("num_spheres", 30);
+
+    computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 1.0, -1.0));
+    computeShader.setFloat("spheres[0].radius", 1);
+    computeShader.setInt("spheres[0].material.type", 0);
+    computeShader.setVec3("spheres[0].material.albedo", glm::vec3(0.8, 0.3, 0.3));
+    computeShader.setFloat("spheres[0].material.fuzz", 0.0);
+    computeShader.setFloat("spheres[0].material.ir", 0.0);
+
+    computeShader.setVec3("spheres[1].center", glm::vec3(-2.0, 1.0, -1.0));
+    computeShader.setFloat("spheres[1].radius", 0.8);
+    computeShader.setInt("spheres[1].material.type", 2);
+    computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.8, 0.8));
+    computeShader.setFloat("spheres[1].material.fuzz", 0);
+    computeShader.setFloat("spheres[1].material.ir", 1.00 / 1.33);
+
+    computeShader.setVec3("spheres[4].center", glm::vec3(-2.0, 1.0, -1.0));
+    computeShader.setFloat("spheres[4].radius", 1);
+    computeShader.setInt("spheres[4].material.type", 2);
+    computeShader.setVec3("spheres[4].material.albedo", glm::vec3(0.8, 0.8, 0.8));
+    computeShader.setFloat("spheres[4].material.fuzz", 0);
+    computeShader.setFloat("spheres[4].material.ir", 1.50);
+
+    computeShader.setVec3("spheres[2].center", glm::vec3(2.0, 1.0, -1.0));
+    computeShader.setFloat("spheres[2].radius", 1);
+    computeShader.setInt("spheres[2].material.type", 1);
+    computeShader.setVec3("spheres[2].material.albedo", glm::vec3(0.8, 0.8, 0.8));
+    computeShader.setFloat("spheres[2].material.fuzz", 0.0);
+    computeShader.setFloat("spheres[2].material.ir", 0);
+
+    computeShader.setVec3("spheres[3].center", glm::vec3(0, -1000, 0));
+    computeShader.setFloat("spheres[3].radius", 1000.0);
+    computeShader.setInt("spheres[3].material.type", 0);
+    computeShader.setVec3("spheres[3].material.albedo", glm::vec3(0.5, 0.5, 0.5));
+    computeShader.setFloat("spheres[3].material.fuzz", 0.0);
+    computeShader.setFloat("spheres[3].material.ir", 0.0);
+
+    using namespace RandomHelpers;
+    for (int a = -2; a < 2; a++)
+    {
+        for (int b = -2; b < 2; b++)
+        {
+            auto choose_mat = random_double();
+            glm::vec3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+
+            if ((center - glm::vec3(4, 0.2, 0)).length() > 0.9)
+            {
+                int c = b + 6;
+                if (choose_mat < 0.8)
+                {
+                    // diffuse
+                    auto albedo = glm::vec3(random_double(), random_double(), random_double()) *
+                                  glm::vec3(random_double(), random_double(), random_double());
+                    
+
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].center", center);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].radius", 0.2);
+                    computeShader.setInt("spheres[" + std::to_string(a * 22 + c) + "].material.type", 0);
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].material.albedo", albedo);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].material.fuzz", 0.0);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].ir", 0.0);
+                }
+                else if (choose_mat < 0.95)
+                {
+                    // metal
+                    auto albedo = glm::vec3(random_double(), random_double(), random_double());
+                    auto fuzz = random_double(0, 0.5);
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].center", center);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].radius", 0.2);
+                    computeShader.setInt("spheres[" + std::to_string(a * 22 + c) + "].material.type", 0);
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].material.albedo", albedo);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].material.fuzz", fuzz);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].ir", 0.0);
+                }
+                else
+                {
+                    // glass
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].center", center);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].radius", 0.2);
+                    computeShader.setInt("spheres[" + std::to_string(a * 22 + c) + "].material.type", 0);
+                    computeShader.setVec3("spheres[" + std::to_string(a * 22 + c) + "].material.albedo",
+                                          glm::vec3(0, 0, 0));
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].material.fuzz", 0.0);
+                    computeShader.setFloat("spheres[" + std::to_string(a * 22 + c) + "].ir", 1.5);
+                }
+            }
+        }
+    }
+
 
     while (!glfwWindowShouldClose(m_window))
     {
@@ -133,47 +260,19 @@ void Game::RtLoop()
 
 
         computeShader.use();
-        computeShader.setVec3("camera_origin", m_camera.m_cameraPos);
+        computeShader.setFloat("timeee", currentFrame);
+
+        computeShader.setVec3("camera_origin", m_camera->m_cameraPos);
         computeShader.setVec3("camera_lower_left_corner", glm::vec3(-2.0, -1.0, -1.0));
         computeShader.setVec3("camera_horizontal", glm::vec3(4.0, 0.0, 0.0));
         computeShader.setVec3("camera_vertical", glm::vec3(0.0, 2.0, 0.0));
 
-        m_camera.getCornerRays();
-        computeShader.setVec3("ray00", m_camera.ray00);
-        computeShader.setVec3("ray10", m_camera.ray10);
-        computeShader.setVec3("ray01", m_camera.ray01);
-        computeShader.setVec3("ray11", m_camera.ray11);
+        m_camera->getCornerRays();
+        computeShader.setVec3("ray00", m_camera->ray00);
+        computeShader.setVec3("ray10", m_camera->ray10);
+        computeShader.setVec3("ray01", m_camera->ray01);
+        computeShader.setVec3("ray11", m_camera->ray11);
 
-
-        computeShader.setInt("num_spheres", 4);
-
-        computeShader.setVec3("spheres[0].center", glm::vec3(0.0, 0.0, -1.0));
-        computeShader.setFloat("spheres[0].radius", 0.5);
-        computeShader.setInt("spheres[0].material.type", 0);
-        computeShader.setVec3("spheres[0].material.albedo", glm::vec3(0.8, 0.3, 0.3));
-        computeShader.setFloat("spheres[0].material.fuzz", 0.0);
-        computeShader.setFloat("spheres[0].material.ir", 0.0);
-
-        computeShader.setVec3("spheres[1].center", glm::vec3(-1.0, 0.0, -1.0));
-        computeShader.setFloat("spheres[1].radius", 0.5);
-        computeShader.setInt("spheres[1].material.type", 1);
-        computeShader.setVec3("spheres[1].material.albedo", glm::vec3(0.8, 0.3, 0.3));
-        computeShader.setFloat("spheres[1].material.fuzz", 0.0);
-        computeShader.setFloat("spheres[1].material.ir", 0.0);
-
-        computeShader.setVec3("spheres[2].center", glm::vec3(1.0, 0.0, -1.0));
-        computeShader.setFloat("spheres[2].radius", 0.5);
-        computeShader.setInt("spheres[2].material.type", 2);
-        computeShader.setVec3("spheres[2].material.albedo", glm::vec3(0.8, 0.3, 0.3));
-        computeShader.setFloat("spheres[2].material.fuzz", 0.0);
-        computeShader.setFloat("spheres[2].material.ir", 0.0);
-
-        computeShader.setVec3("spheres[3].center", glm::vec3(0.0, -100.5, -1.0));
-        computeShader.setFloat("spheres[3].radius", 100.0);
-        computeShader.setInt("spheres[3].material.type", 0);
-        computeShader.setVec3("spheres[3].material.albedo", glm::vec3(0.8, 0.8, 0.0));
-        computeShader.setFloat("spheres[3].material.fuzz", 0.0);
-        computeShader.setFloat("spheres[3].material.ir", 0.0);
 
         glDispatchCompute((unsigned int)(TEXTURE_WIDTH + 15) / 16, (unsigned int)(TEXTURE_HEIGHT + 15) / 16, 1);
 
@@ -197,7 +296,7 @@ void Game::GameLoop()
     while (!glfwWindowShouldClose(m_window))
     {
 
-        m_camera.updateCameraFrustum();
+        m_camera->updateCameraFrustum();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -213,21 +312,21 @@ void Game::GameLoop()
 
         if (level == 1)
         {
-            ShadowManager::GetInstance().m_dirLight.setDirLight(glm::vec3(442.0f, -75.0f, 451.0f),
+            ShadowManager::GetInstance().m_dirLight->setDirLight(glm::vec3(442.0f, -75.0f, 451.0f),
                                                                 glm::vec3(1.0f, 1.0f, 1.0f));
             if (
                 // m_camera.m_cameraPos.x <= 116.0f
                 1)
             {
                 level = 2;
-                m_camera.setCameraSpeed(200.0f);
+                m_camera->setCameraSpeed(200.0f);
 
                 lev1timeChange = currentFrame;
             }
         }
         else if (level == 2)
         {
-            m_camera.setCameraPos(glm::vec3(
+            m_camera->setCameraPos(glm::vec3(
                 422.0f, RandomHelpers::getHeight(421.0f, 437.0f, data, m_ResolutionWidth, m_ResolutionHeight) + 2.0f,
                 437.0f));
             if (currentFrame - lev1timeChange > 0.0f)
@@ -239,7 +338,7 @@ void Game::GameLoop()
 
         if (level != 2)
         {
-            ShadowManager::GetInstance().updateShadows(m_deltaTime, currentFrame, m_entities, m_camera);
+            ShadowManager::GetInstance().updateShadows(m_deltaTime, currentFrame, m_entities, *m_camera);
             RenderLoop();
         }
         {
@@ -255,11 +354,11 @@ void Game::GameLoop()
             }*/
         }
 
-        debugDepthQuad.use();
-        debugDepthQuad.setInt("layer", debugLayer);
+        debugDepthQuad->use();
+        debugDepthQuad->setInt("layer", debugLayer);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight.m_lightDepthMaps);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, ShadowManager::GetInstance().m_dirLight->m_lightDepthMaps);
 
         // renderQuad();
 
@@ -293,7 +392,7 @@ void Game::RenderLoop()
                 // isDirty(?) trigger AABBupdate rotate and stuff for later
 
                 objectsSent++;
-                if (ptr->boundingAABB.isOnFrustum(m_camera.getCamFrustum()))
+                if (ptr->boundingAABB.isOnFrustum(m_camera->getCamFrustum()))
                 {
                     ptr->inFrustum = true;
                     /*if (ptr->getName() == "SEA")
@@ -321,7 +420,7 @@ void Game::RenderLoop()
             [&](const auto &ptr) {
                 if (!ptr->inFrustum || !ptr->getIsRendered())
                     return;
-                ptr->draw(m_deltaTime, m_camera, false, currentFrame, ShadowManager::GetInstance().m_dirLight,
+                ptr->draw(m_deltaTime, *m_camera, false, currentFrame, *ShadowManager::GetInstance().m_dirLight,
                           ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
             },
             entity);
@@ -330,11 +429,11 @@ void Game::RenderLoop()
     // Drawing All instances
     for (const auto &obj : m_entitiesInstanced)
     {
-        obj->draw(m_deltaTime, m_camera, true, currentFrame, ShadowManager::GetInstance().m_dirLight,
+        obj->draw(m_deltaTime, *m_camera, true, currentFrame, *ShadowManager::GetInstance().m_dirLight,
                   ShadowManager::GetInstance().m_pointLights, ShadowManager::GetInstance().lightSpaceMatrix);
     }
 
-    m_skyBox.draw(m_camera, ShadowManager::GetInstance().m_dirLight.m_color);
+    m_skyBox->draw(*m_camera, ShadowManager::GetInstance().m_dirLight->m_color);
 
     {
 
@@ -342,12 +441,12 @@ void Game::RenderLoop()
                     ImGui::GetIO().Framerate);
         ImGui::Text("Sent: %d Culled: %d", objectsSent, objectsCulled);
 
-        ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera.m_cameraPos.x, m_camera.m_cameraPos.y,
-                    m_camera.m_cameraPos.z);
-        ImGui::Text("Height: %.3f ", RandomHelpers::getHeight(m_camera.m_cameraPos.x, m_camera.m_cameraPos.z, data,
+        ImGui::Text("Coordinates: %.3f %.3f %.3f", m_camera->m_cameraPos.x, m_camera->m_cameraPos.y,
+                    m_camera->m_cameraPos.z);
+        ImGui::Text("Height: %.3f ", RandomHelpers::getHeight(m_camera->m_cameraPos.x, m_camera->m_cameraPos.z, data,
                                                               m_ResolutionWidth, m_ResolutionHeight));
         if (ImGui::Button("GOD MODE"))
-            m_camera.godMode = !m_camera.godMode;
+            m_camera->godMode = !m_camera->godMode;
     }
 
     {
@@ -355,7 +454,7 @@ void Game::RenderLoop()
 
         if (ImGui::InputFloat("Movement Speed", &inputNumber, 1.0f, 10.0f))
         {
-            m_camera.setCameraSpeed(inputNumber);
+            m_camera->setCameraSpeed(inputNumber);
         }
     }
 
@@ -370,17 +469,17 @@ void Game::RenderLoop()
     if (ImGui::CollapsingHeader("Directional Light Settings"))
     {
 
-        static glm::vec3 dirLightDirection = ShadowManager::GetInstance().m_dirLight.m_direction;
-        static glm::vec3 dirLightColor = ShadowManager::GetInstance().m_dirLight.m_color;
+        static glm::vec3 dirLightDirection = ShadowManager::GetInstance().m_dirLight->m_direction;
+        static glm::vec3 dirLightColor = ShadowManager::GetInstance().m_dirLight->m_color;
 
         if (ImGui::InputFloat3("Direction", glm::value_ptr(dirLightDirection)))
         {
-            ShadowManager::GetInstance().m_dirLight.m_direction = glm::normalize(dirLightDirection);
+            ShadowManager::GetInstance().m_dirLight->m_direction = glm::normalize(dirLightDirection);
         }
 
         if (ImGui::ColorEdit3("Color", glm::value_ptr(dirLightColor)))
         {
-            ShadowManager::GetInstance().m_dirLight.m_color = dirLightColor;
+            ShadowManager::GetInstance().m_dirLight->m_color = dirLightColor;
         }
     }
 
@@ -438,11 +537,11 @@ void Game::RenderLoop()
     {
         bool horizontal = true, first_iteration = true;
         int amount = 10;
-        shaderBlur.use();
+        shaderBlur->use();
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-            shaderBlur.setInt("horizontal", horizontal);
+            shaderBlur->setInt("horizontal", horizontal);
             glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
             RandomHelpers::renderQuad();
             horizontal = !horizontal;
@@ -452,22 +551,22 @@ void Game::RenderLoop()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    hdrShader.use();
+    hdrShader->use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, pingpongBuffer[0]);
 
-    hdrShader.setInt("hdr", hdr);
-    hdrShader.setFloat("exposure", exposure);
+    hdrShader->setInt("hdr", hdr);
+    hdrShader->setFloat("exposure", exposure);
     RandomHelpers::renderQuad();
 }
 
 void Game::initEntities()
 {
-    Player::GetInstance().InitPlayer(m_camera);
+    Player::GetInstance().InitPlayer(*m_camera);
 
-    m_skyBox = SkyBox("../../res/CubeMaps/skybox/");
+    m_skyBox = new SkyBox("../../res/CubeMaps/skybox/");
     m_terrain = std::make_unique<EntityTerrain>("Terrain 1", data, m_ResolutionWidth, m_ResolutionHeight);
 
     //----------------------------------------------------------------------------------------------------------
@@ -515,18 +614,18 @@ void Game::initEntities()
 
     //----------------------------------------------------------------------------------------------------------
 
-    Shader bulbShader("../../res/Shaders/Bulb/Bulb.vs", "../../res/Shaders/Bulb/Bulb.fs");
-    Shader unlitShader("../../res/Shaders/Standard/Unlit/Unlit.vs", "../../res/Shaders/Standard/Unlit/Unlit.fs");
-    Shader pbrShader("../../res/Shaders/Standard/PBR/PBR.vs", "../../res/Shaders/Standard/PBR/PBR.fs");
-    Shader grassShader("../../res/Shaders/Grass/Grass.vs", "../../res/Shaders/Grass/Grass.fs");
-    Shader ourShader("../../res/Shaders/skeletal.vs", "../../res/Shaders/skeletalPBR.fs");
-    Shader seaShader("../../res/Shaders/Sea/sea.vs", "../../res/Shaders/Sea/sea.fs");
-    Shader bMoon("../../res/Shaders/Bulb/bMoon/bMoon.vs", "../../res/Shaders/Bulb/bMoon/bMoon.fs");
-    // Shader vFog("res/Shaders/VolumetricFog/VolumetricFog.vs", "res/Shaders/VolumetricFog/VolumetricFog.fs");
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Bulb/Bulb.vs", "../../res/Shaders/Bulb/Bulb.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Standard/Unlit/Unlit.vs", "../../res/Shaders/Standard/Unlit/Unlit.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Standard/PBR/PBR.vs", "../../res/Shaders/Standard/PBR/PBR.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Grass/Grass.vs", "../../res/Shaders/Grass/Grass.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/skeletal.vs", "../../res/Shaders/skeletalPBR.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Sea/sea.vs", "../../res/Shaders/Sea/sea.fs"));
+    m_Shaders.emplace_back(std::make_shared<Shader>("../../res/Shaders/Bulb/bMoon/bMoon.vs", "../../res/Shaders/Bulb/bMoon/bMoon.fs"));
+    // m_Shaders.emplace_back(std::make_shared<Shader>("res/Shaders/VolumetricFog/VolumetricFog.vs", // "res/Shaders/VolumetricFog/VolumetricFog.fs"));
 
-    unlitShader.use();
-    unlitShader.setInt("shadowMap", 11);
-    unlitShader.setInt("pointShadowMap", 12);
+    m_Shaders[1]->use();
+    m_Shaders[1]->setInt("shadowMap", 11);
+    m_Shaders[1]->setInt("pointShadowMap", 12);
 
     /*pbrShader.use();
     pbrShader.setInt("shadowmap", 11);
@@ -546,24 +645,22 @@ void Game::initEntities()
     vFog.setVec4("_SunDir", glm::vec4(0.2000008, 0.20000005, 1.20000005, 1));*/
 
     std::unique_ptr<EntityM> grass =
-        std::make_unique<EntityM>("Grass", "../../res/textures/Grass/grass.png", grassPos, grassScale, grassShader,
+        std::make_unique<EntityM>("Grass", "../../res/textures/Grass/grass.png", grassPos, grassScale,
+                                  m_Shaders[3].get(),
                                   "../../res/Models/Grass/grass.fbx",
                                   RandomHelpers::instanceMatrixTerrain(500000, 300.0, 75.0f, -20.0f, 20.0f, data,
                                                                        m_ResolutionWidth, m_ResolutionHeight),
                                   500000);
 
-    std::unique_ptr<EntityV> lightBulb1 = std::make_unique<EntityV>("bulb 1", lightPos1, lightScale1, 0.0f,
-                                                                    glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>("bulb 2", lightPos2, lightScale1, 0.0f,
-                                                                    glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
-    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>("bulb 3", lightPos4, lightScale1, 0.0f,
-                                                                    glm::vec3(1.0f, 0.0f, 0.0f), bulbShader, "SPHERE");
+    std::unique_ptr<EntityV> lightBulb1 = std::make_unique<EntityV>("bulb 1", lightPos1, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), m_Shaders[0].get(), "SPHERE");
+    std::unique_ptr<EntityV> lightBulb2 = std::make_unique<EntityV>("bulb 2", lightPos2, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), m_Shaders[0].get(), "SPHERE");
+    std::unique_ptr<EntityV> lightBulb3 = std::make_unique<EntityV>("bulb 3", lightPos4, lightScale1, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), m_Shaders[0].get(), "SPHERE");
     // std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader,
     // "res/Models/Player/Final/Player.gltf", "Idle"); std::unique_ptr<EntityM> vampire =
     //  std::make_unique<EntityM>(vampireLocation, vampireScale, ourShader,
     //  "res/Models/Player/Vampire/dancing_vampire.dae", "Hips");
     // vampire->m_model.
-    std::unique_ptr<EntityM> helmet = std::make_unique<EntityM>("Helmet", soljaLocation, soljaScale1, pbrShader,
+    std::unique_ptr<EntityM> helmet = std::make_unique<EntityM>("Helmet", soljaLocation, soljaScale1, m_Shaders[2].get(),
                                                                 "../../res/Models/DamagedHelmet/DamagedHelmet.gltf");
     // std::unique_ptr<EntityM> cyberGirl = std::make_unique<EntityM>(
     // "CyberGirl", soljaLocation, soljaScale1, ourShader, "../../res/Models/Player/Cybergirl/scene.gltf", "pose1");
@@ -572,20 +669,21 @@ void Game::initEntities()
     // std::make_unique<EntityM>(soljaLocation1, soljaScale1, unlitShader,
     // "res/Models/Backpack/Survival_BackPack_2.fbx"); std::unique_ptr<EntityV> goodCube = std::make_unique<EntityV>(c,
     // d, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
-    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>("House Exterior", ExLocation, grassScale, pbrShader,
+    std::unique_ptr<EntityM> Exterior = std::make_unique<EntityM>(
+        "House Exterior", ExLocation, grassScale, m_Shaders[2].get(),
                                                                   "../../res/Models/House/Exterior/Exterior.gltf");
     // std::unique_ptr<EntityM> Exterior2 = std::make_unique<EntityM>(ExLocation2, ab, unlitShader,
     // "res/Models/House/Exterior/Exterior.gltf");
-    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>("Interior", InLocation, InScale, pbrShader,
+    std::unique_ptr<EntityM> Interior = std::make_unique<EntityM>("Interior", InLocation, InScale, m_Shaders[2].get(),
                                                                   "../../res/Models/House/StarWarsClone/untitled.gltf");
-    std::unique_ptr<EntityM> Boat =
-        std::make_unique<EntityM>("BOAT", boatLocation, boatScale, unlitShader, "../../res/Models/Boat/boat.obj");
+    std::unique_ptr<EntityM> Boat = std::make_unique<EntityM>("BOAT", boatLocation, boatScale, m_Shaders[1].get(),
+                                                              "../../res/Models/Boat/boat.obj");
     // std::unique_ptr<EntityV> vFogObject = std::make_unique<EntityV>(vFogLoc, vFogScale, 0.0f, glm::vec3(1.0f, 0.0f,
     // 0.0f), vFog, "CUBE");
-    std::unique_ptr<EntityM> sea =
-        std::make_unique<EntityM>("SEA", seaLocation, seaScale, seaShader, "../../res/Models/Shapes/Plane.gltf");
+    std::unique_ptr<EntityM> sea = std::make_unique<EntityM>("SEA", seaLocation, seaScale, m_Shaders[5].get(),
+                                                             "../../res/Models/Shapes/Plane.gltf");
     std::unique_ptr<EntityV> bMoonObject = std::make_unique<EntityV>(
-        "Moon", bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), unlitShader, "SPHERE");
+        "Moon", bMoonLoc, bMoonScale, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f), m_Shaders[1].get(), "SPHERE");
     // std::unique_ptr<EntityM> solja = std::make_unique<EntityM>(soljaLocation, soljaScale, ourShader,
     // "res/Models/Player/Final/Player.gltf", "Idle"); std::unique_ptr<EntityM> vampire =
 
@@ -651,10 +749,10 @@ void Game::initData()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         hdrShader =
-            Shader("../../res/Shaders/Post Processing/HDR/hdr.vs", "../../res/Shaders/Post Processing/HDR/hdr.fs");
-        hdrShader.use();
-        hdrShader.setInt("hdrBuffer", 0);
-        hdrShader.setInt("bloomBlur", 1);
+            new Shader("../../res/Shaders/Post Processing/HDR/hdr.vs", "../../res/Shaders/Post Processing/HDR/hdr.fs");
+        hdrShader->use();
+        hdrShader->setInt("hdrBuffer", 0);
+        hdrShader->setInt("bloomBlur", 1);
     }
     {
         glGenFramebuffers(2, pingpongFBO);
@@ -671,7 +769,7 @@ void Game::initData()
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
         }
 
-        shaderBlur = Shader("../../res/Shaders/Post Processing/Bloom/blur.vs",
+        shaderBlur = new Shader("../../res/Shaders/Post Processing/Bloom/blur.vs",
                             "../../res/Shaders/Post Processing/Bloom/blur.fs");
     }
 
@@ -719,19 +817,19 @@ void Game::processInput(GLFWwindow *window)
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(FORWARD, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
+            m_camera->ProcessKeyboard(FORWARD, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(BACKWARD, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
+            m_camera->ProcessKeyboard(BACKWARD, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(LEFT, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
+            m_camera->ProcessKeyboard(LEFT, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
-            m_camera.ProcessKeyboard(RIGHT, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
+            m_camera->ProcessKeyboard(RIGHT, m_deltaTime, data, m_ResolutionWidth, m_ResolutionHeight);
         }
 
         {
@@ -739,7 +837,7 @@ void Game::processInput(GLFWwindow *window)
             if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && plusPress == GLFW_PRESS)
             {
                 debugLayer++;
-                if (debugLayer > ShadowManager::GetInstance().m_dirLight.m_shadowCascadeLevels.size())
+                if (debugLayer > ShadowManager::GetInstance().m_dirLight->m_shadowCascadeLevels.size())
                 {
                     debugLayer = 0;
                 }
@@ -751,9 +849,9 @@ void Game::processInput(GLFWwindow *window)
             if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE && cPress == GLFW_PRESS)
             {
                 ShadowManager::GetInstance().lightMatricesCache =
-                    ShadowManager::GetInstance().m_dirLight.getLightSpaceMatrices(
-                        m_camera.m_nearPlane, m_camera.m_farPlane, m_camera.GetViewMatrix(), m_camera.m_FOV,
-                        m_camera.m_aspectRatio);
+                    ShadowManager::GetInstance().m_dirLight->getLightSpaceMatrices(
+                        m_camera->m_nearPlane, m_camera->m_farPlane, m_camera->GetViewMatrix(), m_camera->m_FOV,
+                        m_camera->m_aspectRatio);
             }
             cPress = glfwGetKey(window, GLFW_KEY_C);
         }
@@ -801,7 +899,7 @@ void Game::drawCascadeVolumeVisualizers(const std::vector<glm::mat4> &lightMatri
 
     for (int i = 0; i < lightMatrices.size(); ++i)
     {
-        const auto corners = ShadowManager::GetInstance().m_dirLight.getFrustumCornersWorldSpace(lightMatrices[i]);
+        const auto corners = ShadowManager::GetInstance().m_dirLight->getFrustumCornersWorldSpace(lightMatrices[i]);
         std::vector<glm::vec3> vec3s;
         for (const auto &v : corners)
         {

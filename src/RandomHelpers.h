@@ -4,6 +4,7 @@
 #define __RANDOMHELPERS_H__
 #include "glad.h"
 #include <GLFW/glfw3.h>
+
 extern unsigned int quadVAO;
 extern unsigned int quadVAO;
 extern unsigned int cubeVAO;
@@ -113,6 +114,11 @@ void renderCube();
 
 void genCubeMapTransforms(const float &nearPlane, const float &farPlane, const float &aspect, glm::vec3 pos,
                           std::vector<glm::mat4> &shadowTransforms, int i);
+
+double random_double();
+double random_double(double min, double max);
+
 } // namespace RandomHelpers
+
 
 #endif

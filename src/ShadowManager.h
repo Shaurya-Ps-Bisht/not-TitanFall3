@@ -4,17 +4,19 @@
 
 #include <memory>
 #include <vector>
+#include <variant>
 
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-#include "Camera.h"
-#include "EntityM.h"
-#include "EntityTerrain.h"
-#include "EntityV.h"
-#include "Renderer.h"
-#include "Shader.h"
-#include "lightDir.h"
+
+class Camera;
+class EntityM;
+class EntityTerrain;
+class EntityV;
+class lightPoint;
+class lightDir;
+class Shader;
 
 using EntityPtr = std::variant<std::shared_ptr<EntityM>, std::unique_ptr<EntityM>, std::unique_ptr<EntityV>,
                                std::unique_ptr<EntityTerrain>>;
@@ -40,7 +42,7 @@ class ShadowManager
 
     std::vector<glm::mat4> shadowTransforms;
 
-    lightDir m_dirLight;
+    lightDir* m_dirLight;
     std::vector<lightPoint> m_pointLights;
 
     std::vector<glm::mat4> lightMatricesCache;
@@ -51,10 +53,10 @@ class ShadowManager
     void initDirectionalShadow();
 
   private:
-    Shader dirDepthShader;
-    Shader pointDepthShader;
-
-    Shader debugCascadeShader;
+    ~ShadowManager();
+    Shader* dirDepthShader;
+    Shader* pointDepthShader;
+    Shader* debugCascadeShader;
     unsigned int matricesUBO;
 
     unsigned int pointDepthFBO;

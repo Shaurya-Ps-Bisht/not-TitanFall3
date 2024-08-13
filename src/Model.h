@@ -37,8 +37,8 @@ class Model
     Model(const char *path, bool isSkeletal);
     Model(const char *path, glm::mat4 *modelMatrices, unsigned int amount, bool isSkeletal);
     Model(){};
-    void Draw(Shader &shader);
-    void DrawInstanced(Shader &shader);
+    void Draw(const Shader &shader);
+    void DrawInstanced(const Shader &shader);
 
   public:
     auto &GetBoneInfoMap()

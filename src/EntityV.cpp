@@ -1,7 +1,12 @@
 #include "EntityV.h"
+#include "Shape.h"
+#include "lightDir.h"
+#include "Camera.h"
+#include "Shader.h"
+//#include "Texture.h"
 
 EntityV::EntityV(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, float angleP,
-                 glm::vec3 axisP, Shader &initialShader, const char *shape)
+                 glm::vec3 axisP, const Shader *initialShader, const char *shape)
     : Entity(name, initialPosition, initialScale, initialShader), angle(angleP), axis(axisP)
 {
     getVertexData(shape);
@@ -44,30 +49,30 @@ void EntityV::draw(const float &deltaTime, Camera &cam, bool instanced, float el
     glm::mat4 projection = cam.GetProjectionMatrix();
     glm::mat4 view = cam.GetViewMatrix();
 
-    m_shader.use();
+    m_shader->use();
     // m_shader.setInt("texture_diffuse1", 0);
     // m_shader.setInt("shadowMap", 2);
 
-    m_shader.setMat4("projection", projection);
-    m_shader.setMat4("view", view);
+    m_shader->setMat4("projection", projection);
+    m_shader->setMat4("view", view);
 
     // Lighting setup
-    m_shader.setVec3("viewPos", cam.m_cameraPos);
-    m_shader.setVec3("dirLight.direction", dLight.m_direction);
-    m_shader.setVec3("dirLight.color", dLight.m_color);
-    m_shader.setFloat("farPlane", cam.m_farPlane);
-    m_shader.setFloat("pointShadowFar", 25.0f);
-    m_shader.setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
+    m_shader->setVec3("viewPos", cam.m_cameraPos);
+    m_shader->setVec3("dirLight.direction", dLight.m_direction);
+    m_shader->setVec3("dirLight.color", dLight.m_color);
+    m_shader->setFloat("farPlane", cam.m_farPlane);
+    m_shader->setFloat("pointShadowFar", 25.0f);
+    m_shader->setInt("cascadeCount", dLight.m_shadowCascadeLevels.size());
     for (size_t i = 0; i < dLight.m_shadowCascadeLevels.size(); ++i)
     {
-        m_shader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
+        m_shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", dLight.m_shadowCascadeLevels[i]);
     }
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_position); // translate it down so it's at the center of the scene
     model = glm::rotate(model, glm::radians(angle), axis);
     model = glm::scale(model, m_scale); // it's a bit too big for our scene, so scale it down
-    m_shader.setMat4("model", model);
+    m_shader->setMat4("model", model);
 
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);

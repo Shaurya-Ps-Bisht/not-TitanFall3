@@ -1,7 +1,13 @@
 #include "EntityTerrain.h"
+#include "Shader.h"
+//#include "Texture.h"
+#include "lightDir.h"
+#include "Camera.h"
+#include <stb_image.h>
 
 EntityTerrain::EntityTerrain(const std::string &name, const unsigned char *data, const int &width, const int &height)
-    : Entity(name, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), m_shader), m_ResolutionWidth(width),
+    : Entity(name, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), (m_shader)),
+      m_ResolutionWidth(width),
       m_ResolutionHeight(height)
     
 {
@@ -12,13 +18,13 @@ EntityTerrain::EntityTerrain(const std::string &name, const unsigned char *data,
 
     // build and compile our shader program
     // ------------------------------------
-    m_shader = Shader("../../res/Shaders/Terrain/terrain.vs",
+    m_shader = new Shader("../../res/Shaders/Terrain/terrain.vs",
         "../../res/Shaders/Terrain/terrain.fs", nullptr,
         "../../res/Shaders/Terrain/terrain.tcs",
         "../../res/Shaders/Terrain/terrain.tes");
 
 
-    m_shader.setInt("heightMap", 0);
+    m_shader->setInt("heightMap", 0);
     // load and create a texture
     // -------------------------
     loadSand();
@@ -100,30 +106,30 @@ void EntityTerrain::draw(const float &deltaTime, Camera &cam, bool instanced, fl
 {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    int widthUniformLocation = glGetUniformLocation(m_shader.m_ID, "ourColor");
-    m_shader.use();
-    m_shader.setInt("uHeightMap", 0);
-    m_shader.setInt("sandTex", 1);
-    m_shader.setInt("shadowMap", 2);
+    int widthUniformLocation = glGetUniformLocation(m_shader->m_ID, "ourColor");
+    m_shader->use();
+    m_shader->setInt("uHeightMap", 0);
+    m_shader->setInt("sandTex", 1);
+    m_shader->setInt("shadowMap", 2);
 
-    m_shader.setFloat("farPlane", cam.m_farPlane);
+    m_shader->setFloat("farPlane", cam.m_farPlane);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);
-    m_shader.setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
+    m_shader->setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
 
     // view/projection transformations
-    m_shader.setMat4("projection", cam.GetProjectionMatrix());
-    m_shader.setMat4("view", cam.GetViewMatrix());
+    m_shader->setMat4("projection", cam.GetProjectionMatrix());
+    m_shader->setMat4("view", cam.GetViewMatrix());
 
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
-    m_shader.setMat4("model", model);
+    m_shader->setMat4("model", model);
 
     //Lighting setup
-    m_shader.setVec3("viewPos", cam.m_cameraPos);
-    m_shader.setVec3("dirLight.direction", dLight.m_direction);
-    m_shader.setVec3("dirLight.color", dLight.m_color);
+    m_shader->setVec3("viewPos", cam.m_cameraPos);
+    m_shader->setVec3("dirLight.direction", dLight.m_direction);
+    m_shader->setVec3("dirLight.color", dLight.m_color);
 
     // render the 
     glActiveTexture(GL_TEXTURE0);
@@ -137,7 +143,7 @@ void EntityTerrain::draw(const float &deltaTime, Camera &cam, bool instanced, fl
 void EntityTerrain::drawDirLight(const float &deltaTime, bool instanced, Camera &cam, float elapsedTime,
                                  lightDir dLight, Shader &shader)
 {
-    int widthUniformLocation = glGetUniformLocation(m_shader.m_ID, "ourColor");
+    int widthUniformLocation = glGetUniformLocation(m_shader->m_ID, "ourColor");
     shader.use();
     shader.setInt("uHeightMap", 0);
     shader.setInt("sandTex", 1);
@@ -145,13 +151,13 @@ void EntityTerrain::drawDirLight(const float &deltaTime, bool instanced, Camera 
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_sand);
-    m_shader.setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
+    m_shader->setVec2("uTexelSize", (float)1.0 / m_ResolutionWidth, (float)1.0 / m_ResolutionHeight);
 
     // view/projection transformations
 
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
-    m_shader.setMat4("model", model);
+    m_shader->setMat4("model", model);
 
     // render the 
     glActiveTexture(GL_TEXTURE0);

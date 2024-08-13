@@ -2,20 +2,16 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-
-#include "Animation.h"
-#include "Animator.h"
-#include "lightDir.h"
-#include "lightPoint.h"
-#include "ShadowManager.h"
-
-#include "Camera.h"
-#include "EntityM.h"
+//#include <glad.h>
+#include <glm.hpp>
+// #include <gtc/matrix_transform.hpp>
 
 #include <memory>
+#include <vector>
+
+class Camera;
+class EntityM;
+class Shader;
 
 class Player
 {
@@ -39,10 +35,10 @@ private:
 private:
 	bool m_moving, m_flashlightEnabled;
 
-	Shader m_playerShader;
+	Shader* m_playerShader;
 	glm::vec3 m_playerPos;
-	Animation m_animations;
-	Animator m_animator;
+	//Animation m_animations;
+	//Animator m_animator;
 	//Model m_playerModel;
 
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "Shader.h"
 #include <vector>
 
 #ifndef __REFLECTION_PROBE__
@@ -9,6 +8,8 @@
 
 #include "glm.hpp"
 
+class Shader;
+
 class ReflectionProbe
 {
   public:
@@ -17,6 +18,7 @@ class ReflectionProbe
         static ReflectionProbe instance;
         return instance;
     }
+    ~ReflectionProbe();
 
     void addProbe(const glm::vec3 &position);
     void bake(unsigned int index);
@@ -44,7 +46,7 @@ class ReflectionProbe
     const unsigned int CUBEMAP_RESOLUTION = 512;
     int currentLayer = 0;
 
-    Shader irradianceShader, prefilterShader, brdfShader;
+    Shader * irradianceShader, *prefilterShader, *brdfShader;
 };
 
 #endif // !__REFLECTION_PROBE__

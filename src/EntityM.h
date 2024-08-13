@@ -4,25 +4,29 @@
 
 
 #include "Entity.h"
-
+#include "Texture.h"
+#include "Animation.h"
+#include "Animator.h"
+//class Animator;
+//class Animation;
+class Model;
 class EntityM : public Entity {
 
 public:
     // Constructor for objects without animation
-  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, Shader &initialShader,
+  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, const Shader *initialShader,
           const char *modelPath);
     // Constructor for objects with animation
-  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale,
-          Shader &initialShader,
+  EntityM(const std::string &name, glm::vec3 &initialPosition, glm::vec3 &initialScale, const Shader *initialShader,
           const char *modelPath, const char *animationName);
     //Constructors for objects with explicit textures
   EntityM(const std::string &name, const char *texturePath, glm::vec3 &initialPosition, glm::vec3 &initialScale,
-          Shader &initialShader, const char *modelPath);
+          const Shader *initialShader, const char *modelPath);
     //Constructors for objects with explicit textures and instanced rendering
   EntityM(const std::string &name, const char *texturePath, glm::vec3 &initialPosition, glm::vec3 &initialScale,
-          Shader &initialShader, const char *modelPath, glm::mat4 *modelMatrices, unsigned int amount);
+          const Shader *initialShader, const char *modelPath, glm::mat4 *modelMatrices, unsigned int amount);
     //and this is the destructorrr
-    ~EntityM() {};
+    ~EntityM();
     // Destructor to clean up optional objects
 
 
@@ -35,7 +39,7 @@ public:
 
     void CalculateModelExtents();
 
-    Model m_model;
+    Model *m_model;
 
 private:
     Animation m_animation;

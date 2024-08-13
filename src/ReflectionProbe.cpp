@@ -1,7 +1,16 @@
 #include "ReflectionProbe.h"
 #include "RandomHelpers.h"
+#include "Shader.h"
+
 #include <glad.h>
 #include <limits>
+
+ReflectionProbe::~ReflectionProbe()
+{
+    delete irradianceShader;
+    delete prefilterShader;
+    delete brdfShader;
+}
 
 void ReflectionProbe::addProbe(const glm::vec3 &position)
 {
@@ -56,10 +65,10 @@ ReflectionProbe::ReflectionProbe()
     // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    irradianceShader = Shader("../../res/Shaders/Standard/Cubemaps/cubemap_capture.vs",
+    irradianceShader = new Shader("../../res/Shaders/Standard/Cubemaps/cubemap_capture.vs",
                               "../../res/Shaders/IBL/irradiance_convolution.fs",
                               "../../res/Shaders/Standard/Cubemaps/cubemap_capture.gs");
-    prefilterShader =
+    prefilterShader = new
         Shader("../../res/Shaders/Standard/Cubemaps/cubemap_capture.vs", "../../res/Shaders/IBL/prefilter.fs",
                "../../res/Shaders/Standard/Cubemaps/cubemap_capture.gs");
 }
@@ -113,8 +122,8 @@ unsigned int ReflectionProbe::generateIrradianceMap(const unsigned int &cubemapI
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, irradianceMap, 0);
 
-    irradianceShader.use();
-    irradianceShader.setInt("environmentMap", 0);
+    irradianceShader->use();
+    irradianceShader->setInt("environmentMap", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
 
@@ -124,7 +133,7 @@ unsigned int ReflectionProbe::generateIrradianceMap(const unsigned int &cubemapI
     RandomHelpers::genCubeMapTransforms(1.0f, 10.0f, 1.0f, pos, cubemapCaptureTransforms, 0);
 
     for (unsigned int i = 0; i < 6; ++i)
-        irradianceShader.setMat4("cubemapCaptureTransforms[" + std::to_string(i) + "]", cubemapCaptureTransforms[i]);
+        irradianceShader->setMat4("cubemapCaptureTransforms[" + std::to_string(i) + "]", cubemapCaptureTransforms[i]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     RandomHelpers::renderCube();
@@ -148,8 +157,8 @@ unsigned int ReflectionProbe::generatePrefilterMap(const unsigned int &cubemapId
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-    prefilterShader.use();
-    prefilterShader.setInt("environmentMap", 0);
+    prefilterShader->use();
+    prefilterShader->setInt("environmentMap", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
 
@@ -157,7 +166,7 @@ unsigned int ReflectionProbe::generatePrefilterMap(const unsigned int &cubemapId
     RandomHelpers::genCubeMapTransforms(1.0f, 10.0f, 1.0f, pos, cubemapCaptureTransforms, 0);
 
     for (unsigned int i = 0; i < 6; ++i)
-        prefilterShader.setMat4("cubemapCaptureTransforms[" + std::to_string(i) + "]", cubemapCaptureTransforms[i]);
+        prefilterShader->setMat4("cubemapCaptureTransforms[" + std::to_string(i) + "]", cubemapCaptureTransforms[i]);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     unsigned int maxMipLevels = 5;
@@ -168,7 +177,7 @@ unsigned int ReflectionProbe::generatePrefilterMap(const unsigned int &cubemapId
         glViewport(0, 0, mipWidth, mipHeight);
 
         float roughness = (float)mip / (float)(maxMipLevels - 1);
-        prefilterShader.setFloat("roughness", roughness);
+        prefilterShader->setFloat("roughness", roughness);
 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, prefilterMap, mip);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -192,7 +201,7 @@ unsigned int ReflectionProbe::generateBrdfMap()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    brdfShader = Shader("../../res/Shaders/IBL/brdf.vs", "../../res/Shaders/IBL/brdf.fs");
+    brdfShader = new Shader("../../res/Shaders/IBL/brdf.vs", "../../res/Shaders/IBL/brdf.fs");
 
     unsigned int captureFBO;
     glGenFramebuffers(1, &captureFBO);
@@ -205,7 +214,7 @@ unsigned int ReflectionProbe::generateBrdfMap()
     // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
     glViewport(0, 0, 512, 512);
-    brdfShader.use();
+    brdfShader->use();
     glClear(GL_COLOR_BUFFER_BIT);
     RandomHelpers::renderQuad();
 

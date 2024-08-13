@@ -2,15 +2,26 @@
 #ifndef __ENTITY__
 #define __ENTITY__
 
-#include "Animator.h"
-#include "Camera.h"
-#include "Texture.h"
-#include "lightDir.h"
-#include "lightPoint.h"
+//#include "Animator.h"
+//#include "Camera.h"
+//#include "Texture.h"
+//#include "lightDir.h"
+//#include "lightPoint.h"
+#define NOMINMAX
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include <string>
+
+#include "RandomHelpers.h"
+
+//class Animator;
+class Camera;
+class lightDir;
+class lightPoint;
+class Shader;
+
 
 class Entity
 {
@@ -21,15 +32,18 @@ class Entity
     glm::vec3 m_position;
     glm::vec3 m_scale;
     glm::vec3 m_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-    Shader m_shader;
+    const Shader* m_shader;
+
     bool inFrustum = true;
     bool dirtyTransform = false;
 
     Entity(const std::string &name, const glm::vec3 &initialPosition, const glm::vec3 &initialScale,
-           const Shader &initialShader)
-        : m_position(initialPosition), m_scale(initialScale), m_shader(initialShader), name(name),
+           const Shader* initialShader)
+        : m_position(initialPosition), m_scale(initialScale), m_shader(initialShader),
+          name(name),
           boundingAABB(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
     {
+        //: m_position(initialPosition), m_scale(initialScale), m_shader(const_cast<Shader*>(&initialShader)), name(name),
     }
 
     const std::string &getName() const

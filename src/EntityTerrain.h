@@ -2,15 +2,16 @@
 #ifndef __ENTITY_TERRAIN_H__
 #define __ENTITY_TERRAIN_H__
 
-#include "Shader.h"
-#include "Texture.h"
 #include "Entity.h"
 
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
-#include "lightDir.h"
+
+class Shader;
+//class Texture;
+//class lightDir;
 
 const unsigned int NUM_PATCH_PTS = 4;
 

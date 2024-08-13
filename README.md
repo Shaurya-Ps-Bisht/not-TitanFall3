@@ -11,7 +11,7 @@ Just like the title suggests, this is not TitanFall 3, but an OpenGL renderer in
 - [To do](#to-do)
 
 ![Nice](res/Screenshots/1.png)
-![Nice](res/Screenshots/nottitanfall_raytrace_1.gif)
+![Nice](res/Screenshots/nottitanfall_raytrace_3.gif)
 
 
 ## Features

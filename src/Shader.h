@@ -3,7 +3,6 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad.h>
 
 #include <fstream>
 #include <iostream>
@@ -24,7 +23,7 @@ class Shader
     Shader(const char *computePath);
     ~Shader();
 
-    void use();
+    void use() const;
 
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
